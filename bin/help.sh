@@ -121,9 +121,11 @@ function help_get_conf()
 {
     option="getconf"
     echo "Usage         : $0 ${option} [conf_list] # ${USAGE_GET_CONF}"
-    echo " [conf_list]  : configuration list in key, seperated by comma"
-    echo "  e.g.        : $0 ${option} MO_PATH,MO_PW,MO_PORT=6101"
+    echo " [conf_list]  : configuration list in key, seperated by comma."
+    echo "              : use 'all' to print all configurations"
+    echo "  e.g.        : $0 ${option} MO_PATH,MO_PW,MO_PORT"
     echo "              : $0 ${option} MO_PATH"
+    echo "              : $0 ${option} all"
 }
 
 function help_ddl_convert()

@@ -5,7 +5,8 @@ mo_ctl tool for standalone matrixone
 Run below command to get this tool
 ```bash
 wget https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
-unzip mo_ctl.zip && mkdir -p /data/ && mv ./mo_ctl_standalone/ /data/mo_ctl/
+unzip mo_ctl.zip && mkdir -p /data/ && mv ./mo_ctl_standalone-main /data/mo_ctl
+cd /data/mo_ctl/ && chmod +x ./mo_ctl.sh
 ```
 
 # How to use it
