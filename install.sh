@@ -27,7 +27,7 @@ function download()
 {
     SITES=(\
             # in case you're in mainland of China, you can set one of the backup addresses below to replace the default value:
-      	   "https://ghproxy.com/https://github.com/matrixorigin" \
+             "https://ghproxy.com/https://github.com/matrixorigin" \
            "https://ghproxy.com/https://github.com/matrixorigin" \
            "https://hub.njuu.cf/matrixorigin" \
            "https://hub.yzuu.cf/matrixorigin" \
@@ -67,14 +67,14 @@ function install()
     fi
 
     add_log "INFO" "Try to install mo_ctl from file ${pkg}" 
-
-    if ! unzip -o mo_ctl.zip && mkdir -p /data/ && mv ./mo_ctl_standalone-main /data/mo_ctl; then
+    rm -rf /data/mo_ctl/
+    if unzip -o mo_ctl.zip && mkdir -p /data/ && mv ./mo_ctl_standalone-main/ /data/mo_ctl/; then
+        add_log "INFO" "Successfully extracted mo_ctl file to /data/mo_ctl/"
+    else
         add_log "ERROR"  "Failed to extract file, please check if 'unzip' is installed or file is complete"
         return 1
     fi
-
-    add_log "INFO" "Successfully extracted mo_ctl file to /data/mo_ctl/" 
-
+    
     add_log "INFO" "Setting up mo_ctl to /usr/bin/mo_ctl" 
 
     cd /data/mo_ctl/ && chmod +x ./mo_ctl.sh
