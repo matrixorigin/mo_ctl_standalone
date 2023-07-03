@@ -13,6 +13,13 @@ function get_conf()
     list=$1
     rc=0
 
+
+    if [[ "${list}" == "" ]]; then
+        add_log "ERROR" "Not conf detected, please specifiy at leaset one conf"
+        help_get_conf
+        return 1
+    fi        
+
     if [[ "${list}" == "all" ]]; then
         add_log "INFO" "Below are all configurations set in conf file ${CONF_FILE}"
         grep -v "^#" "${CONF_FILE}" |tr -s '\n' | grep "="
