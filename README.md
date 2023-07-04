@@ -1,5 +1,5 @@
 # What it is
-mo_ctl tool is a tool designed to help you easily manage your standalone MatrixOne server, such as deploying, starting, stopping, connect and much more administrations for you to discover!
+`mo_ctl` tool is a tool designed to help you easily manage your standalone MatrixOne server, such as deploying, starting, stopping, connect and much more fun admin operations for you to discover!
 
 # How to get it
 Depending on whether your machine has access to the Internet or not, choose one of the ways to get this tool. Please remember to run the commands as root or a user with sudo privileges (adding `sudo` to each command is also required too).
@@ -220,11 +220,11 @@ Usage         : mo_ctl getconf [conf_list] # get configurations
 
 ### ddl_convert - a ddl format converter
 
-Use `mo_ctl ddl_convert [options] [src_file] [tgt_file]` to get one or more configuration items.
+Use `mo_ctl ddl_convert [options] [src_file] [tgt_file]` to convert a ddl file to mo format from other types of database. Currently, only `mysql_to_mo` is supported.
 
 ```bash
 mo_ctl ddl_convert help
-Usage           : mo_ctl ddl_convert [options] [src_file] [tgt_file] # convert ddl file from to mo format from other types of database
+Usage           : mo_ctl ddl_convert [options] [src_file] [tgt_file] # convert a ddl file to mo format from other types of database
  [options]      : available: mysql_to_mo
  [src_file]     : source file to be converted, will use env DDL_SRC_FILE from conf file by default
  [tgt_file]     : target file of converted output, will use env DDL_TGT_FILE from conf file by default
