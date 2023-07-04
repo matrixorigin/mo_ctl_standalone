@@ -34,7 +34,7 @@ GO_VERSION="1.19"
 # for deploy
 # which url to be used for git cloning mo
 MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
-# in case you're in mainland of China, you can set one of the backup addresses below to replace the default value:
+# in case you have network issues accessing above address, you can set one of the backup addresses below to replace the default value:
 # default: "https://github.com/matrixorigin/matrixone.git"
 # "https://ghproxy.com/https://github.com/matrixorigin/matrixone.git"
 # "https://ghproxy.com/https://github.com/matrixorigin/matrixone.git"
@@ -47,7 +47,7 @@ MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 # default version of which mo to be deployed
 MO_DEFAULT_VERSION="0.8.0"
 # which go proxy to be used when downloading go dependencies
-# in case you're in mainland of China, set this go proxy when building mo-service
+# you can set this go proxy when building mo-service
 GOPROXY=https://goproxy.cn,direct
 
 # for stop

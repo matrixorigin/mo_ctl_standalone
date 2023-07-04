@@ -17,7 +17,7 @@ USAGE_PATH="print mo path configured"
 USAGE_PPROF="collect pprof information"
 USAGE_SET_CONF="set configurations"
 USAGE_GET_CONF="get configurations"
-USAGE_DDL_CONVERT="convert ddl file from to mo format from other types of database"
+USAGE_DDL_CONVERT="convert ddl file to mo format from other types of database"
 
 function help_precheck()
 {
@@ -72,7 +72,10 @@ function help_stop()
 function help_restart()
 {
     option="restart"
-    echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_RESTART}"
+    echo "Usage         : ${TOOL_NAME} ${option} [force] # ${USAGE_RESTART}"
+    echo " [force]      : optional, if specified, will try to kill mo-services with -9 option, so be very carefully"
+    echo "  e.g.        : ${TOOL_NAME} ${option}         # default, stop all mo-service processes found on this machine and start mo-serivce under path of conf MO_PATH"
+    echo "              : ${TOOL_NAME} ${option} force   # stop all mo-services with kill -9 command and start mo-serivce under path of conf MO_PATH"
 }
 
 function help_connect()
@@ -114,19 +117,20 @@ function help_set_conf()
     option="setconf"
     echo "Usage         : ${TOOL_NAME} ${option} [conf_list] # ${USAGE_SET_CONF}"
     echo " [conf_list]  : configuration list in key=value format, seperated by comma"
-    echo "  e.g.        : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629/matrixone,MO_PW=M@trix0riginR0cks,MO_PORT=6101"
-    echo "              : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629/matrixone"
+    echo "  e.g.        : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629/matrixone,MO_PW=M@trix0riginR0cks,MO_PORT=6101  # set multiple configurations"
+    echo "              : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629/matrixone                                       # set single configuration"
 }
 
 function help_get_conf()
 {
     option="getconf"
     echo "Usage         : ${TOOL_NAME} ${option} [conf_list] # ${USAGE_GET_CONF}"
-    echo " [conf_list]  : configuration list in key, seperated by comma."
-    echo "              : use 'all' to print all configurations"
-    echo "  e.g.        : ${TOOL_NAME} ${option} MO_PATH,MO_PW,MO_PORT"
-    echo "              : ${TOOL_NAME} ${option} MO_PATH"
-    echo "              : ${TOOL_NAME} ${option} all"
+    echo " [conf_list]  : optional, configuration list in key, seperated by comma."
+    echo "              : use 'all' or leave it as blank to print all configurations"
+    echo "  e.g.        : ${TOOL_NAME} ${option} MO_PATH,MO_PW,MO_PORT  # get multiple configurations"
+    echo "              : ${TOOL_NAME} ${option} MO_PATH                # get single configuration"
+    echo "              : ${TOOL_NAME} ${option} all                    # get all configurations"
+    echo "              : ${TOOL_NAME} ${option}                        # get all configurations"
 }
 
 function help_ddl_convert()

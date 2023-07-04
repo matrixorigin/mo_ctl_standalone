@@ -53,7 +53,7 @@ function main()
             stop ${option_2}
             ;;
         restart)
-            restart
+            restart ${option_2}
             ;;
         connect)
             connect

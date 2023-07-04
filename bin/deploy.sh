@@ -19,7 +19,7 @@ function git_clone()
     fi 
 
     if [[ "${MO_PATH}" != "" ]] ; then
-        cd ${MO_PATH} && rm -rf ./* && rm -rf ./.*
+        cd ${MO_PATH} && rm -rf ./* && rm -rf ./.* >/dev/null 2>&1
     fi
 
     mkdir -p ${MO_PATH}
