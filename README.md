@@ -2,7 +2,7 @@
 `mo_ctl` tool is a tool designed to help you easily manage your standalone MatrixOne server, such as deploying, starting, stopping, connect and much more fun admin operations for you to discover!
 
 # How to get it
-Depending on whether your machine has access to the Internet or not, choose one of the ways to get this tool. Please remember to run the commands as root or a user with sudo privileges (adding `sudo` to each command is also required too).
+Depending on whether your machine has access to the Internet or not, choose one of the ways to get this tool. Please remember to run the commands as root or a user with sudo privileges (adding `sudo` to each command is also required).
 ```bash
 # Option-A. install with the Internet
 wget https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh && bash +x install.sh
