@@ -18,7 +18,7 @@ function ddl_convert ()
                 fi
             fi
 
-            if [[ "${DDL_TGT_FILE}" == "" ]]; then
+            if [[ "${tgt_file}" == "" ]]; then
                 add_log "INFO" "DDL_TGT_FILE is not set manually, try to get it from conf file"
                 if ! get_conf DDL_TGT_FILE; then
                     return 1
@@ -26,7 +26,13 @@ function ddl_convert ()
                     tgt_file=${DDL_TGT_FILE}
                 fi
             fi
-            if [[ "`what_os`" == "Mac" ]] ; then
+
+            src_file=`readlink -f ${src_file}`
+            tgt_file=`readlink -f ${tgt_file}`
+           
+            os=`what_os`
+            add_log "INFO" "Current OS: ${os}"
+            if [[ "${os}" == "Mac" ]] ; then
                 mysql_to_mo_mac ${src_file} ${tgt_file}
             else
                 mysql_to_mo ${src_file} ${tgt_file}

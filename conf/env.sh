@@ -7,7 +7,7 @@
 
 # For deploy
 # path to deploy matrixone, recommanded path: /data/mo/${DATE}/matrixone
-MO_PATH="/data/mo/20230630-1448/matrixone"
+MO_PATH="/data/mo/matrixone"
 
 
 # For connect

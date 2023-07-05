@@ -27,6 +27,10 @@ function git_clone()
     for ((i=1;i<=${try_times};i++));do
         add_log "INFO" "Try number: $i"
         add_log "INFO" "cd ${MO_PATH}/.. && git clone ${MO_GIT_URL}"
+        if [[ "${MO_GIT_URL}" == "" ]]; then
+            add_log "ERROR" "MO_GIT_URL is not set, please set it first, exiting"
+            return 1
+        fi
         if cd ${MO_PATH}/.. && git clone ${MO_GIT_URL};then
             add_log "INFO" "Git clone succeeded."
             add_log "INFO" "checking out to version ${mo_version}"
@@ -87,7 +91,8 @@ function build()
     force=$1
 
     if [[ "${GOPROXY}" != "" ]]; then
-        go env -w GOPROXY=https://goproxy.cn,direct
+        add_log "INFO" "GOPROXY is set, setting go proxy to GOPROXY=${GOPROXY}"
+        go env -w GOPROXY=${GOPROXY}
     fi
 
     if [[ "${force}" == "force" ]]; then

@@ -1,6 +1,8 @@
 #!/bin/bash
 # mysql_to_mo
 
+src_file=""
+tgt_file=""
 
 # engines
 engines=(\
@@ -42,17 +44,17 @@ index_types=("BTREE" "HASH")
 
 function check_files()
 {
-    if [[ ! -f "${DDL_SRC_FILE}" ]]; then
-        add_log "ERROR" "Source file ${DDL_SRC_FILE} does not exist"
+    if [[ ! -f "${src_file}" ]]; then
+        add_log "ERROR" "Source file ${src_file} does not exist"
         return 1
     fi
 
-    if [[ ! -f "${DDL_TGT_FILE}" ]]; then
-        touch "${DDL_TGT_FILE}"
+    if [[ ! -f "${tgt_file}" ]]; then
+        touch "${tgt_file}"
     fi
 
-    add_log "INFO" "Cleaning content of target file ${DDL_TGT_FILE}"
-    cat /dev/null > "${DDL_TGT_FILE}"
+    add_log "INFO" "Cleaning content of target file ${tgt_file}"
+    cat /dev/null > "${tgt_file}"
 }
 
 
@@ -63,55 +65,57 @@ function check_files()
 
 function get_db()
 {
-    awk '/[Dd][Rr][Oo][Pp] [Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
-    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
-    awk '/[Uu][Ss][Ee] /,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
+    awk '/[Dd][Rr][Oo][Pp] [Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
+    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
+    awk '/[Uu][Ss][Ee] /,/;/' "${src_file}" >> "${tgt_file}"
 }
 
 function get_tbl()
 {
-    awk '/[Dd][Rr][Oo][Pp] [Tt][Aa][Bb][Ll][Ee]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
-    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Tt][Aa][Bb][Ll][Ee]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
+    awk '/[Dd][Rr][Oo][Pp] [Tt][Aa][Bb][Ll][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
+    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Tt][Aa][Bb][Ll][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
 }
 
 function get_view()
 {
-    awk '/[Dd][Rr][Oo][Pp] [Vv][Ii][Ee][Ww]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
-    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Vv][Ii][Ee][Ww]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
+    awk '/[Dd][Rr][Oo][Pp] [Vv][Ii][Ee][Ww]/,/;/' "${src_file}" >> "${tgt_file}"
+    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Vv][Ii][Ee][Ww]/,/;/' "${src_file}" >> "${tgt_file}"
 }
 
 function get_index()
 {
-    awk '/[Dd][Rr][Oo][Pp] [Ii][Nn][Dd][Ee][Xx]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
-    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Ii][Nn][Dd][Ee][Xx]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
+    awk '/[Dd][Rr][Oo][Pp] [Ii][Nn][Dd][Ee][Xx]/,/;/' "${src_file}" >> "${tgt_file}"
+    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Ii][Nn][Dd][Ee][Xx]/,/;/' "${src_file}" >> "${tgt_file}"
 }
 
 function get_udf()
 {
-    awk '/[Dd][Rr][Oo][Pp] [Ff][Uu][Cc][Tt][Ii][Oo][Nn]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
-    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Ff][Uu][Cc][Tt][Ii][Oo][Nn]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
+    awk '/[Dd][Rr][Oo][Pp] [Ff][Uu][Cc][Tt][Ii][Oo][Nn]/,/;/' "${src_file}" >> "${tgt_file}"
+    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Ff][Uu][Cc][Tt][Ii][Oo][Nn]/,/;/' "${src_file}" >> "${tgt_file}"
 }
 
 
 function get_sp()
 {
-    awk '/[Dd][Rr][Oo][Pp] [Pp][Rr][Oo][Cc][Ee][Dd][Uu][Rr][Ee]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
-    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Pp][Rr][Oo][Cc][Ee][Dd][Uu][Rr][Ee]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
+    awk '/[Dd][Rr][Oo][Pp] [Pp][Rr][Oo][Cc][Ee][Dd][Uu][Rr][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
+    awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Pp][Rr][Oo][Cc][Ee][Dd][Uu][Rr][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
 }
 
 function get_data()
 {
-    awk '/[Ii][Nn][Ss][Ee][Rr][Tt] [Ii][Nn][Tt][Oo]/,/;/' "${DDL_SRC_FILE}" >> "${DDL_TGT_FILE}"
+    awk '/[Ii][Nn][Ss][Ee][Rr][Tt] [Ii][Nn][Tt][Oo]/,/;/' "${src_file}" >> "${tgt_file}"
 }
 
 
 function get_content()
 {
+    rc=0
     add_log "INFO" "Getting drop and create database ... "
     if get_db; then
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi  
     
     add_log "INFO" "Getting drop and create table ... "
@@ -119,6 +123,7 @@ function get_content()
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi  
 
     add_log "INFO" "Getting drop and create view ... "
@@ -126,6 +131,7 @@ function get_content()
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi  
 #    get_index
 #    get_udf
@@ -136,8 +142,10 @@ function get_content()
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi  
     
+    return ${rc}
 
 }
 
@@ -150,16 +158,16 @@ function get_content()
 function del_engine()
 {
     for engine in ${engines[@]}; do
-        sed -i "s/ENGINE=${engine}//gi" ${DDL_TGT_FILE} 
-        sed -i "s/ENGINE = ${engine}//gi" ${DDL_TGT_FILE} 
+        sed -i "s/ENGINE=${engine}//gi" ${tgt_file} 
+        sed -i "s/ENGINE = ${engine}//gi" ${tgt_file} 
     done
 }
 
 function del_row_format()
 {
     for row_format in ${row_formats[@]}; do
-        sed -i "s/ROW_FORMAT=${row_format}//gi" ${DDL_TGT_FILE}
-        sed -i "s/ROW_FORMAT = ${row_format}//gi" ${DDL_TGT_FILE}
+        sed -i "s/ROW_FORMAT=${row_format}//gi" ${tgt_file}
+        sed -i "s/ROW_FORMAT = ${row_format}//gi" ${tgt_file}
     done
 }
 
@@ -167,46 +175,46 @@ function del_charset()
 {
 
     for char_set in ${char_sets[@]}; do
-        sed -i "s/DEFAULT CHARSET=${char_set}//gi" ${DDL_TGT_FILE}
-        sed -i "s/DEFAULT CHARSET = ${char_set}//gi" ${DDL_TGT_FILE}
-        sed -i "s/CHARACTER SET ${char_set}//gi" ${DDL_TGT_FILE}
-        sed -i "s/CHARACTER SET = ${char_set}//gi" ${DDL_TGT_FILE}
-        sed -i "s/CHARACTER SET=${char_set}//gi" ${DDL_TGT_FILE}
+        sed -i "s/DEFAULT CHARSET=${char_set}//gi" ${tgt_file}
+        sed -i "s/DEFAULT CHARSET = ${char_set}//gi" ${tgt_file}
+        sed -i "s/CHARACTER SET ${char_set}//gi" ${tgt_file}
+        sed -i "s/CHARACTER SET = ${char_set}//gi" ${tgt_file}
+        sed -i "s/CHARACTER SET=${char_set}//gi" ${tgt_file}
     done   
 
 
     for collate in ${collates[@]}; do
-        sed -i "s/COLLATE ${collate}//gi" ${DDL_TGT_FILE}
-        sed -i "s/COLLATE=${collate}//gi" ${DDL_TGT_FILE}
-        sed -i "s/COLLATE = ${collate}//gi" ${DDL_TGT_FILE}
+        sed -i "s/COLLATE ${collate}//gi" ${tgt_file}
+        sed -i "s/COLLATE=${collate}//gi" ${tgt_file}
+        sed -i "s/COLLATE = ${collate}//gi" ${tgt_file}
     done
 
 }
 
 function del_index_types()
 {
-
     for index_type in ${index_types[@]}; do
-        sed -i "s/USING ${index_type}//gi" ${DDL_TGT_FILE}
+        sed -i "s/USING ${index_type}//gi" ${tgt_file}
     done
 }
 
 function del_auto_increment()
 {
-
     # note the orders, first replace 'AUTO_INCREMENT=' with ';', then replace 'AUTO_INCREMENT' with ''
-    sed -i "s/AUTO_INCREMENT=\([0-9]*\)//" ${DDL_TGT_FILE}
-    sed -i "s/AUTO_INCREMENT = \([0-9]*\)//" ${DDL_TGT_FILE}
-    sed -i "s/AUTO_INCREMENT//g" ${DDL_TGT_FILE}
+    sed -i "s/AUTO_INCREMENT=\([0-9]*\)//" ${tgt_file}
+    sed -i "s/AUTO_INCREMENT = \([0-9]*\)//" ${tgt_file}
+    sed -i "s/AUTO_INCREMENT//g" ${tgt_file}
 }
 
 function del_unwanted()
 {
+    rc=0
     add_log "INFO" "Deleting ENGINE=xxx ... "
     if del_engine; then
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi  
 
     add_log "INFO" "Deleting ROW_FORMAT=xxx ... "
@@ -214,6 +222,7 @@ function del_unwanted()
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi   
 
     add_log "INFO" "Deleting DEFAULT CHARSET=xxx, CHARACTER SET xxx, COLLATE xxx ... "
@@ -221,6 +230,7 @@ function del_unwanted()
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi  
 
     add_log "INFO" "Deleting USING xxx ... "
@@ -228,6 +238,7 @@ function del_unwanted()
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi  
     
     add_log "INFO" "Deleting AUTO_INCREMENT, AUTO_INCREMENT=xxx ... "
@@ -235,7 +246,10 @@ function del_unwanted()
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
-    fi   
+        rc=1
+    fi
+
+    return ${rc}
     
 }
 
@@ -245,19 +259,23 @@ function del_unwanted()
 
 function format_content()
 {
+    rc=0
     add_log "INFO" "Adding lines... "
-    if sed -i 's/;$/;\n/g' "${DDL_TGT_FILE}"; then
+    if sed -i 's/;$/;\n/g' "${tgt_file}"; then
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
+        rc=1
     fi
     
     add_log "INFO" "Converting dos to unix... "
-    if dos2unix "${DDL_TGT_FILE}" >/dev/null 2>&1; then
+    if dos2unix "${tgt_file}" >/dev/null 2>&1; then
         add_log "INFO" "Succeeded"
     else
-        add_log "ERROR" "Failed"
+        add_log "WARN" "Failed, please check if dos2unix is installed, the output file format may have potential issues when executing in mo. You can convert output file mannually after installing it: dos2unix ${tgt_file}"
     fi
+
+    return ${rc}
 }
 
 
@@ -267,7 +285,10 @@ function format_content()
 
 function mysql_to_mo()
 {
-    add_log "INFO" "Check if source file ${DDL_SRC_FILE} and ${DDL_TGT_FILE} exist"
+    rc=0
+    src_file=$1
+    tgt_file=$2
+    add_log "INFO" "Check if source file ${src_file} and ${tgt_file} exist"
     if ! check_files; then
         return 1
     fi
@@ -277,7 +298,7 @@ function mysql_to_mo()
         add_log "INFO"  "Getting content succeeded"
     else
         add_log "ERROR"  "Getting content failed"
-        return 1
+        rc=1
     fi
 
     add_log "INFO" "2. Deleting unwanted content, pls wait... "
@@ -285,7 +306,7 @@ function mysql_to_mo()
         add_log "INFO"  "Deleting unwanted content succeeded"
     else
         add_log "ERROR" "Deleting unwanted content failed"
-        return 1
+        rc=1
     fi
 
     add_log "INFO" "3. Formatting content, pls wait... "
@@ -293,7 +314,9 @@ function mysql_to_mo()
         add_log "INFO" "Formatting content succeeded"
     else
         add_log "ERROR" "Formatting content failed"
-        return 1
+        rc=1
     fi
+    
+    return ${rc}
 
 }

@@ -12,12 +12,21 @@ source "${CONF_FILE}"
 script_list=("basic" "help" "precheck" "deploy" \
     "status" "start" "stop" "restart" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
-    "mysql_to_mo" "mysql_to_mo_mac" "ddl_convert" \
+    # "mysql_to_mo" "mysql_to_mo_mac" \
+    "ddl_convert" \
 )
 
 for script in ${script_list[@]}; do
     source "${file_dir}/bin/${script}.sh"
 done
+
+os=`what_os`
+# add_log "DEBUG" "Current OS: ${os}"
+if [[ "${os}" == "Mac" ]] ; then
+    source "${file_dir}/bin/mysql_to_mo_mac.sh"
+else
+    source "${file_dir}/bin/mysql_to_mo.sh"
+fi 
 
 
 p_ids=""

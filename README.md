@@ -49,7 +49,7 @@ mo_ctl help
 ```bash
 mo_ctl get_conf MO_PATH # check default value of mo path to be installed
 mo_ctl set_conf MO_PATH="/data/mo/20230701/matrixone" # set your own mo path
-mo_ctl set_conf MO_GIT_URL="https://ghproxy.com/https://github.com/matrixorigin/matrixone.git" # in case you're in mainland of China, you can set this conf by overwritting default value MO_GIT_URL="https://github.com/matrixorigin/matrixone.git", in order to avoid any network issues
+mo_ctl set_conf MO_GIT_URL="https://ghproxy.com/https://github.com/matrixorigin/matrixone.git" # in case have network issues, you can set this conf by overwritting default value MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 ```
 
 3. Deploy a standalone mo instance of latest stable release version(current: 0.8.0)
