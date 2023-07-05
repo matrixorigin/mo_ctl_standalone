@@ -4,38 +4,6 @@
 src_file=""
 tgt_file=""
 
-# engines
-engines=(\
-    #"ARCHIVE" "BDB" "CSV"\
-    #"EXAMPLE" "FEDERATED" "HEAP"\
-    "MyISAM" "InnoDB"\
-    #"MEMORY" "MERGE" "ISAM" "NDBCLUSTER"\
-)
-
-# character sets
-char_sets=(\
-    #"big5" "dec8" "cp850" "hp8" "koi8r" "latin1" "latin2"\
-    #"swe7" "ascii" "ujis" "sjis" "hebrew" "tis620" "euckr" "koi8u"\
-    #"gb2312" "greek" "cp1250" "gbk" "latin5" "armscii8" "utf8" "ucs2"\
-    #"cp866" "keybcs2" "macce" "macroman" "cp852" "latin7"\
-    "utf8mb3" "utf8mb4" "utf8" \
-    #"cp1251" "utf16" "utf16le" "cp1256" "cp1257" "utf32" "binary"\
-    #"geostd8" "cp932" "eucjpms" "gb18030"\
-)
-
-
-collates=(\
-    "utf8mb3_general_ci" "utf8mb3_bin" "utf8mb4_general_ci" "utf8mb4_unicode_ci" "utf8_general_ci" \
-)
-
-# row formats
-row_formats=(\
-    #"DEFAULT" "FIXED" "COMPRESSED" "REDUNDANT"\
-    "COMPACT" "DYNAMIC"\
-    )
-
-# index types
-index_types=("BTREE" "HASH")
 
 ##########################
 # basics
@@ -44,6 +12,7 @@ index_types=("BTREE" "HASH")
 
 function check_files()
 {
+    add_log "INFO" "Check if source file ${src_file} and ${tgt_file} exist"
     if [[ ! -f "${src_file}" ]]; then
         add_log "ERROR" "Source file ${src_file} does not exist"
         return 1
@@ -65,6 +34,7 @@ function check_files()
 
 function get_db()
 {
+
     awk '/[Dd][Rr][Oo][Pp] [Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
     awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Dd][Aa][Tt][Aa][Bb][Aa][Ss][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
     awk '/[Uu][Ss][Ee] /,/;/' "${src_file}" >> "${tgt_file}"
@@ -72,8 +42,11 @@ function get_db()
 
 function get_tbl()
 {
+
     awk '/[Dd][Rr][Oo][Pp] [Tt][Aa][Bb][Ll][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
     awk '/[Cc][Rr][Ee][Aa][Tt][Ee] [Tt][Aa][Bb][Ll][Ee]/,/;/' "${src_file}" >> "${tgt_file}"
+
+
 }
 
 function get_view()
@@ -103,33 +76,27 @@ function get_sp()
 
 function get_data()
 {
-    awk '/[Ii][Nn][Ss][Ee][Rr][Tt] [Ii][Nn][Tt][Oo]/,/;/' "${src_file}" >> "${tgt_file}"
+    awk '/[Ii][Nn][Ss][Ee][Rr][Tt] [Ii][Nn][Tt][Oo]/,/);/' "${src_file}" >> "${tgt_file}"
 }
 
 
-function get_content()
+function get_ddl()
 {
     rc=0
     add_log "INFO" "Getting drop and create database ... "
-    if get_db; then
-        add_log "INFO" "Succeeded"
-    else
+    if ! get_db; then
         add_log "ERROR" "Failed"
         rc=1
     fi  
     
     add_log "INFO" "Getting drop and create table ... "
-    if get_tbl; then
-        add_log "INFO" "Succeeded"
-    else
+    if ! get_tbl; then
         add_log "ERROR" "Failed"
         rc=1
     fi  
 
     add_log "INFO" "Getting drop and create view ... "
-    if get_view; then
-        add_log "INFO" "Succeeded"
-    else
+    if ! get_view; then
         add_log "ERROR" "Failed"
         rc=1
     fi  
@@ -137,16 +104,7 @@ function get_content()
 #    get_udf
 #    get_sp
 
-    add_log "INFO" "Getting insert into ... "
-    if get_data; then
-        add_log "INFO" "Succeeded"
-    else
-        add_log "ERROR" "Failed"
-        rc=1
-    fi  
-    
     return ${rc}
-
 }
 
 
@@ -154,125 +112,94 @@ function get_content()
 ##########################
 # delete unwanted content
 ##########################
-
-function del_engine()
+function del_all_not_supported()
 {
-    for engine in ${engines[@]}; do
-        sed -i "s/ENGINE=${engine}//gi" ${tgt_file} 
-        sed -i "s/ENGINE = ${engine}//gi" ${tgt_file} 
+
+    rc=0
+
+    # 1. key = xxx, key xxx, key
+    DEL_KEY_1=(\
+        "ENGINE" "ROW_FORMAT" \
+        "DEFAULT CHARSET" "CHARACTER SET" \
+        "COLLATE" "USING" "AUTO_INCREMENT")
+
+
+    for del_key in "${DEL_KEY_1[@]}"; do
+        add_log "INFO" "Delete content: ${del_key}=xxx, ${del_key} = xxx, ${del_key} xxx, and/or ${delkey}"
+
+        if ! sed -i "s/$del_key=[a-zA-Z0-9_]*//gi" ${tgt_file}; then
+            add_log "ERROR" "Failed at key=xxx"
+            rc = 1
+        fi
+
+        if ! sed -i "s/$del_key = [a-zA-Z0-9_]*//gi" ${tgt_file}; then
+            add_log "ERROR" "Failed at key = xxx"
+            rc=1
+        fi
+        
+        if [[ "${del_key}" == "AUTO_INCREMENT" ]]; then
+            if ! sed -i "s/$del_key//gi" ${tgt_file}; then
+                add_log "ERROR" "Failed at key xxx"
+                rc=1
+            fi
+        else
+            if ! sed -i "s/$del_key [a-zA-Z0-9_]*//gi" ${tgt_file}; then
+                add_log "ERROR" "Failed at key"
+                rc=1
+            fi
+        fi
     done
-}
-
-function del_row_format()
-{
-    for row_format in ${row_formats[@]}; do
-        sed -i "s/ROW_FORMAT=${row_format}//gi" ${tgt_file}
-        sed -i "s/ROW_FORMAT = ${row_format}//gi" ${tgt_file}
-    done
-}
-
-function del_charset()
-{
-
-    for char_set in ${char_sets[@]}; do
-        sed -i "s/DEFAULT CHARSET=${char_set}//gi" ${tgt_file}
-        sed -i "s/DEFAULT CHARSET = ${char_set}//gi" ${tgt_file}
-        sed -i "s/CHARACTER SET ${char_set}//gi" ${tgt_file}
-        sed -i "s/CHARACTER SET = ${char_set}//gi" ${tgt_file}
-        sed -i "s/CHARACTER SET=${char_set}//gi" ${tgt_file}
-    done   
-
-
-    for collate in ${collates[@]}; do
-        sed -i "s/COLLATE ${collate}//gi" ${tgt_file}
-        sed -i "s/COLLATE=${collate}//gi" ${tgt_file}
-        sed -i "s/COLLATE = ${collate}//gi" ${tgt_file}
-    done
 
 }
 
-function del_index_types()
-{
-    for index_type in ${index_types[@]}; do
-        sed -i "s/USING ${index_type}//gi" ${tgt_file}
-    done
-}
-
-function del_auto_increment()
-{
-    # note the orders, first replace 'AUTO_INCREMENT=' with ';', then replace 'AUTO_INCREMENT' with ''
-    sed -i "s/AUTO_INCREMENT=\([0-9]*\)//" ${tgt_file}
-    sed -i "s/AUTO_INCREMENT = \([0-9]*\)//" ${tgt_file}
-    sed -i "s/AUTO_INCREMENT//g" ${tgt_file}
-}
-
-function del_unwanted()
+function del_set_var()
 {
     rc=0
-    add_log "INFO" "Deleting ENGINE=xxx ... "
-    if del_engine; then
-        add_log "INFO" "Succeeded"
-    else
-        add_log "ERROR" "Failed"
-        rc=1
-    fi  
-
-    add_log "INFO" "Deleting ROW_FORMAT=xxx ... "
-    if del_row_format; then
-        add_log "INFO" "Succeeded"
-    else
-        add_log "ERROR" "Failed"
-        rc=1
-    fi   
-
-    add_log "INFO" "Deleting DEFAULT CHARSET=xxx, CHARACTER SET xxx, COLLATE xxx ... "
-    if del_charset; then
-        add_log "INFO" "Succeeded"
-    else
-        add_log "ERROR" "Failed"
-        rc=1
-    fi  
-
-    add_log "INFO" "Deleting USING xxx ... "
-    if del_index_types; then
-        add_log "INFO" "Succeeded"
-    else
-        add_log "ERROR" "Failed"
-        rc=1
-    fi  
-    
-    add_log "INFO" "Deleting AUTO_INCREMENT, AUTO_INCREMENT=xxx ... "
-    if del_auto_increment; then
-        add_log "INFO" "Succeeded"
-    else
+    add_log "INFO" "Delete content: SET xxx"
+    if ! sed -i "s/^SET .*//gi" ${tgt_file}; then
         add_log "ERROR" "Failed"
         rc=1
     fi
 
     return ${rc}
-    
 }
+
+function del_unwanted()
+{
+    rc=0
+
+    if ! del_all_not_supported; then
+        rc=1
+    fi
+
+    if ! del_set_var; then
+        rc=1 
+    fi
+
+    return ${rc}
+}
+
 
 ##########################
 # format content
 ##########################
 
-function format_content()
+function format_file()
 {
     rc=0
-    add_log "INFO" "Adding lines... "
-    if sed -i 's/;$/;\n/g' "${tgt_file}"; then
+#    add_log "INFO" "Adding lines... "
+#    if ! sed -i 's/;$/;\n/g' "${tgt_file}"; then
+#        add_log "ERROR" "Failed"
+#        rc=1
+#    fi
+    
+    add_log "INFO" "Converting dos to unix... "
+    #if dos2unix "${tgt_file}" >/dev/null 2>&1; then
+    if sed -i "s/\r//" "${tgt_file}"; then
         add_log "INFO" "Succeeded"
     else
         add_log "ERROR" "Failed"
-        rc=1
-    fi
-    
-    add_log "INFO" "Converting dos to unix... "
-    if dos2unix "${tgt_file}" >/dev/null 2>&1; then
-        add_log "INFO" "Succeeded"
-    else
-        add_log "WARN" "Failed, please check if dos2unix is installed, the output file format may have potential issues when executing in mo. You can convert output file mannually after installing it: dos2unix ${tgt_file}"
+#         add_log "WARN" "Failed, please check if dos2unix is installed, the output file format may have potential issues when executing in mo. You can convert output file mannually after installing it: dos2unix ${tgt_file}"
     fi
 
     return ${rc}
@@ -288,32 +215,41 @@ function mysql_to_mo()
     rc=0
     src_file=$1
     tgt_file=$2
-    add_log "INFO" "Check if source file ${src_file} and ${tgt_file} exist"
     if ! check_files; then
         return 1
     fi
 
-    add_log "INFO" "1. Getting content, pls wait...  "
-    if get_content; then
-        add_log "INFO"  "Getting content succeeded"
-    else
-        add_log "ERROR"  "Getting content failed"
+#    add_log "INFO" "1. Getting ddl, please wait...  "
+#    if get_ddl; then
+#        add_log "INFO"  "Getting ddl succeeded"
+#    else
+#        add_log "ERROR"  "Getting ddl failed"
+#        rc=1
+#    fi
+
+    add_log "INFO" "1. Copy source file to target file, this may take a while depending on the size the source file, please wait... "
+    if ! cp -pf ${src_file} ${tgt_file}; then
+        add_log "ERROR" "Failed"
+        return 1
+    fi 
+
+    add_log "INFO" "2. Delete unwanted content, please wait... "
+    if ! del_unwanted; then
+        add_log "ERROR" "Delete unwanted content failed"
         rc=1
     fi
 
-    add_log "INFO" "2. Deleting unwanted content, pls wait... "
-    if del_unwanted; then
-        add_log "INFO"  "Deleting unwanted content succeeded"
-    else
-        add_log "ERROR" "Deleting unwanted content failed"
-        rc=1
-    fi
+#    add_log "INFO" "3. Getting data, please wait...  "
+#    if get_data; then
+#        add_log "INFO"  "Getting data succeeded"
+#    else
+#        add_log "ERROR"  "Getting data failed"
+#        rc=1
+#    fi
 
-    add_log "INFO" "3. Formatting content, pls wait... "
-    if format_content; then
-        add_log "INFO" "Formatting content succeeded"
-    else
-        add_log "ERROR" "Formatting content failed"
+    add_log "INFO" "3. Format file, please wait... "
+    if ! format_file; then
+        add_log "ERROR" "Format file failed"
         rc=1
     fi
     

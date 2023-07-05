@@ -74,3 +74,4 @@ RESTART_INTERVAL=2
 PPROF_OUT_PATH="/tmp/pprof-test/"
 # duration to collect pprof profile, unit: seconds
 PPROF_PROFILE_DURATION=30
+

@@ -4,38 +4,7 @@
 src_file=""
 tgt_file=""
 
-# engines
-engines=(\
-    #"ARCHIVE" "BDB" "CSV"\
-    #"EXAMPLE" "FEDERATED" "HEAP"\
-    "MyISAM" "InnoDB"\
-    #"MEMORY" "MERGE" "ISAM" "NDBCLUSTER"\
-)
 
-# character sets
-char_sets=(\
-    #"big5" "dec8" "cp850" "hp8" "koi8r" "latin1" "latin2"\
-    #"swe7" "ascii" "ujis" "sjis" "hebrew" "tis620" "euckr" "koi8u"\
-    #"gb2312" "greek" "cp1250" "gbk" "latin5" "armscii8" "utf8" "ucs2"\
-    #"cp866" "keybcs2" "macce" "macroman" "cp852" "latin7"\
-    "utf8mb3" "utf8mb4" "utf8" \
-    #"cp1251" "utf16" "utf16le" "cp1256" "cp1257" "utf32" "binary"\
-    #"geostd8" "cp932" "eucjpms" "gb18030"\
-)
-
-
-collates=(\
-    "utf8mb3_general_ci" "utf8mb3_bin" "utf8mb4_general_ci" "utf8mb4_unicode_ci" "utf8_general_ci" \
-)
-
-# row formats
-row_formats=(\
-    #"DEFAULT" "FIXED" "COMPRESSED" "REDUNDANT"\
-    "COMPACT" "DYNAMIC"\
-    )
-
-# index types
-index_types=("BTREE" "HASH")
 
 ##########################
 # basics
@@ -107,7 +76,7 @@ function get_data()
 }
 
 
-function get_content()
+function get_ddl()
 {
     rc=0
     add_log "INFO" "Getting drop and create database ... "
@@ -137,16 +106,7 @@ function get_content()
 #    get_udf
 #    get_sp
 
-    add_log "INFO" "Getting insert into ... "
-    if get_data; then
-        add_log "INFO" "Succeeded"
-    else
-        add_log "ERROR" "Failed"
-        rc=1
-    fi  
-    
     return ${rc}
-
 }
 
 
@@ -157,50 +117,42 @@ function get_content()
 
 function del_engine()
 {
-    for engine in ${engines[@]}; do
-        sed -i "" "s/ENGINE=${engine}//gi" ${tgt_file} 
-        sed -i "" "s/ENGINE = ${engine}//gi" ${tgt_file} 
-    done
+    sed -i "" "s/ENGINE=[a-zA-Z0-9_]*//gi" ${tgt_file} 
+    sed -i "" "s/ENGINE = [a-zA-Z0-9_]*//gi" ${tgt_file} 
 }
 
 function del_row_format()
 {
-    for row_format in ${row_formats[@]}; do
-        sed -i "" "s/ROW_FORMAT=${row_format}//gi" ${tgt_file}
-        sed -i "" "s/ROW_FORMAT = ${row_format}//gi" ${tgt_file}
-    done
+
+    sed -i "" "s/ROW_FORMAT=[a-zA-Z0-9_]*//gi" ${tgt_file}
+    sed -i "" "s/ROW_FORMAT = [a-zA-Z0-9_]*//gi" ${tgt_file}
 }
 
 function del_charset()
 {
 
-    for char_set in ${char_sets[@]}; do
-        sed -i "" "s/DEFAULT CHARSET=${char_set}//gi" ${tgt_file}
-        sed -i "" "s/DEFAULT CHARSET = ${char_set}//gi" ${tgt_file}
-        sed -i "" "s/CHARACTER SET ${char_set}//gi" ${tgt_file}
-        sed -i "" "s/CHARACTER SET = ${char_set}//gi" ${tgt_file}
-        sed -i "" "s/CHARACTER SET=${char_set}//gi" ${tgt_file}
-    done   
+    # char sets
+    sed -i "" "s/DEFAULT CHARSET=[a-zA-Z0-9_]*//gi" ${tgt_file}
+    sed -i "" "s/DEFAULT CHARSET = [a-zA-Z0-9_]*//gi" ${tgt_file}
+    sed -i "" "s/CHARACTER SET [a-zA-Z0-9_]*//gi" ${tgt_file}
+    sed -i "" "s/CHARACTER SET = [a-zA-Z0-9_]*//gi" ${tgt_file}
+    sed -i "" "s/CHARACTER SET=[a-zA-Z0-9_]*//gi" ${tgt_file}
 
-
-    for collate in ${collates[@]}; do
-        sed -i "" "s/COLLATE ${collate}//gi" ${tgt_file}
-        sed -i "" "s/COLLATE=${collate}//gi" ${tgt_file}
-        sed -i "" "s/COLLATE = ${collate}//gi" ${tgt_file}
-    done
+    # collates
+    sed -i "" "s/COLLATE [a-zA-Z0-9_]*//gi" ${tgt_file}
+    sed -i "" "s/COLLATE=[a-zA-Z0-9_]*//gi" ${tgt_file}
+    sed -i "" "s/COLLATE = [a-zA-Z0-9_]*//gi" ${tgt_file}
 
 }
 
 function del_index_types()
 {
-    for index_type in ${index_types[@]}; do
-        sed -i "" "s/USING ${index_type}//gi" ${tgt_file}
-    done
+    sed -i "" "s/USING [a-zA-Z0-9_]*//gi" ${tgt_file}
 }
 
 function del_auto_increment()
 {
-    # note the orders, first replace 'AUTO_INCREMENT=' with ';', then replace 'AUTO_INCREMENT' with ''
+    # note the orders, first replace 'AUTO_INCREMENT=' with '', then replace 'AUTO_INCREMENT' with ''
     sed -i "" "s/AUTO_INCREMENT=\([0-9]*\)//" ${tgt_file}
     sed -i "" "s/AUTO_INCREMENT = \([0-9]*\)//" ${tgt_file}
     sed -i "" "s/AUTO_INCREMENT//g" ${tgt_file}
@@ -257,7 +209,7 @@ function del_unwanted()
 # format content
 ##########################
 
-function format_content()
+function format_file()
 {
     rc=0
     add_log "INFO" "Adding lines... "
@@ -293,15 +245,15 @@ function mysql_to_mo()
         return 1
     fi
 
-    add_log "INFO" "1. Getting content, pls wait...  "
-    if get_content; then
-        add_log "INFO"  "Getting content succeeded"
+    add_log "INFO" "1. Getting ddl, please wait...  "
+    if get_ddl; then
+        add_log "INFO"  "Getting ddl succeeded"
     else
-        add_log "ERROR"  "Getting content failed"
+        add_log "ERROR"  "Getting ddl failed"
         rc=1
     fi
 
-    add_log "INFO" "2. Deleting unwanted content, pls wait... "
+    add_log "INFO" "2. Deleting unwanted content, please wait... "
     if del_unwanted; then
         add_log "INFO"  "Deleting unwanted content succeeded"
     else
@@ -309,11 +261,19 @@ function mysql_to_mo()
         rc=1
     fi
 
-    add_log "INFO" "3. Formatting content, pls wait... "
-    if format_content; then
-        add_log "INFO" "Formatting content succeeded"
+    add_log "INFO" "3. Getting data, please wait...  "
+    if get_data; then
+        add_log "INFO"  "Getting data succeeded"
     else
-        add_log "ERROR" "Formatting content failed"
+        add_log "ERROR"  "Getting data failed"
+        rc=1
+    fi
+
+    add_log "INFO" "4. Formatting file, please wait... "
+    if format_file; then
+        add_log "INFO" "Formatting file succeeded"
+    else
+        add_log "ERROR" "Formatting file failed"
         rc=1
     fi
     
