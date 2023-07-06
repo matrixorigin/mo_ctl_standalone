@@ -60,30 +60,73 @@ function download()
 function install()
 {
     pkg=$1
-    
+    os=`uname`
+    os_user=`whoami`
+    add_log "INFO" "Current os: ${os}, current user: ${os_user}"
+
+    if [[ "${os_user}" == "" ]]; then
+        add_log "ERROR" "Get current os user failed"
+        return 1
+    fi
+
+    if [[ "${os}" == "Darwin" ]]; then
+        os="Mac"
+        mo_ctl_path="/Users/${os_user}/mo_ctl"
+        global_path="/usr/local/bin"
+    elif [[ "${os}" == "Linux" ]]; then
+        add_log "INFO" "Current os: ${os}, current user: ${os_user}"
+        mo_ctl_path="/data/mo_ctl"
+        global_path="/usr/bin"
+        mkdir -p /data/
+    elif [[ "${os}" == "" ]]; then
+        add_log "ERROR" "Get current os failed"
+        return 1
+    else
+        add_log "ERROR" "Currently only Linux or Mac is supported"
+        return 1
+    fi
+
+
     if [[ ! -f ${pkg} ]]; then
         add_log "ERROR"  "Error! Installation file ${pkg} is not found, please check again."
         return 1
     fi
 
+    if [[ -d ${mo_ctl_path} ]]; then
+        add_log "WARN" "Path ${mo_ctl_path} already exists, removing it now" 
+        if [[ "${os}" == "Linux" ]]; then
+            rm -rf /data/mo_ctl/
+        else
+            rm -rf /Users/${os_user}/mo_ctl/
+        fi
+    fi
+
     add_log "INFO" "Try to install mo_ctl from file ${pkg}" 
-    rm -rf /data/mo_ctl/
-    if unzip -o mo_ctl.zip && mkdir -p /data/ && mv ./mo_ctl_standalone-main/ /data/mo_ctl/; then
-        add_log "INFO" "Successfully extracted mo_ctl file to /data/mo_ctl/"
+    if unzip -o mo_ctl.zip &&  mv ./mo_ctl_standalone-main/ ${mo_ctl_path}; then
+        add_log "INFO" "Successfully extracted mo_ctl file to ${mo_ctl_path}"
     else
         add_log "ERROR"  "Failed to extract file, please check if 'unzip' is installed or file is complete"
         return 1
     fi
+
+    chmod +x ${mo_ctl_path}/mo_ctl.sh
+
     
-    add_log "INFO" "Setting up mo_ctl to /usr/bin/mo_ctl" 
+    add_log "INFO" "Setting up mo_ctl to ${global_path}/mo_ctl" 
 
-    cd /data/mo_ctl/ && chmod +x ./mo_ctl.sh
-    cat /dev/null > /usr/bin/mo_ctl   
-    echo "bash +x /data/mo_ctl/mo_ctl.sh \$*" > /usr/bin/mo_ctl
-    chmod +x /usr/bin/mo_ctl
+    sudo touch ${global_path}/mo_ctl
+    sudo chown ${os_user} ${global_path}/mo_ctl
+    echo "bash +x ${mo_ctl_path}/mo_ctl.sh \$*" > ${global_path}/mo_ctl
+    chmod +x ${global_path}/mo_ctl
 
-    add_log "INFO" "Done. Successfully installed mo_ctl. Enjoy!!!"
-    add_log "INFO" "Use 'mo_ctl help' to get more info" 
+    if [[ "${os}" == "Mac" ]]; then
+        add_log "INFO" "Setting up default confs for mac"
+        add_log "INFO" "Conf: MO_PATH=/Users/${os_user}/mo/matrixone"
+        ${mo_ctl_path}/mo_ctl.sh set_conf MO_PATH=/Users/${os_user}/mo/matrixone
+    fi
+
+    add_log "INFO" "Done. Successfully installed mo_ctl to path ${mo_ctl_path}."
+    add_log "INFO" "Use 'mo_ctl help' to get more info. Have Fun!" 
 
 }
 

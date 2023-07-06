@@ -152,6 +152,16 @@ function del_all_not_supported()
 
 }
 
+function del_comment()
+{
+    rc=0
+    add_log "INFO" "Replace content: /*! with -- /*!"
+    if ! sed -i "s#^\/\*\!#-- \/\*\!#gi" ${tgt_file}; then
+        add_log "ERROR" "Failed"
+        rc=1
+    fi
+}
+
 function del_set_var()
 {
     rc=0
@@ -172,9 +182,14 @@ function del_unwanted()
         rc=1
     fi
 
+    if ! del_comment; then
+        rc=1 
+    fi
+
     if ! del_set_var; then
         rc=1 
     fi
+    del_comment
 
     return ${rc}
 }

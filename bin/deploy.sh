@@ -11,7 +11,7 @@ function git_clone()
     try_times=10
 
 
-    if [[ -d "${MO_PATH}" ]] && [[ "`ls ${MO_PATH} | wc -l`" != "0" ]]; then
+    if [[ -d "${MO_PATH}" ]] && [[ "`ls ${MO_PATH} | wc -l |sed 's/[[:space:]]//g'`" != "0" ]]; then
         if [[ "${force}" != "force" ]]; then
             add_log "INFO" "${MO_PATH} already exists and not empty, will skip git clone and check out"
             return 0

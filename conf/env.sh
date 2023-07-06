@@ -29,7 +29,7 @@ MO_PW="111"
 # for precheck
 CHECK_LIST=("go" "gcc" "git" "mysql")
 GCC_VERSION="8.5.0"
-GO_VERSION="1.19"
+GO_VERSION="1.20"
 
 # for deploy
 # which url to be used for git cloning mo

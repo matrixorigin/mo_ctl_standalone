@@ -53,17 +53,22 @@ function cmp_version_old()
 function what_os()
 {    
     system=`uname`
-    case ${system} in
-        Darwin)
-            echo "Mac"
+    os=""
+    case "${system}" in
+        "")
+            return 1
             ;;
-        Linux)
-            echo "Linux"
+        "Darwin")
+            os="Mac"
+            ;;
+        "Linux")
+            os="Linux"
             ;;            
         *)
-            echo "OtherOS"
+            os="OtherOS"
             ;;
     esac
+    echo "${os}"
 }
 
 function pos_int_range()

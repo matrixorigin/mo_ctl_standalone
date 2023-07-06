@@ -237,6 +237,9 @@ Usage           : mo_ctl ddl_convert [options] [src_file] [tgt_file] # convert a
   e.g.          : mo_ctl ddl_convert mysql_to_mo /tmp/mysql.sql /tmp/mo.sql
 ```
 
+note： some types of column definition might not have yet been supported in mo, please refer to
+https://docs.matrixorigin.cn/0.8.0/MatrixOne/Overview/feature/mysql-compatibility/#_1 for more info.
+
 ## Installing pre-requisites
 
 ### gcc

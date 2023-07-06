@@ -31,7 +31,6 @@ function ddl_convert ()
             tgt_file=`readlink -f ${tgt_file}`
            
             os=`what_os`
-            add_log "INFO" "Current OS: ${os}"
             if [[ "${os}" == "Mac" ]] ; then
                 mysql_to_mo_mac ${src_file} ${tgt_file}
             else
