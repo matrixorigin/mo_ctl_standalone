@@ -11,30 +11,30 @@ function git_clone()
     try_times=10
 
 
-    if [[ -d "${MO_PATH}" ]] && [[ "`ls ${MO_PATH} | wc -l |sed 's/[[:space:]]//g'`" != "0" ]]; then
+    if [[ -d "${MO_PATH}/matrixone/" ]] && [[ "`ls ${MO_PATH}/matrixone/ | wc -l |sed 's/[[:space:]]//g'`" != "0" ]]; then
         if [[ "${force}" != "force" ]]; then
-            add_log "INFO" "${MO_PATH} already exists and not empty, will skip git clone and check out"
+            add_log "INFO" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, will skip git clone and check out"
             return 0
         fi
     fi 
 
     if [[ "${MO_PATH}" != "" ]] ; then
-        cd ${MO_PATH} && rm -rf ./* && rm -rf ./.* >/dev/null 2>&1
+        cd ${MO_PATH} >/dev/null 2>&1 && rm -rf ./matrixone/ >/dev/null 2>&1
     fi
 
     mkdir -p ${MO_PATH}
     add_log "INFO" "Deploying mo on path ${MO_PATH}"
     for ((i=1;i<=${try_times};i++));do
         add_log "INFO" "Try number: $i"
-        add_log "INFO" "cd ${MO_PATH}/.. && git clone ${MO_GIT_URL}"
+        add_log "INFO" "cd ${MO_PATH} && git clone ${MO_GIT_URL}"
         if [[ "${MO_GIT_URL}" == "" ]]; then
             add_log "ERROR" "MO_GIT_URL is not set, please set it first, exiting"
             return 1
         fi
-        if cd ${MO_PATH}/.. && git clone ${MO_GIT_URL};then
+        if cd ${MO_PATH} && git clone ${MO_GIT_URL};then
             add_log "INFO" "Git clone succeeded."
             add_log "INFO" "checking out to version ${mo_version}"
-            if cd ${MO_PATH} && git checkout ${mo_version}; then
+            if cd ${MO_PATH}/matrixone/ && git checkout ${mo_version}; then
                 add_log "INFO" "Check out succeeded."
             else
                 add_log "ERROR" "Check out failed, please check mo version, exiting"
@@ -64,7 +64,7 @@ function build_mo_service()
 {
     # mo-service
     add_log "INFO" "Try to build mo-service: make build"
-    if cd ${MO_PATH}/ && make build ; then
+    if cd ${MO_PATH}/matrixone/ && make build ; then
         add_log "INFO" "Build succeeded"
     else
         add_log "ERROR" "Build failed"
@@ -77,7 +77,7 @@ function build_mo_service()
 function build_mo_dump()
 {
     add_log "INFO" "Try to build mo-dump: make build modump"
-    if cd ${MO_PATH}/ && make build modump; then
+    if cd ${MO_PATH}/matrixone/ && make build modump; then
         add_log "INFO" "Build succeeded"
     else
         add_log "ERROR" "Build failed"
@@ -99,13 +99,13 @@ function build()
         build_mo_service
         build_mo_dump
     else
-        if [[ -f "${MO_PATH}/mo-service" ]]; then
+        if [[ -f "${MO_PATH}/matrixone/mo-service" ]]; then
             add_log "INFO" "mo-service is already built on ${MO_PATH}, no need to build"
         else
             build_mo_service
         fi
 
-        if [[ -f "${MO_PATH}/mo-dump" ]]; then
+        if [[ -f "${MO_PATH}/matrixone/mo-dump" ]]; then
             add_log "INFO" "mo-dump is already built on ${MO_PATH}, no need to build"
         else
             build_mo_dump

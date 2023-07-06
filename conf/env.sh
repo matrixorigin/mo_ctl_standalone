@@ -6,9 +6,10 @@
 ###########################################
 
 # For deploy
-# path to deploy matrixone, recommanded path: /data/mo/${DATE}/matrixone
-MO_PATH="/data/mo/matrixone"
-
+# path to deploy matrixone, recommanded path: /data/mo/${DATE}/
+MO_PATH="/data/mo/"
+# log path used to store mo-service logs
+MO_LOG_PATH="${MO_PATH}/logs"
 
 # For connect
 # host ip to connect where mo is deployed, by default: 127.0.0.1
@@ -48,30 +49,28 @@ MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 MO_DEFAULT_VERSION="0.8.0"
 # which go proxy to be used when downloading go dependencies
 # you can set this go proxy when building mo-service
-GOPROXY=https://goproxy.cn,direct
+GOPROXY="https://goproxy.cn,direct"
 
 # for stop
 # interval between stop and check status after stop, unit: seconds
-STOP_INTERVAL=5
+STOP_INTERVAL="5"
 
 # for start
 # interval between start and check status after start, unit: seconds
-START_INTERVAL=2
+START_INTERVAL="2"
 # debug port that mo-service uses when it is started, which can be used to collect pprof info
 MO_DEBUG_PORT="9876"
 # conf file used to start mo-service
-MO_CONF_FILE="${MO_PATH}/etc/launch-tae-CN-tae-DN/launch.toml"
-# log path used to store mo-service logs
-MO_LOG_PATH="${MO_PATH}/logs"
+MO_CONF_FILE="${MO_PATH}/matrixone/etc/launch-tae-CN-tae-DN/launch.toml"
+
 
 
 # for restart
 # interval between stop and start, unit: seconds
-RESTART_INTERVAL=2
+RESTART_INTERVAL="2"
 
 # for pprof
 # output path of pprof results 
 PPROF_OUT_PATH="/tmp/pprof-test/"
 # duration to collect pprof profile, unit: seconds
-PPROF_PROFILE_DURATION=30
-
+PPROF_PROFILE_DURATION="30"

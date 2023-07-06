@@ -42,50 +42,49 @@ function main()
         exit 0
     fi
 
-    case ${option_1} in
-        help)
+    case "${option_1}" in
+        "" | "help")
             help_1
             ;;
-        precheck)
+        "precheck")
             precheck
             ;;
-        deploy)
+        "deploy")
             deploy ${option_2} ${option_3}
             ;;
-        status)
+        "status")
             status
             ;;
-        start)
+        "start")
             start
             ;;
-        stop)
+        "stop")
             stop ${option_2}
             ;;
-        restart)
+        "restart")
             restart ${option_2}
             ;;
-        connect)
+        "connect")
             connect
             ;;
-        get_cid)
+        "get_cid")
             get_cid
             ;;
-        pprof)
+        "pprof")
             pprof ${option_2} ${option_3} 
             ;;
-        set_conf)
+        "set_conf")
             set_conf ${option_2}
             ;;
-        get_conf)
+        "get_conf")
             get_conf ${option_2}
             ;;
-        ddl_convert)
+        "ddl_convert")
             ddl_convert ${option_2} ${option_3} ${option_4}
             ;;
         *)
-            add_log "ERROR" "Invalid option_1 ${option_1}"
+            add_log "ERROR" "Invalid option_1: ${option_1}, please refer to usage help info below"
             help_1
-            exit 1
             ;;
     esac
 
