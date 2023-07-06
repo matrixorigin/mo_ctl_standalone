@@ -51,7 +51,7 @@ function precheck()
         add_log "INFO" "All pre-requisites are ok"
 
     else
-        add_log "INFO" "At least one pre-requisite is not ok, list: ${list_nok}"
+        add_log "ERROR" "At least one pre-requisite is not ok, list: ${list_nok}"
 
     fi
 

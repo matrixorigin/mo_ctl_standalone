@@ -2,15 +2,15 @@
 `mo_ctl` tool is a tool designed to help you easily manage your standalone MatrixOne server, such as deploying, starting, stopping, connect and much more fun admin operations for you to discover!
 
 # How to get it
-Depending on whether your machine has access to the Internet or not, choose one of the ways to get this tool. Please remember to run the commands as root or a user with sudo privileges (adding `sudo` to each command is also required).
+Depending on whether your machine has access to the Internet or not, you can choose to install `mo_ctl` online or offline. Please remember to run the commands as root or a user with sudo privileges (and add `sudo` to each command). Also `install.sh` will use `unzip` command to extract `mo_ctl`, thus please make sure `unzip` is installed.
+
 ```bash
 # Option-A. install with the Internet
-wget https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh && bash +x install.sh
-
+wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/install.sh && bash +x ./install.sh
 
 # Option-B. install without the Internet
-# 1. download them to your pc first, then upload them to your machine
-wget https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh
+# 1. download them to your local pc first, then upload them to your server machine
+wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/install.sh
 wget https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
 
 # 2. install from offline pacakge
@@ -25,7 +25,6 @@ In case you have network issues accessing above address, you can use the backup 
 # Option-A. install with the Internet
 wget https://ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh && bash +x install.sh
 
-
 # Option-B. install without the Internet
 # 1. download them to your pc first, then upload them to your machine
 wget https://ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh
@@ -37,15 +36,17 @@ bash +x ./install.sh mo_ctl.zip
 
 # How to use it
 
-After mo_ctl is installed, you can use `mo_ctl help` to print help info on how to use.
+After `mo_ctl` is installed, you can use `mo_ctl help` to print help info on how to use.
 
 # Quick start
-1. Take a quick look at the tool guide
+1. Take a quick look at the tool guide. 
 ```bash
 mo_ctl help
 ```
 
-2. Set some configurations
+2. Note that some pre-requisites are required by `mo_ctl`, and use `mo_ctl precheck` to check if your machine meets them. Refer to chapter Reference for more info on how to install them.
+3. Set some configurations
+
 ```bash
 mo_ctl get_conf MO_PATH # check default value of mo path to be installed
 mo_ctl set_conf MO_PATH="/data/mo/20230701/matrixone" # set your own mo path
@@ -104,6 +105,11 @@ Use `mo_ctl [option_1] help` to get more help on how to use `mo_ctl [option_1]`
 ### precheck - check pre-requisites
 
 Use `mo_ctl precheck` before deploying your MatrixOne standalone instance. Currently the required pre-requsites are: `go`/`gcc`/` git`/`mysql(client)`.
+```bash
+mo_ctl precheck help
+Usage         : mo_ctl precheck # check pre-requisites for mo_ctl
+   Check list : go gcc git mysql 
+```
 
 ### deploy - deploy mo
 
@@ -230,4 +236,22 @@ Usage           : mo_ctl ddl_convert [options] [src_file] [tgt_file] # convert a
  [tgt_file]     : target file of converted output, will use env DDL_TGT_FILE from conf file by default
   e.g.          : mo_ctl ddl_convert mysql_to_mo /tmp/mysql.sql /tmp/mo.sql
 ```
+
+## Installing pre-requisites
+
+### gcc
+
+`gcc` is required for building and running MatrixOne. Version `8.5` or higher is recommended. Please refer to https://gcc.gnu.org/install/ on how to install it.
+
+### go
+
+`go` is required for building and running MatrixOne. Version `1.20` or higher is recommended. Please refer to https://go.dev/doc/install on how to install it.
+
+### git
+
+`git` is used to perform actions when deploying, getting commit id, etc on MatrixOne. Latest version is recommended. Please refer to https://github.com/git-guides/install-git on how to install it.
+
+### mysql(client)
+
+`mysql` command is used as a client tool for connecting MatrixOne server. Version `8.0.30` or higher is recommended. Please refer to https://dev.mysql.com/downloads/ on how to install it.
 
