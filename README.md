@@ -34,7 +34,7 @@ wget https://ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/archi
 bash +x ./install.sh mo_ctl.zip
 ```
 
-For users who are running this on your Mac environment, assuming you're a non-root user, thus please run `install.sh` via
+For users who are running this on your Mac environment, assuming you're a non-root user, thus please run `install.sh` as
 ```
 sudo -u $(whoami) bash +x ./install.sh
 ```

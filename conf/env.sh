@@ -9,7 +9,7 @@
 # path to deploy matrixone, recommanded path: /data/mo/${DATE}/
 MO_PATH="/data/mo/"
 # log path used to store mo-service logs
-MO_LOG_PATH="${MO_PATH}/logs"
+MO_LOG_PATH="${MO_PATH}/matrixone/logs"
 
 # For connect
 # host ip to connect where mo is deployed, by default: 127.0.0.1
