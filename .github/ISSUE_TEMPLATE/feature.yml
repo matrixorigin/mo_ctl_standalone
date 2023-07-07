@@ -1,0 +1,34 @@
+name: Feature Request
+description: Suggest an idea of new feature for mo_ctl
+title: "[Feature Request]: "
+labels: [type/feature]
+assignees:
+  - aronchanisme
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for the same feature request?
+      description: Please check if an issue already exists for the feature request you'd like to propos.
+      options:
+        - label: I have checked the existing issues.
+          required: true
+  - type: textarea
+    attributes:
+      label: Feature Description
+      description: Describe your idea on what you want, and why you want it.
+      render: Markdown
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Feature Implementation
+      description: Describe how you would like a implement the feature.
+      render: Markdown
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: Add any other more information you want to tell us.
+    validations:
+      required: false

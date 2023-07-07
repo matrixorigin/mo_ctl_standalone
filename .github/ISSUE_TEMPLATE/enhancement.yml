@@ -1,0 +1,34 @@
+name: Feature Request
+description: Suggest an idea of an enhancement to an existing feature for mo_ctl
+title: "[Enhancement]: "
+labels: [type/enhancement]
+assignees:
+  - aronchanisme
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for the same enhancement?
+      description: Please check if an issue already exists for the enhancement you'd like to propose.
+      options:
+        - label: I have checked the existing issues.
+          required: true
+  - type: textarea
+    attributes:
+      label: Enhancement Description
+      description: Describe your idea on what you want, and why you want it.
+      render: Markdown
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Enhancement Implementation
+      description: Describe how you would like a implement the enhancement.
+      render: Markdown
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: Add any other more information you want to tell us.
+    validations:
+      required: false

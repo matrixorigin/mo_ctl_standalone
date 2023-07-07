@@ -109,7 +109,7 @@ Use `mo_ctl [option_1] help` to get more help on how to use `mo_ctl [option_1]`
 
 ### precheck - check pre-requisites
 
-Use `mo_ctl precheck` before deploying your MatrixOne standalone instance. Currently the required pre-requsites are: `go`/`gcc`/` git`/`mysql(client)`.
+Use `mo_ctl precheck` before deploying your MatrixOne standalone instance. Currently the required pre-requsites are: `go`/`gcc`/`git`/`mysql(client)`.
 ```bash
 mo_ctl precheck help
 Usage         : mo_ctl precheck # check pre-requisites for mo_ctl

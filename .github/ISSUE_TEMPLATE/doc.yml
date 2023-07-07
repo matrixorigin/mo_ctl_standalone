@@ -1,0 +1,28 @@
+name: Doc report
+description: Create a docs report regarding any documentation errors of mo_ctl
+title: "[Doc]: "
+labels: [type/doc]
+assignees:
+  - aronchanisme
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for the same doc error?
+      description: Please check if an issue already exists for the doc error you encountered.
+      options:
+        - label: I have checked the existing issues.
+          required: true
+  - type: textarea
+    attributes:
+      label: Issue Description
+      description: Describe what part of the documentation that you think is currently incorrect or missing.
+      render: Markdown
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: Add any other more information you want to tell us.
+      render: Markdown
+    validations:
+      required: false

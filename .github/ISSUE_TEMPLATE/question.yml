@@ -1,0 +1,14 @@
+name: Question
+description: Create a question to discuss anything other than bug/feature/enhancement/.. regarding mo_ctl
+title: "[Question]: "
+labels: [type/question]
+assignees:
+  - aronchanisme
+body:
+  - type: textarea
+    attributes:
+      label: Issue Description
+      description: Describe what you want to discuss.
+      render: Markdown
+    validations:
+      required: true
