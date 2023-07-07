@@ -16,20 +16,17 @@ body:
     attributes:
       label: Feature Description
       description: Describe your idea on what you want, and why you want it.
-      render: Markdown
     validations:
       required: true
   - type: textarea
     attributes:
       label: Feature Implementation
       description: Describe how you would like a implement the feature
-      render: Markdown
     validations:
       required: false
   - type: textarea
     attributes:
       label: Additional information
       description: Add any other more information you want to tell us.
-      render: Markdown
     validations:
       required: false

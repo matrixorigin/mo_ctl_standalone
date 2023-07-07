@@ -21,27 +21,23 @@ body:
         - Version or commit-id: e.g. v0.1.0 or 8b23a93
         - OS type: e.g. MacOS 13/Debian 11
         - Other info: e.g. 2c cpu, 4g mem, 250g hdd
-      render: Markdown
     validations:
       required: true
   - type: textarea
     attributes:
       label: Issue Description
       description: Describe what you encountered, what you expected and what you actually got.
-      render: Markdown
     validations:
       required: true
   - type: textarea
     attributes:
       label: Steps to Reproduce
       description: Steps to reproduce what you encountered. e.g. 1. download; 2. install; 3. run; ...
-      render: Markdown
     validations:
       required: true
   - type: textarea
     attributes:
       label: Additional information
       description: Log, error message or any other information can help find the root cause.
-      render: Markdown
     validations:
       required: false

@@ -16,13 +16,11 @@ body:
     attributes:
       label: Issue Description
       description: Describe what part of the documentation that you think is currently incorrect or missing.
-      render: Markdown
     validations:
       required: true
   - type: textarea
     attributes:
       label: Additional information
       description: Add any other more information you want to tell us.
-      render: Markdown
     validations:
       required: false

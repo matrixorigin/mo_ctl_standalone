@@ -9,6 +9,5 @@ body:
     attributes:
       label: Issue Description
       description: Describe what you want to discuss.
-      render: Markdown
     validations:
       required: true
