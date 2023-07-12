@@ -106,7 +106,7 @@ Usage             : mo_ctl [option_1] [option_2]
   12) start       : start mo-service from the path configured
   13) status      : check if there's any mo process running on this machine
   14) stop        : stop all mo-service processes found on this machine
-  15) uninstall   : uninstall mo from path MO_PATH=/xx/xx/xx/matrixonev
+  15) uninstall   : uninstall mo from path MO_PATH=/xx/xx/xx/matrixone
   16) upgrade     : upgrade or downgrade mo from current version to a target commit id or stable version
   17) watchdog    : setup a watchdog crontab task for mo-service to keep it alive
   e.g.            : mo_ctl status
