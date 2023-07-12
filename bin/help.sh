@@ -20,7 +20,8 @@ USAGE_GET_CONF="get configurations"
 USAGE_DDL_CONVERT="convert ddl file to mo format from other types of database"
 USAGE_WATCHDOG="setup a watchdog crontab task for mo-service to keep it alive"
 USAGE_UPGRADE="upgrade or downgrade mo from current version to a target commit id or stable version"
-USAGE_GET_BRANCH="print git branch where mo is currently on"
+USAGE_GET_BRANCH="print which git branch mo is currently on"
+USAGE_UNINSTALL="uninstall mo from path MO_PATH=${MO_PATH}/matrixone"
 
 
 function help_precheck()
@@ -164,7 +165,7 @@ function help_watchdog()
 function help_upgrade()
 {
     option="upgrade"
-    echo "Usage           : ${TOOL_NAME} ${option} [version_commitid]   # ${USAGE_UPGRADE}"
+    echo "Usage           : ${TOOL_NAME} ${option} [version_or_commitid]   # ${USAGE_UPGRADE}"
     echo " [commitid]     : a commit id such as '38888f7', or a stable version such as '0.8.0'"
     echo "                : use 'latest' to upgrade to latest commit on main branch if you don't know the id"
     echo "  e.g.          : ${TOOL_NAME} ${option} 38888f7              # upgrade/downgrade to commit id 38888f7 on main branch"
@@ -173,33 +174,44 @@ function help_upgrade()
 
 }
 
+
+
 function help_get_branch()
 {
     option="get_branch"
     echo "Usage           : ${TOOL_NAME} ${option}        # ${USAGE_GET_BRANCH}"
 }
 
+function help_uninstall()
+{
+    option="uninstall"
+    echo "Usage           : ${TOOL_NAME} ${option}        # ${USAGE_UNINSTALL}"
+    echo "                                          # note: you will need to input 'Yes/No' to confirm before uninstalling"
+
+}
 
 function help_1()
 {
     echo "Usage             : ${TOOL_NAME} [option_1] [option_2]"
     echo ""
-    echo "[option_1]        : available: help | precheck | deploy | status | start | stop | restart | connect | get_cid | set_conf | get_conf | pprof | ddl_convert"
-    echo "  0) help         : ${USAGE_HELP}"
-    echo "  1) precheck     : ${USAGE_PRECHECK}"
-    echo "  2) deploy       : ${USAGE_DEPLOY}"
-    echo "  3) status       : ${USAGE_STATUS}"
-    echo "  4) start        : ${USAGE_START}"
-    echo "  5) stop         : ${USAGE_STOP}"
-    echo "  6) restart      : ${USAGE_START}"
-    echo "  7) connect      : ${USAGE_CONNECT}"
-    echo "  8) get_cid      : ${USAGE_GET_CID}"
-    echo "  9) pprof        : ${USAGE_PPROF}"
-    echo "  10) set_conf    : ${USAGE_SET_CONF}"
-    echo "  11) get_conf    : ${USAGE_GET_CONF}"
-    echo "  12) ddl_convert : ${USAGE_DDL_CONVERT}"
-    echo "  13) watchdog    : ${USAGE_WATCHDOG}"
-    echo "  14) upgrade     : ${USAGE_UPGRADE}"
+    echo "[option_1]        : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | start | status | stop | uninstall | upgrade | watchdog"
+    echo "  1) connect      : ${USAGE_CONNECT}"
+    echo "  2) ddl_convert  : ${USAGE_DDL_CONVERT}"
+    echo "  3) deploy       : ${USAGE_DEPLOY}"
+    echo "  4) get_branch   : ${USAGE_UPGRADE}"
+    echo "  5) get_cid      : ${USAGE_GET_CID}"
+    echo "  6) get_conf     : ${USAGE_GET_CONF}"
+    echo "  7) help         : ${USAGE_HELP}"
+    echo "  8) pprof        : ${USAGE_PPROF}"
+    echo "  9) precheck     : ${USAGE_PRECHECK}"
+    echo "  10) restart     : ${USAGE_START}"
+    echo "  11) set_conf    : ${USAGE_SET_CONF}"
+    echo "  12) start       : ${USAGE_START}"
+    echo "  13) status      : ${USAGE_STATUS}"
+    echo "  14) stop        : ${USAGE_STOP}"
+    echo "  15) uninstall   : ${USAGE_UNINSTALL}"
+    echo "  16) upgrade     : ${USAGE_UPGRADE}"
+    echo "  17) watchdog    : ${USAGE_WATCHDOG}"
     echo "  e.g.            : ${TOOL_NAME} status"
     echo ""
     echo "[option_2]        : Use \" ${TOOL_NAME} [option_1] help \" to get more info"
@@ -256,6 +268,9 @@ function help_2()
             ;;
         get_branch)
             help_get_branch
+            ;;
+        uninstall)
+            help_uninstall
             ;;
         *)
             add_log "ERROR" "invalid [option_1]: ${option_1}"

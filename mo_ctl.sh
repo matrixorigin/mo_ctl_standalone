@@ -14,6 +14,7 @@ script_list=("basic" "help" "precheck" "deploy" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
     # "mysql_to_mo" "mysql_to_mo_mac" \
     "ddl_convert" "watchdog" "upgrade" "get_branch" \
+    "uninstall" \
 )
 
 for script in ${script_list[@]}; do
@@ -94,6 +95,9 @@ function main()
             ;;
         "get_branch")
             get_branch ${option_2}
+            ;;
+        "uninstall")
+            uninstall
             ;;
         *)
             add_log "ERROR" "Invalid option_1: ${option_1}, please refer to usage help info below"

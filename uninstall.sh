@@ -25,7 +25,7 @@ function usage()
 }
 
 
-function uninstall()
+function tool_uninstall()
 {
     mo_ctl_global_path=/usr/local/bin
     mo_ctl_local_path=~/mo_ctl
@@ -54,7 +54,7 @@ function main()
             usage
             ;;
         *)
-            uninstall
+            tool_uninstall
             ;;
     esac
 }

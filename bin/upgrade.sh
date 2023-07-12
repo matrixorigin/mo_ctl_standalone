@@ -37,7 +37,7 @@ function init_global_vars()
 
 
 
-function check_pre_requisites()
+function check_upgrade_pre_requisites()
 {
     rc=0
     if [[ "${target_cid}" == "" ]]; then
@@ -182,7 +182,7 @@ function upgrade_build_mo_service()
 {
     # mo-service
     add_log "INFO" "Try to build mo-service: make build"
-    if cd ${MO_UPGRADE_PATH}/matrixone/ && make build ; then
+    if cd ${MO_UPGRADE_PATH}/ && make build ; then
         add_log "INFO" "Build succeeded"
     else
         add_log "ERROR" "Build failed"
@@ -194,7 +194,7 @@ function upgrade_build_mo_service()
 function upgrade_build_mo_dump()
 {
     add_log "INFO" "Try to build mo-dump: make build modump"
-    if cd ${MO_UPGRADE_PATH}/matrixone/ && make build modump; then
+    if cd ${MO_UPGRADE_PATH}/ && make build modump; then
         add_log "INFO" "Build succeeded"
     else
         add_log "ERROR" "Build failed"
@@ -205,29 +205,22 @@ function upgrade_build_mo_dump()
 
 function upgrade_build_all()
 {
-    force=$1
-
+    rc=0
     if [[ "${GOPROXY}" != "" ]]; then
         add_log "INFO" "GOPROXY is set, setting go proxy to GOPROXY=${GOPROXY}"
         go env -w GOPROXY=${GOPROXY}
     fi
 
-    if [[ "${force}" == "force" ]]; then
-        build_mo_service
-        build_mo_dump
-    else
-        if [[ -f "${MO_UPGRADE_PATH}/matrixone/mo-service" ]]; then
-            add_log "INFO" "mo-service is already built on ${MO_UPGRADE_PATH}, no need to build"
-        else
-            build_mo_service
-        fi
-
-        if [[ -f "${MO_UPGRADE_PATH}/matrixone/mo-dump" ]]; then
-            add_log "INFO" "mo-dump is already built on ${MO_UPGRADE_PATH}, no need to build"
-        else
-            build_mo_dump
-        fi
+    if ! upgrade_build_mo_service; then
+        rc=1
     fi
+
+    if ! upgrade_build_mo_dump; then
+        rc=1
+    fi
+
+    return ${rc}
+
 }
 
 function upgrade_rollback()
@@ -259,7 +252,7 @@ function upgrade()
     init_global_vars
     
     # 1. check if target_cid is not empty and mo-service not running and mo-watchdog disabled
-    if ! check_pre_requisites; then
+    if ! check_upgrade_pre_requisites; then
         return 1
     fi
 
