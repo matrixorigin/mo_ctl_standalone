@@ -13,7 +13,7 @@ script_list=("basic" "help" "precheck" "deploy" \
     "status" "start" "stop" "restart" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
     # "mysql_to_mo" "mysql_to_mo_mac" \
-    "ddl_convert" \
+    "ddl_convert" "watchdog" "upgrade" \
 )
 
 for script in ${script_list[@]}; do
@@ -33,14 +33,17 @@ p_ids=""
 
 function main()
 {
+    rc=0
     option_1=$1
     option_2=$2
     option_3=$3
     option_4=$4
     if [[ ${option_2} == "help" ]]; then
         help_2
-        exit 0
+        return 0
     fi
+
+    current_path=`pwd`
 
     case "${option_1}" in
         "" | "help")
@@ -68,13 +71,14 @@ function main()
             connect
             ;;
         "get_cid")
-            get_cid
+            get_cid ${option_2}
             ;;
         "pprof")
             pprof ${option_2} ${option_3} 
             ;;
         "set_conf")
-            set_conf ${option_2}
+            shift
+            set_conf $*
             ;;
         "get_conf")
             get_conf ${option_2}
@@ -82,12 +86,24 @@ function main()
         "ddl_convert")
             ddl_convert ${option_2} ${option_3} ${option_4}
             ;;
+        "watchdog")
+            watchdog ${option_2}
+            ;;
+        "upgrade")
+            upgrade ${option_2}
+            ;;
         *)
             add_log "ERROR" "Invalid option_1: ${option_1}, please refer to usage help info below"
             help_1
+            cd ${current_path}
+            return 1
             ;;
     esac
+    
+    rc=$?
 
+    cd ${current_path}
+    return ${rc}
 }
 
 main $*

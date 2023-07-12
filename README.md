@@ -1,5 +1,5 @@
 # What it is
-`mo_ctl` tool is a tool designed to help you easily manage your standalone MatrixOne server, such as deploying, starting, stopping, connect and much more fun admin operations for you to discover!
+`mo_ctl` tool is a tool designed to help you easily manage your standalone MatrixOne server, such as deploying, starting, stopping, connecting and much more fun admin operations for you to discover!
 
 # How to get it
 Depending on whether your machine has access to the Internet or not, you can choose to install `mo_ctl` online or offline. Please remember to run the commands as root or a user with sudo privileges (and add `sudo` to each command). Also `install.sh` will use `unzip` command to extract `mo_ctl`, thus please make sure `unzip` is installed.
@@ -186,7 +186,7 @@ Usage         : mo_ctl get_cid # print mo commit id from the path configured
 
 ### pprof - collect pprof information
 
-Use `mo_ctl pprof [item] [duration]` to collect pprof information, which is usefully when debugging issues.
+Use `mo_ctl pprof [item] [duration]` to collect pprof information, which is useful when debugging issues.
 
 ```bash
 mo_ctl pprof help

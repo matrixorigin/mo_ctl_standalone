@@ -26,13 +26,15 @@ function stop()
                 add_log "INFO" "Stop succeeded"
                 break;
             else
-                add_log "ERROR" "Stop failed, will try again now"
+                if [[ "${i}" == "${max_times}" ]] ; then
+                    add_log "ERRPR" "Stop failed after a maximum of ${max_times} times"
+                    return 1
+                else
+                    add_log "ERROR" "Stop failed, will try again now"
+                fi
             fi
         done
-        if [[ "${i}" == "${max_times}" ]] ; then
-            add_log "ERRPR" "Stop failed after a maximum of ${max_times} times"
-            return 1
-        fi
+
     else
         add_log "INFO" "No need to stop mo-service"
         add_log "INFO" "Stop succeeded"

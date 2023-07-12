@@ -15,6 +15,14 @@ function git_clone()
         if [[ "${force}" != "force" ]]; then
             add_log "INFO" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, will skip git clone and check out"
             return 0
+        else
+            add_log "WARN" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, please confirm if you really want to overwrite it(Yes/No): "
+            user_confirm=""
+            read -t 30 user_confirm
+            if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
+                add_log "ERROR" "User input not confirmed or timed out, exiting"
+                return 1
+            fi
         fi
     fi 
 
@@ -86,7 +94,7 @@ function build_mo_dump()
 }
 
 
-function build()
+function build_all()
 {
     force=$1
 
@@ -141,12 +149,12 @@ function deploy()
     fi
 
     # 2. Build
-    if ! build ${force}; then
+    if ! build_all ${force}; then
         return 1
     fi
 
     # 3. Create logs folder
-    add_log "INFO" "Creating mo logs path in case it does not exist"
+    add_log "INFO" "Creating mo logs ${MO_LOG_PATH} path in case it does not exist"
     mkdir -p ${MO_LOG_PATH}
     add_log "INFO" "Deoloy succeeded"
 

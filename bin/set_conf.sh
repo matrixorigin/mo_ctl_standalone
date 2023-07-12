@@ -33,13 +33,13 @@ function set_kv()
 
 function set_conf()
 {
-    list=$1
+    list=$*
     rc=0
     for kv in $(echo $list | sed "s/,/ /g")
     do
         # 1. check if format is key=value
         if ! echo ${kv} | grep "=" >/dev/null 2>&1; then
-            add_log "ERROR" "Conf ${kv} is a invalid format, please set conf as key=value, skipping"
+            add_log "ERROR" "Conf ${kv} is an invalid format, please set conf as key=value, skipping"
             rc=1
             continue
         fi

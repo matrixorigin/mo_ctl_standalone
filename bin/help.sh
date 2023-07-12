@@ -18,6 +18,8 @@ USAGE_PPROF="collect pprof information"
 USAGE_SET_CONF="set configurations"
 USAGE_GET_CONF="get configurations"
 USAGE_DDL_CONVERT="convert ddl file to mo format from other types of database"
+USAGE_WATCHDOG="setup a watchdog crontab task for mo-service to keep it alive"
+USAGE_UPGRADE="upgrade mo from current version to a target commit id"
 
 function help_precheck()
 {
@@ -35,8 +37,8 @@ function help_deploy()
 {
     option="deploy"
     echo "Usage         : ${TOOL_NAME} ${option} [mo_version] [force] # ${USAGE_DEPLOY}"
-    echo "  [mo_version]: optional, specify an mo version to deploy"
-    echo "  [force]     : optional, if specified will delete all content under MO_PATH and deploy from beginning"
+    echo "  [mo_version]: optional: specify an mo version to deploy"
+    echo "  [force]     : optional: if specified will delete all content under MO_PATH and deploy from beginning"
     echo "  e.g.        : ${TOOL_NAME} ${option}             # default, same as ${TOOL_NAME} ${option} ${MO_DEFAULT_VERSION}"
     echo "              : ${TOOL_NAME} ${option} main        # deploy development latest version"
     echo "              : ${TOOL_NAME} ${option} d29764a     # deploy development version d29764a"
@@ -63,7 +65,7 @@ function help_stop()
 {
     option="stop"
     echo "Usage         : ${TOOL_NAME} ${option} [force] # ${USAGE_STOP}"
-    echo " [force]      : optional, if specified, will try to kill mo-services with -9 option, so be very carefully"
+    echo " [force]      : optional: if specified, will try to kill mo-services with -9 option, so be very carefully"
     echo "  e.g.        : ${TOOL_NAME} ${option}         # default, stop all mo-service processes found on this machine"
     echo "              : ${TOOL_NAME} ${option} force   # stop all mo-services with kill -9 command"
 }
@@ -73,7 +75,7 @@ function help_restart()
 {
     option="restart"
     echo "Usage         : ${TOOL_NAME} ${option} [force] # ${USAGE_RESTART}"
-    echo " [force]      : optional, if specified, will try to kill mo-services with -9 option, so be very carefully"
+    echo " [force]      : optional: if specified, will try to kill mo-services with -9 option, so be very carefully"
     echo "  e.g.        : ${TOOL_NAME} ${option}         # default, stop all mo-service processes found on this machine and start mo-serivce under path of conf MO_PATH"
     echo "              : ${TOOL_NAME} ${option} force   # stop all mo-services with kill -9 command and start mo-serivce under path of conf MO_PATH"
 }
@@ -87,7 +89,9 @@ function help_connect()
 function help_get_cid()
 {
     option="get_cid"
-    echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_GET_CID}"
+    echo "Usage         : ${TOOL_NAME} ${option} [less] # ${USAGE_GET_CID}"
+    echo "  [less]      : optional, if specified, print less info with cid only, otherwise print more info"
+
 }
 
 function help_path()
@@ -101,11 +105,11 @@ function help_pprof()
 {
     option="pprof"
     echo "Usage         : ${TOOL_NAME} ${option} [item] [duration] # ${USAGE_PPROF}"
-    echo "  [item]      : optional, specify what pprof to collect, available: profile | heap | allocs"
+    echo "  [item]      : optional: specify what pprof to collect, available: profile | heap | allocs"
     echo "  1) profile  : default, collect profile pprof for 30 seconds"
     echo "  2) heap     : collect heap pprof at current moment"
     echo "  3) allocs   : collect allocs pprof at current moment"
-    echo "  [duration]  : optional, only valid when [item]=profile, specifiy duration to collect profile"
+    echo "  [duration]  : optional: only valid when [item]=profile, specifiy duration to collect profile"
     echo "  e.g.        : ${TOOL_NAME} ${option}"
     echo "              : ${TOOL_NAME} ${option} profile    # collect duration will use conf value PPROF_PROFILE_DURATION from conf file or 30 if it's not set"
     echo "              : ${TOOL_NAME} ${option} profile 30"
@@ -125,7 +129,7 @@ function help_get_conf()
 {
     option="getconf"
     echo "Usage         : ${TOOL_NAME} ${option} [conf_list] # ${USAGE_GET_CONF}"
-    echo " [conf_list]  : optional, configuration list in key, seperated by comma."
+    echo " [conf_list]  : optional: configuration list in key, seperated by comma."
     echo "              : use 'all' or leave it as blank to print all configurations"
     echo "  e.g.        : ${TOOL_NAME} ${option} MO_PATH,MO_PW,MO_PORT  # get multiple configurations"
     echo "              : ${TOOL_NAME} ${option} MO_PATH                # get single configuration"
@@ -141,6 +145,28 @@ function help_ddl_convert()
     echo " [src_file]     : source file to be converted, will use env DDL_SRC_FILE from conf file by default"
     echo " [tgt_file]     : target file of converted output, will use env DDL_TGT_FILE from conf file by default"
     echo "  e.g.          : ${TOOL_NAME} ${option} mysql_to_mo /tmp/mysql.sql /tmp/mo.sql"
+}
+
+function help_watchdog()
+{
+    option="watchdog"
+    echo "Usage           : ${TOOL_NAME} ${option} [options]   # ${USAGE_WATCHDOG}"
+    echo " [options]      : available: enable | disable | status"
+    echo "  e.g.          : ${TOOL_NAME} ${option} enable      # enable watchdog service for mo, by default it will check if mo-servie is alive and pull it up if it's dead every one minute"
+    echo "                : ${TOOL_NAME} ${option} disable     # disable watchdog"
+    echo "                : ${TOOL_NAME} ${option} status      # check if watchdog is enabled or disabled"
+    echo "                : ${TOOL_NAME} ${option}             # same as ${TOOL_NAME} ${option} status"
+}
+
+
+function help_upgrade()
+{
+    option="upgrade"
+    echo "Usage           : ${TOOL_NAME} ${option} [version_commitid]   # ${USAGE_UPGRADE}"
+    echo " [commitid]     : the commit id of target version, such as '38888f7'"
+    echo "                : use 'latest' to upgrade to latest commit if you don't know the id"
+    echo "  e.g.          : ${TOOL_NAME} ${option} 38888f7              # upgrade mo from current version to commit id 38888f7"
+    echo "                : ${TOOL_NAME} ${option} latest               # upgrade mo from current version to latest commit"
 }
 
 function help_1()
@@ -161,6 +187,8 @@ function help_1()
     echo "  10) set_conf    : ${USAGE_SET_CONF}"
     echo "  11) get_conf    : ${USAGE_GET_CONF}"
     echo "  12) ddl_convert : ${USAGE_DDL_CONVERT}"
+    echo "  13) watchdog    : ${USAGE_WATCHDOG}"
+    echo "  14) upgrade     : ${USAGE_UPGRADE}"
     echo "  e.g.            : ${TOOL_NAME} status"
     echo ""
     echo "[option_2]        : Use \" ${TOOL_NAME} [option_1] help \" to get more info"
@@ -208,6 +236,12 @@ function help_2()
             ;;
         ddl_convert)
             help_ddl_convert
+            ;;
+        watchdog)
+            help_watchdog
+            ;;
+        upgrade)
+            help_upgrade
             ;;
         *)
             add_log "ERROR" "invalid [option_1]: ${option_1}"

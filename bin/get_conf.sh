@@ -4,7 +4,7 @@
 function get_kv()
 {
     key=$1
-    value=`grep "^${key}=" "${CONF_FILE}" | head -1 | awk -F"=" '{print $2}'`
+    value=`grep "^${key}=" "${CONF_FILE}" | head -n 1 | awk -F"=" '{print $2}'`
     echo $value
 }
 

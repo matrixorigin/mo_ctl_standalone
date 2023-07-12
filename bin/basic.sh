@@ -91,3 +91,13 @@ function pos_int_range()
         return 1
     fi
 }
+
+function to_upper()
+{
+    echo $(echo $1 | tr '[a-z]' '[A-Z]') 
+}
+
+function to_lower()
+{
+    echo $(echo $1 | tr '[A-Z]' '[a-z]') 
+}

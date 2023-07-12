@@ -22,7 +22,7 @@ function precheck()
         # 2. check version
         case ${item} in
             "gcc")
-                version_current=`gcc --version | head -1 | awk -F'[)] ' '{print $2}' | awk '{print $1}'`
+                version_current=`gcc --version | head -n 1 | awk -F'[)] ' '{print $2}' | awk '{print $1}'`
                 version_required="${GCC_VERSION}"
     
                 ;;

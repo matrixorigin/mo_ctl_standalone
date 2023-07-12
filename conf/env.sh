@@ -38,8 +38,6 @@ MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 # in case you have network issues accessing above address, you can set one of the backup addresses below to replace the default value:
 # default: "https://github.com/matrixorigin/matrixone.git"
 # "https://ghproxy.com/https://github.com/matrixorigin/matrixone.git"
-# "https://ghproxy.com/https://github.com/matrixorigin/matrixone.git"
-# "https://hub.njuu.cf/matrixorigin/matrixone.git"
 # "https://hub.yzuu.cf/matrixorigin/matrixone.git"
 # "https://kgithub.com/matrixorigin/matrixone.git"
 # "https://gitclone.com/github.com/matrixorigin/matrixone.git"
