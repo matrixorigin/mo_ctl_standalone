@@ -34,6 +34,13 @@ function set_kv()
 function set_conf()
 {
     list=$*
+
+    if [[ "${list}" == "" ]]; then
+        add_log "ERROR" "Set list cannot be empty"
+        help_set_conf
+        return 1
+    fi
+
     rc=0
     for kv in $(echo $list | sed "s/,/ /g")
     do
@@ -53,6 +60,17 @@ function set_conf()
         add_log "INFO" "Try to set conf: ${key}=${value}"
         if ! set_kv "${key}" "${value}"; then
             rc=1
+        else
+            if [[ "${key}" == "MO_GIT_URL" ]]; then
+                if [[ -d ${MO_PATH}/matrixone/.git/ ]]; then
+                    add_log "INFO" "Key is MO_GIT_URL, thus setting mo git remote url"
+                    if git remote set-url origin ${value}; then
+                        add_log "INFO" "Succeeded"
+                    else
+                        add_log "ERROR" "Failed"
+                    fi
+                fi
+            fi
         fi
     done
 

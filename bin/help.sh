@@ -12,14 +12,16 @@ USAGE_START="start mo-service from the path configured"
 USAGE_STOP="stop all mo-service processes found on this machine"
 USAGE_RESTART="a combination operation of stop and start"
 USAGE_CONNECT="connect to mo via mysql client using connection info configured"
-USAGE_GET_CID="print mo commit id from the path configured"
+USAGE_GET_CID="print mo git commit id from the path configured"
 USAGE_PATH="print mo path configured"
 USAGE_PPROF="collect pprof information"
 USAGE_SET_CONF="set configurations"
 USAGE_GET_CONF="get configurations"
 USAGE_DDL_CONVERT="convert ddl file to mo format from other types of database"
 USAGE_WATCHDOG="setup a watchdog crontab task for mo-service to keep it alive"
-USAGE_UPGRADE="upgrade mo from current version to a target commit id"
+USAGE_UPGRADE="upgrade or downgrade mo from current version to a target commit id or stable version"
+USAGE_GET_BRANCH="print git branch where mo is currently on"
+
 
 function help_precheck()
 {
@@ -163,11 +165,20 @@ function help_upgrade()
 {
     option="upgrade"
     echo "Usage           : ${TOOL_NAME} ${option} [version_commitid]   # ${USAGE_UPGRADE}"
-    echo " [commitid]     : the commit id of target version, such as '38888f7'"
-    echo "                : use 'latest' to upgrade to latest commit if you don't know the id"
-    echo "  e.g.          : ${TOOL_NAME} ${option} 38888f7              # upgrade mo from current version to commit id 38888f7"
-    echo "                : ${TOOL_NAME} ${option} latest               # upgrade mo from current version to latest commit"
+    echo " [commitid]     : a commit id such as '38888f7', or a stable version such as '0.8.0'"
+    echo "                : use 'latest' to upgrade to latest commit on main branch if you don't know the id"
+    echo "  e.g.          : ${TOOL_NAME} ${option} 38888f7              # upgrade/downgrade to commit id 38888f7 on main branch"
+    echo "                : ${TOOL_NAME} ${option} latest               # upgrade/downgrade to latest commit on main branch"
+    echo "                : ${TOOL_NAME} ${option} 0.8.0                # upgrade/downgrade to stable version 0.8.0"
+
 }
+
+function help_get_branch()
+{
+    option="get_branch"
+    echo "Usage           : ${TOOL_NAME} ${option}        # ${USAGE_GET_BRANCH}"
+}
+
 
 function help_1()
 {
@@ -242,6 +253,9 @@ function help_2()
             ;;
         upgrade)
             help_upgrade
+            ;;
+        get_branch)
+            help_get_branch
             ;;
         *)
             add_log "ERROR" "invalid [option_1]: ${option_1}"

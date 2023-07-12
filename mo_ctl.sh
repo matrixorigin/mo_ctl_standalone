@@ -13,7 +13,7 @@ script_list=("basic" "help" "precheck" "deploy" \
     "status" "start" "stop" "restart" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
     # "mysql_to_mo" "mysql_to_mo_mac" \
-    "ddl_convert" "watchdog" "upgrade" \
+    "ddl_convert" "watchdog" "upgrade" "get_branch" \
 )
 
 for script in ${script_list[@]}; do
@@ -91,6 +91,9 @@ function main()
             ;;
         "upgrade")
             upgrade ${option_2}
+            ;;
+        "get_branch")
+            get_branch ${option_2}
             ;;
         *)
             add_log "ERROR" "Invalid option_1: ${option_1}, please refer to usage help info below"
