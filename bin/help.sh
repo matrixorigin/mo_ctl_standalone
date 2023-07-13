@@ -217,7 +217,7 @@ function help_1()
     echo "  7) help         : ${USAGE_HELP}"
     echo "  8) pprof        : ${USAGE_PPROF}"
     echo "  9) precheck     : ${USAGE_PRECHECK}"
-    echo "  10) restart     : ${USAGE_START}"
+    echo "  10) restart     : ${USAGE_RESTART}"
     echo "  11) set_conf    : ${USAGE_SET_CONF}"
     echo "  12) sql         : ${USAGE_SQL}"
     echo "  13) start       : ${USAGE_START}"
