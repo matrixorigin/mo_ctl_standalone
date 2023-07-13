@@ -207,7 +207,7 @@ function help_1()
 {
     echo "Usage             : ${TOOL_NAME} [option_1] [option_2]"
     echo ""
-    echo "  [option_1]      : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | query | restart | set_conf | start | status | stop | uninstall | upgrade | watchdog"
+    echo "  [option_1]      : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | query | restart | set_conf | sql | start | status | stop | uninstall | upgrade | watchdog"
     echo "  1) connect      : ${USAGE_CONNECT}"
     echo "  2) ddl_convert  : ${USAGE_DDL_CONVERT}"
     echo "  3) deploy       : ${USAGE_DEPLOY}"

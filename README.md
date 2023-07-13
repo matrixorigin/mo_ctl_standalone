@@ -91,7 +91,7 @@ Use `mo_ctl help` to get help on how to use `mo_ctl`
 ```bash
 Usage             : mo_ctl [option_1] [option_2]
 
-  [option_1]      : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | query | restart | set_conf | start | status | stop | uninstall | upgrade | watchdog
+  [option_1]      : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | query | restart | set_conf | sql | start | status | stop | uninstall | upgrade | watchdog
   1) connect      : connect to mo via mysql client using connection info configured
   2) ddl_convert  : convert ddl file to mo format from other types of database
   3) deploy       : deploy mo onto the path configured

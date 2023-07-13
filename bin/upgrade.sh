@@ -124,7 +124,7 @@ function validate_target_cid()
 
         # 3.2.2 get latest commit id if target cid is set to latest
         if [[ "${target_cid}" == "latest" ]]; then
-            target_cid=`git log ${target_branch} | head  -n 1 | awk '{print $2}'`
+            target_cid=`git rev-parse origin/${target_branch} | head  -n 1`
             add_log "I" "Latest commit id on remote repository is ${target_cid}"
             if echo "${current_cid}" | grep "${target_cid}" >/dev/null 2>&1; then
                 add_log "I" "Target commit id ${target_cid} seems to match current commit id ${current_cid}"
