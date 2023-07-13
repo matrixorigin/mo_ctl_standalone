@@ -22,8 +22,8 @@ function add_log()
     #format: 2023-07-13_15:37:40
     #nowtime=`date '+%F_%T'`
     #format: 2023-07-13_15:37:22.775
-    nowtime=`date '+%Y-%m-%d_%H:%M:%S.%N'`
-    nowtime=`echo "${nowtime}" | cut -b 1-23`
+    nowtime="`date '+%Y-%m-%d_%H:%M:%S.%N'`"
+    nowtime="`echo "${nowtime}" | cut -b 1-23`"
     
     case "${level}" in
         "e"|"E")

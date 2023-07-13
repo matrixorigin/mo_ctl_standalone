@@ -5,44 +5,6 @@
 ################################################################
 # uninstall
 
-function add_log()
-{
-    level=$1
-    msg="$2"
-    add_line="$3"
-    #format: 2023-07-13_15:37:40
-    #nowtime=`date '+%F_%T'`
-    #format: 2023-07-13_15:37:22.775
-    notime=`date +%Y-%m-%d'_'%H:%M:%S.%N | cut -b 1-23`
-
-    case "${level}" in
-        "e"|"E")
-            level="ERROR"
-            ;;
-        "W"|"w")
-            level="WARN" 
-            ;;
-        "I"|"i")
-            level="INFO" 
-            ;;
-        "d"|"D")
-            level="DEBUG" 
-            ;;
-        *)
-            echo "These are valid log levels: E/e/W/w/I/i/D/d."
-            echo "   E/e: ERROR, W/w: WARN, I/i: INFO, D/d: DEBUG"
-            exit 1
-        ;;
-    esac 
-
-    if [[ "${add_line}" == "n" ]]; then
-        echo -n "${nowtime}    [${level}]    ${msg}"
-    else
-        echo "${nowtime}    [${level}]    ${msg}"
-    fi
-}
-
-
 function check_uninstall_pre_requisites()
 {
     rc=0
