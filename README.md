@@ -91,7 +91,7 @@ Use `mo_ctl help` to get help on how to use `mo_ctl`
 ```bash
 Usage             : mo_ctl [option_1] [option_2]
 
-[option_1]        : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | start | status | stop | uninstall | upgrade | watchdog
+  [option_1]      : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | query | restart | set_conf | start | status | stop | uninstall | upgrade | watchdog
   1) connect      : connect to mo via mysql client using connection info configured
   2) ddl_convert  : convert ddl file to mo format from other types of database
   3) deploy       : deploy mo onto the path configured
@@ -103,16 +103,17 @@ Usage             : mo_ctl [option_1] [option_2]
   9) precheck     : check pre-requisites for mo_ctl
   10) restart     : start mo-service from the path configured
   11) set_conf    : set configurations
-  12) start       : start mo-service from the path configured
-  13) status      : check if there's any mo process running on this machine
-  14) stop        : stop all mo-service processes found on this machine
-  15) uninstall   : uninstall mo from path MO_PATH=/xx/xx/xx/matrixone
-  16) upgrade     : upgrade or downgrade mo from current version to a target commit id or stable version
-  17) watchdog    : setup a watchdog crontab task for mo-service to keep it alive
+  12) sql         : execute sql from string, or a file or a path containg multiple files
+  13) start       : start mo-service from the path configured
+  14) status      : check if there's any mo process running on this machine
+  15) stop        : stop all mo-service processes found on this machine
+  16) uninstall   : uninstall mo from path MO_PATH=/data/chenhaolang/mo_ins/20230713_000506//matrixone
+  17) upgrade     : upgrade or downgrade mo from current version to a target commit id or stable version
+  18) watchdog    : setup a watchdog crontab task for mo-service to keep it alive
   e.g.            : mo_ctl status
 
-[option_2]        : Use " mo_ctl [option_1] help " to get more info
-  e.g.            : mo_ctl deploy help 
+  [option_2]      : Use " mo_ctl [option_1] help " to get more info
+  e.g.            : mo_ctl deploy help
 ```
 
 Use `mo_ctl [option_1] help` to get more help on how to use `mo_ctl [option_1]`.
