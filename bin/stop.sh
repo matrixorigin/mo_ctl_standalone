@@ -1,4 +1,8 @@
 #!/bin/bash
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
 # stop
 
 function stop()
@@ -11,32 +15,32 @@ function stop()
     max_times=10
     if status; then
         for ((i=1;i<=${max_times};i++)); do
-            add_log "INFO" "Try stop all mo-services found for a maximum of ${max_times} times, try no: $i"
+            add_log "I" "Try stop all mo-services found for a maximum of ${max_times} times, try no: $i"
             for pid in ${p_ids}; do
-                add_log "INFO" "Stopping mo-service with pid ${pid} with command: kill ${kill_option} ${pid}"
+                add_log "I" "Stopping mo-service with pid ${pid} with command: kill ${kill_option} ${pid}"
                 if kill ${kill_option} ${pid}; then
-                    add_log "INFO" "kill succeeded"
+                    add_log "I" "kill succeeded"
                 else
-                    add_log "ERROR" "kill fail"
+                    add_log "E" "kill fail"
                 fi
             done
-            add_log "INFO" "Wait for ${STOP_INTERVAL} seconds"
+            add_log "I" "Wait for ${STOP_INTERVAL} seconds"
             sleep ${STOP_INTERVAL}
             if ! status; then
-                add_log "INFO" "Stop succeeded"
+                add_log "I" "Stop succeeded"
                 break;
             else
                 if [[ "${i}" == "${max_times}" ]] ; then
                     add_log "ERRPR" "Stop failed after a maximum of ${max_times} times"
                     return 1
                 else
-                    add_log "ERROR" "Stop failed, will try again now"
+                    add_log "E" "Stop failed, will try again now"
                 fi
             fi
         done
 
     else
-        add_log "INFO" "No need to stop mo-service"
-        add_log "INFO" "Stop succeeded"
+        add_log "I" "No need to stop mo-service"
+        add_log "I" "Stop succeeded"
     fi
 }

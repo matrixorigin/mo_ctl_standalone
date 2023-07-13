@@ -1,4 +1,8 @@
 #!/bin/bash
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
 # deploy
 
 function git_clone()
@@ -13,14 +17,14 @@ function git_clone()
 
     if [[ -d "${MO_PATH}/matrixone/" ]] && [[ "`ls ${MO_PATH}/matrixone/ | wc -l |sed 's/[[:space:]]//g'`" != "0" ]]; then
         if [[ "${force}" != "force" ]]; then
-            add_log "INFO" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, will skip git clone and check out"
+            add_log "I" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, will skip git clone and check out"
             return 0
         else
-            add_log "WARN" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, please confirm if you really want to overwrite it(Yes/No): "
+            add_log "W" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, please confirm if you really want to overwrite it(Yes/No): "
             user_confirm=""
             read -t 30 user_confirm
             if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
-                add_log "ERROR" "User input not confirmed or timed out, exiting"
+                add_log "E" "User input not confirmed or timed out, exiting"
                 return 1
             fi
         fi
@@ -31,21 +35,21 @@ function git_clone()
     fi
 
     mkdir -p ${MO_PATH}
-    add_log "INFO" "Deploying mo on path ${MO_PATH}"
+    add_log "I" "Deploying mo on path ${MO_PATH}"
     for ((i=1;i<=${try_times};i++));do
-        add_log "INFO" "Try number: $i"
-        add_log "INFO" "cd ${MO_PATH} && git clone ${MO_GIT_URL}"
+        add_log "I" "Try number: $i"
+        add_log "I" "cd ${MO_PATH} && git clone ${MO_GIT_URL}"
         if [[ "${MO_GIT_URL}" == "" ]]; then
-            add_log "ERROR" "MO_GIT_URL is not set, please set it first, exiting"
+            add_log "E" "MO_GIT_URL is not set, please set it first, exiting"
             return 1
         fi
         if cd ${MO_PATH} && git clone ${MO_GIT_URL};then
-            add_log "INFO" "Git clone succeeded."
-            add_log "INFO" "checking out to version ${mo_version}"
+            add_log "I" "Git clone succeeded."
+            add_log "I" "checking out to version ${mo_version}"
             if cd ${MO_PATH}/matrixone/ && git checkout ${mo_version}; then
-                add_log "INFO" "Check out succeeded."
+                add_log "I" "Check out succeeded."
             else
-                add_log "ERROR" "Check out failed, please check mo version, exiting"
+                add_log "E" "Check out failed, please check mo version, exiting"
                 rc="1"                     
             fi
             # git clone ok, breaking the loop
@@ -59,7 +63,7 @@ function git_clone()
     done
 
     if [[ "${rc}" == "1" ]] ;then
-        add_log "ERROR" "All tries on git clone have failed. Exiting"
+        add_log "E" "All tries on git clone have failed. Exiting"
     fi
 
     return ${rc}
@@ -71,11 +75,11 @@ function git_clone()
 function build_mo_service()
 {
     # mo-service
-    add_log "INFO" "Try to build mo-service: make build"
+    add_log "I" "Try to build mo-service: make build"
     if cd ${MO_PATH}/matrixone/ && make build ; then
-        add_log "INFO" "Build succeeded"
+        add_log "I" "Build succeeded"
     else
-        add_log "ERROR" "Build failed"
+        add_log "E" "Build failed"
         return 1
     fi
 
@@ -84,11 +88,11 @@ function build_mo_service()
 
 function build_mo_dump()
 {
-    add_log "INFO" "Try to build mo-dump: make build modump"
+    add_log "I" "Try to build mo-dump: make build modump"
     if cd ${MO_PATH}/matrixone/ && make build modump; then
-        add_log "INFO" "Build succeeded"
+        add_log "I" "Build succeeded"
     else
-        add_log "ERROR" "Build failed"
+        add_log "E" "Build failed"
         return 1
     fi
 }
@@ -99,7 +103,7 @@ function build_all()
     force=$1
 
     if [[ "${GOPROXY}" != "" ]]; then
-        add_log "INFO" "GOPROXY is set, setting go proxy to GOPROXY=${GOPROXY}"
+        add_log "I" "GOPROXY is set, setting go proxy to GOPROXY=${GOPROXY}"
         go env -w GOPROXY=${GOPROXY}
     fi
 
@@ -108,13 +112,13 @@ function build_all()
         build_mo_dump
     else
         if [[ -f "${MO_PATH}/matrixone/mo-service" ]]; then
-            add_log "INFO" "mo-service is already built on ${MO_PATH}, no need to build"
+            add_log "I" "mo-service is already built on ${MO_PATH}, no need to build"
         else
             build_mo_service
         fi
 
         if [[ -f "${MO_PATH}/matrixone/mo-dump" ]]; then
-            add_log "INFO" "mo-dump is already built on ${MO_PATH}, no need to build"
+            add_log "I" "mo-dump is already built on ${MO_PATH}, no need to build"
         else
             build_mo_dump
         fi
@@ -137,10 +141,10 @@ function deploy()
 
     # 0. Precheck
     if ! precheck; then
-        add_log "INFO" "Precheck failed, exiting"
+        add_log "I" "Precheck failed, exiting"
         return 1
     else
-        add_log "INFO" "Precheck passed, deploying mo now"
+        add_log "I" "Precheck passed, deploying mo now"
     fi
 
     # 1. Install
@@ -154,8 +158,8 @@ function deploy()
     fi
 
     # 3. Create logs folder
-    add_log "INFO" "Creating mo logs ${MO_LOG_PATH} path in case it does not exist"
+    add_log "I" "Creating mo logs ${MO_LOG_PATH} path in case it does not exist"
     mkdir -p ${MO_LOG_PATH}
-    add_log "INFO" "Deoloy succeeded"
+    add_log "I" "Deoloy succeeded"
 
 }

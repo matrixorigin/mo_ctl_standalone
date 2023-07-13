@@ -1,5 +1,9 @@
 #!/bin/bash
-# getconf
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
+# get_conf
 
 function get_kv()
 {
@@ -14,7 +18,7 @@ function get_conf()
     rc=0    
 
     if [[ "${list}" == "" ]] || [[ "${list}" == "all" ]]; then
-        add_log "INFO" "Below are all configurations set in conf file ${CONF_FILE}"
+        add_log "I" "Below are all configurations set in conf file ${CONF_FILE}"
         grep -v "^#" "${CONF_FILE}" |tr -s '\n' | grep "="
         return 0
     fi
@@ -23,10 +27,10 @@ function get_conf()
     do
         value=`get_kv ${key}`
         if [ ! -n "${value}" ]; then
-            add_log "ERROR" "Get conf failed: ${key} is not set in conf file "${CONF_FILE}" or is set to empty value"
+            add_log "E" "Get conf failed: ${key} is not set in conf file "${CONF_FILE}" or is set to empty value"
             rc=1
         else
-            add_log "INFO" "Get conf succeeded: ${key}=${value}"
+            add_log "I" "Get conf succeeded: ${key}=${value}"
         fi
     done
     return ${rc}

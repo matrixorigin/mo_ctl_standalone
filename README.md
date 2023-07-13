@@ -245,6 +245,18 @@ Usage         : mo_ctl setconf [conf_list] # set configurations
   e.g.        : mo_ctl setconf MO_PATH=/data/mo/20230629/matrixone,MO_PW=M@trix0riginR0cks,MO_PORT=6101  # set multiple configurations
               : mo_ctl setconf MO_PATH=/data/mo/20230629/matrixone                                       # set single configuration
 ```
+### sql - execute sql
+
+Use `mo_ctl sql [sql]` to execute sql queries.
+
+```bash
+mo_ctl sql help
+Usage           : mo_ctl sql [sql]                 # execute sql from string, or a file or a path containg multiple files
+  [sql]         : a string quote by "", or a file, or a path
+  e.g.          : mo_ctl sql "use test;select 1;"  # execute sql "use test;select 1"
+                : mo_ctl sql /data/q1.sql          # execute sql in file /data/q1.sql
+                : mo_ctl sql /data/                # execute all sql files with .sql postfix in /data/
+```
 
 ### start - start mo-service
 

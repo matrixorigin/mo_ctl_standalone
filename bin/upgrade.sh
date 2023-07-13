@@ -1,4 +1,8 @@
 #!/bin/bash
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
 # upgrade
 
 #global vars
@@ -41,21 +45,21 @@ function check_upgrade_pre_requisites()
 {
     rc=0
     if [[ "${target_cid}" == "" ]]; then
-        add_log "ERROR" "Please specify a commit id to upgrade"
+        add_log "E" "Please specify a commit id to upgrade"
         help_upgrade
         rc=1
         return ${rc}
     fi
 
     if status; then
-        add_log "ERROR" "Please make sure no mo-service is running."
-        add_log "INFO" "You may use 'mo_ctl stop [force]' to stop mo-service"
+        add_log "E" "Please make sure no mo-service is running."
+        add_log "I" "You may use 'mo_ctl stop [force]' to stop mo-service"
         rc=1
     fi
 
     if watchdog; then
-        add_log "ERROR" "Please make sure mo-watchdog is disabled before upgrading."
-        add_log "INFO" "You may use 'mo_ctl watchdog disable' to disable mo-watchdog"
+        add_log "E" "Please make sure mo-watchdog is disabled before upgrading."
+        add_log "I" "You may use 'mo_ctl watchdog disable' to disable mo-watchdog"
         rc=1
     fi
     return ${rc}
@@ -63,12 +67,12 @@ function check_upgrade_pre_requisites()
 
 function copy_mo_path()
 {
-    add_log "INFO" "Copying upgrade path from ${MO_PATH}/matrixone/ to ${MO_UPGRADE_PATH}/"
+    add_log "I" "Copying upgrade path from ${MO_PATH}/matrixone/ to ${MO_UPGRADE_PATH}/"
     mkdir -p ${MO_UPGRADE_PATH}/
     if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-service|mo-dump" | xargs -i cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ >/dev/null 2>&1; then
-        add_log "INFO" "Succeeded"
+        add_log "I" "Succeeded"
     else
-        add_log "ERROR" "Failed, exiting"
+        add_log "E" "Failed, exiting"
         return 1
     fi
 }
@@ -80,22 +84,22 @@ function validate_target_cid()
     cd ${MO_UPGRADE_PATH}
 
     # 0. Output info
-    add_log "INFO" "Specified upgrade info:"
-    add_log "INFO" "current branch: ${current_branch}, current commit id: ${current_cid}"
-    add_log "INFO" "target branch: ${target_branch}, target commit id: ${target_cid}"
+    add_log "I" "Specified upgrade info:"
+    add_log "I" "current branch: ${current_branch}, current commit id: ${current_cid}"
+    add_log "I" "target branch: ${target_branch}, target commit id: ${target_cid}"
 
 
 
     # 1. check if target commit id is a valid stable version
     if [ -v stable_list["${target_cid}"] ] ; then
-        add_log "INFO" "Target commit id ${target_cid} is a stable version, whose last commit id is ${stable_list[${target_cid}]}"
+        add_log "I" "Target commit id ${target_cid} is a stable version, whose last commit id is ${stable_list[${target_cid}]}"
         target_branch="${target_cid}"
         target_cid="${stable_list[${target_cid}]}"
     fi
 
     # 2. currently mo is already on this commit id
     if echo "${current_cid}" | grep "${target_cid}" >/dev/null 2>&1 || echo "${target_cid}" | grep "${current_cid}" >/dev/null 2>&1 ; then
-        add_log "INFO" "Current commit id seems to match target, thus no need to perform any upgrade, exiting"
+        add_log "I" "Current commit id seems to match target, thus no need to perform any upgrade, exiting"
         exit 0
     fi
 
@@ -103,52 +107,52 @@ function validate_target_cid()
     # 3.1. switch to target branch
     # e.g. branch not the same: 0.8.0 -> main, main -> 0.8.0, 0.8.0 -> 0.7.0
     if [[ "${current_branch}" != "${target_branch}" ]]; then
-        add_log "INFO" "Current and target branch are not the same, switching to target: git checkout ${target_branch}"
+        add_log "I" "Current and target branch are not the same, switching to target: git checkout ${target_branch}"
         if ! git checkout ${target_branch}; then
-            add_log "ERROR" "Failed, exiting"
+            add_log "E" "Failed, exiting"
             return 1
         fi
     else
     # 3.2. git fetch to update codes on local repository
     # e.g. branch=main, but switch commit id de596817 -> d3661e7d
         # 3.2.1 git fetch
-        add_log "INFO" "Git fetching: git fetch"
+        add_log "I" "Git fetching: git fetch"
         if ! git fetch; then
-            add_log "ERROR" "Failed, exiting"
+            add_log "E" "Failed, exiting"
             return 1
         fi
 
         # 3.2.2 get latest commit id if target cid is set to latest
         if [[ "${target_cid}" == "latest" ]]; then
             target_cid=`git log ${target_branch} | head  -n 1 | awk '{print $2}'`
-            add_log "INFO" "Latest commit id on remote repository is ${target_cid}"
+            add_log "I" "Latest commit id on remote repository is ${target_cid}"
             if echo "${current_cid}" | grep "${target_cid}" >/dev/null 2>&1; then
-                add_log "INFO" "Target commit id ${target_cid} seems to match current commit id ${current_cid}"
-                add_log "INFO" "No need to perform any upgrade, exiting"
+                add_log "I" "Target commit id ${target_cid} seems to match current commit id ${current_cid}"
+                add_log "I" "No need to perform any upgrade, exiting"
                 exit 0
             fi
         fi
 
         # 3.2.3 check if target commit id is submitted
-        add_log "INFO" "Check if the given commit id ${target_cid} is valid: git merge-base --is-ancestor HEAD ${target_cid}"
+        add_log "I" "Check if the given commit id ${target_cid} is valid: git merge-base --is-ancestor HEAD ${target_cid}"
         git merge-base --is-ancestor HEAD ${target_cid} >/dev/null 2>&1
         check_cid_result=`echo $?`
         if [[ "${check_cid_result}" == "0" ]]; then
-            add_log "INFO" "Succeeded, valid target commit id is newer than current, thus it's an UPGRADE"
+            add_log "I" "Succeeded, valid target commit id is newer than current, thus it's an UPGRADE"
             action_type="upgrade"
         elif [[ "${check_cid_result}" == "1" ]]; then
-            add_log "INFO" "Succeeded, valid target commit id is older than current, thus it's a DOWNGRADE"
+            add_log "I" "Succeeded, valid target commit id is older than current, thus it's a DOWNGRADE"
             action_type="downgrade"
         else 
-            add_log "ERROR" "Failed, commit id seems to be invalid, exiting"
+            add_log "E" "Failed, commit id seems to be invalid, exiting"
             return 1
         fi
 
     fi
 
-    add_log "INFO" "Actual upgrade info:"
-    add_log "INFO" "current branch: ${current_branch}, current commit id: ${current_cid}"
-    add_log "INFO" "target branch: ${target_branch}, target commit id: ${target_cid}"
+    add_log "I" "Actual upgrade info:"
+    add_log "I" "current branch: ${current_branch}, current commit id: ${current_cid}"
+    add_log "I" "target branch: ${target_branch}, target commit id: ${target_cid}"
 
 }
 
@@ -158,21 +162,21 @@ function update_src_codes()
     cd ${MO_UPGRADE_PATH}
 
     # 1. pull : merge codes from local repository to local workdir
-    add_log "INFO" "Git pulling: git pull"
+    add_log "I" "Git pulling: git pull"
     if git pull; then
-        add_log "INFO" "Succeeded"
+        add_log "I" "Succeeded"
     else
-        add_log "ERROR" "Failed, exiting"
+        add_log "E" "Failed, exiting"
         return 1
     fi
 
     # 2. checkout to target commit id
     if [[ "${target_cid}" == "main" ]]; then
-        add_log "INFO" "Check out to target commit id: git checkout ${target_cid}"
+        add_log "I" "Check out to target commit id: git checkout ${target_cid}"
         if git checkout ${target_cid}; then
-            add_log "INFO" "Succeeded"
+            add_log "I" "Succeeded"
         else
-            add_log "ERROR" "Failed, exiting"
+            add_log "E" "Failed, exiting"
             return 1
         fi
     fi
@@ -181,11 +185,11 @@ function update_src_codes()
 function upgrade_build_mo_service()
 {
     # mo-service
-    add_log "INFO" "Try to build mo-service: make build"
+    add_log "I" "Try to build mo-service: make build"
     if cd ${MO_UPGRADE_PATH}/ && make build ; then
-        add_log "INFO" "Build succeeded"
+        add_log "I" "Build succeeded"
     else
-        add_log "ERROR" "Build failed"
+        add_log "E" "Build failed"
         return 1
     fi
 
@@ -193,11 +197,11 @@ function upgrade_build_mo_service()
 }
 function upgrade_build_mo_dump()
 {
-    add_log "INFO" "Try to build mo-dump: make build modump"
+    add_log "I" "Try to build mo-dump: make build modump"
     if cd ${MO_UPGRADE_PATH}/ && make build modump; then
-        add_log "INFO" "Build succeeded"
+        add_log "I" "Build succeeded"
     else
-        add_log "ERROR" "Build failed"
+        add_log "E" "Build failed"
         return 1
     fi
 }
@@ -207,7 +211,7 @@ function upgrade_build_all()
 {
     rc=0
     if [[ "${GOPROXY}" != "" ]]; then
-        add_log "INFO" "GOPROXY is set, setting go proxy to GOPROXY=${GOPROXY}"
+        add_log "I" "GOPROXY is set, setting go proxy to GOPROXY=${GOPROXY}"
         go env -w GOPROXY=${GOPROXY}
     fi
 
@@ -284,7 +288,7 @@ function upgrade()
         return 1
     fi
 
-    add_log "INFO" "All ${action_type} actions succeeded. Please use 'mo_ctl start' or 'mo_ctl restart' to restart your mo-service"
+    add_log "I" "All ${action_type} actions succeeded. Please use 'mo_ctl start' or 'mo_ctl restart' to restart your mo-service"
 
 
     return 0

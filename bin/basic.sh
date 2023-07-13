@@ -1,9 +1,13 @@
 #!/bin/bash
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
 # basic funtions
 
 # function: print log with given log level and message
 # usage: add_log [level] [msg] []
-# e.g. : add_log "INFO" "This is a demo log message"
+# e.g. : add_log "I" "This is a demo log message"
 # in: 
 #    [level]: log level, suggested: DEBUG | INFO | WARN | ERROR
 #    [msg]: log message in one sentence
@@ -15,7 +19,32 @@ function add_log()
     level=$1
     msg="$2"
     add_line="$3"
-    nowtime=`date '+%F_%T'`
+    #format: 2023-07-13_15:37:40
+    #nowtime=`date '+%F_%T'`
+    #format: 2023-07-13_15:37:22.775
+    nowtime=`date '+%Y-%m-%d_%H:%M:%S.%N'`
+    nowtime=`echo "${nowtime}" | cut -b 1-23`
+    
+    case "${level}" in
+        "e"|"E")
+            level="ERROR"
+            ;;
+        "W"|"w")
+            level="WARN" 
+            ;;
+        "I"|"i")
+            level="INFO" 
+            ;;
+        "d"|"D")
+            level="DEBUG" 
+            ;;
+        *)
+            echo "These are valid log levels: E/e/W/w/I/i/D/d."
+            echo "   E/e: ERROR, W/w: WARN, I/i: INFO, D/d: DEBUG"
+            exit 1
+        ;;
+    esac 
+
     if [[ "${add_line}" == "n" ]]; then
         echo -n "${nowtime}    [${level}]    ${msg}"
     else
@@ -92,12 +121,50 @@ function pos_int_range()
     fi
 }
 
+# function: convert an input string to upper format
+# usage: to_upper [string]
+# e.g. : to_upper aBcdEfgHI
+# in:
+#   [string]: string in alphabet format
+# out:
+#   [string]: upper format of input string, e.g. aBcdEfgHI -> ABCDEFGHI
 function to_upper()
 {
     echo $(echo $1 | tr '[a-z]' '[A-Z]') 
 }
 
+# function: convert an input string to lower format
+# usage: to_lower [string]
+# e.g. : to_lower aBcdEfgHI
+# in:
+#   [string]: string in alphabet format
+# out:
+#   [string]: lower format of input string, e.g. aBcdEfgHI -> abcdefghi
 function to_lower()
 {
     echo $(echo $1 | tr '[A-Z]' '[a-z]') 
+}
+
+# function: get time cost between start time and end time
+# usage: get_timing [start_time] [end_time]
+# e.g. : get_timing "1689217282.184130282" "1689217289.414088786"
+# in:
+#   [start_time]: start time in format 'date +%s.%N', such as: 1689217282.184130282
+#   [end_time]: end time in format 'date +%s.%N', such as: 1689217289.414088786
+# out:
+#   [time_cost]: time cost between start time and end time, unit: ms, such as 7230
+function time_cost_ms()
+{
+    start=$1
+    end=$2
+  
+    start_s=$(echo $start | cut -d '.' -f 1)
+    start_ns=$(echo $start | cut -d '.' -f 2)
+    end_s=$(echo $end | cut -d '.' -f 1)
+    end_ns=$(echo $end | cut -d '.' -f 2)
+
+
+    cost=$(( ( 10#$end_s - 10#$start_s ) * 1000 + ( 10#$end_ns / 1000000 - 10#$start_ns / 1000000 ) ))
+
+    echo "${cost}"
 }

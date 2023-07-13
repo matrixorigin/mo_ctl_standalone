@@ -1,28 +1,31 @@
 #!/bin/bash
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
 # help
-
 
 #confs
 TOOL_NAME="mo_ctl"
-USAGE_HELP="print help information"
-USAGE_PRECHECK="check pre-requisites for mo_ctl"
+USAGE_CONNECT="connect to mo via mysql client using connection info configured"
+USAGE_DDL_CONVERT="convert ddl file to mo format from other types of database"
 USAGE_DEPLOY="deploy mo onto the path configured"
+USAGE_GET_BRANCH="print which git branch mo is currently on"
+USAGE_GET_CID="print mo git commit id from the path configured"
+USAGE_GET_CONF="get configurations"
+USAGE_HELP="print help information"
+USAGE_PATH="print mo path configured"
+USAGE_PRECHECK="check pre-requisites for mo_ctl"
+USAGE_PPROF="collect pprof information"
+USAGE_RESTART="a combination operation of stop and start"
+USAGE_SET_CONF="set configurations"
+USAGE_SQL="execute sql from string, or a file or a path containg multiple files"
 USAGE_STATUS="check if there's any mo process running on this machine"
 USAGE_START="start mo-service from the path configured"
 USAGE_STOP="stop all mo-service processes found on this machine"
-USAGE_RESTART="a combination operation of stop and start"
-USAGE_CONNECT="connect to mo via mysql client using connection info configured"
-USAGE_GET_CID="print mo git commit id from the path configured"
-USAGE_PATH="print mo path configured"
-USAGE_PPROF="collect pprof information"
-USAGE_SET_CONF="set configurations"
-USAGE_GET_CONF="get configurations"
-USAGE_DDL_CONVERT="convert ddl file to mo format from other types of database"
-USAGE_WATCHDOG="setup a watchdog crontab task for mo-service to keep it alive"
-USAGE_UPGRADE="upgrade or downgrade mo from current version to a target commit id or stable version"
-USAGE_GET_BRANCH="print which git branch mo is currently on"
 USAGE_UNINSTALL="uninstall mo from path MO_PATH=${MO_PATH}/matrixone"
-
+USAGE_UPGRADE="upgrade or downgrade mo from current version to a target commit id or stable version"
+USAGE_WATCHDOG="setup a watchdog crontab task for mo-service to keep it alive"
 
 function help_precheck()
 {
@@ -190,11 +193,21 @@ function help_uninstall()
 
 }
 
+function help_sql()
+{
+    option="sql"
+    echo "Usage           : ${TOOL_NAME} ${option} [sql]                 # ${USAGE_SQL}"
+    echo "  [sql]         : a string quote by \"\", or a file, or a path"
+    echo "  e.g.          : ${TOOL_NAME} ${option} \"use test;select 1;\"  # execute sql \"use test;select 1\""
+    echo "                : ${TOOL_NAME} ${option} /data/q1.sql            # execute sql in file /data/q1.sql"
+    echo "                : ${TOOL_NAME} ${option} /data/                  # execute all sql files with .sql postfix in /data/"
+}
+
 function help_1()
 {
     echo "Usage             : ${TOOL_NAME} [option_1] [option_2]"
     echo ""
-    echo "[option_1]        : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | start | status | stop | uninstall | upgrade | watchdog"
+    echo "  [option_1]      : available: connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | query | restart | set_conf | start | status | stop | uninstall | upgrade | watchdog"
     echo "  1) connect      : ${USAGE_CONNECT}"
     echo "  2) ddl_convert  : ${USAGE_DDL_CONVERT}"
     echo "  3) deploy       : ${USAGE_DEPLOY}"
@@ -206,15 +219,16 @@ function help_1()
     echo "  9) precheck     : ${USAGE_PRECHECK}"
     echo "  10) restart     : ${USAGE_START}"
     echo "  11) set_conf    : ${USAGE_SET_CONF}"
-    echo "  12) start       : ${USAGE_START}"
-    echo "  13) status      : ${USAGE_STATUS}"
-    echo "  14) stop        : ${USAGE_STOP}"
-    echo "  15) uninstall   : ${USAGE_UNINSTALL}"
-    echo "  16) upgrade     : ${USAGE_UPGRADE}"
-    echo "  17) watchdog    : ${USAGE_WATCHDOG}"
+    echo "  12) sql         : ${USAGE_SQL}"
+    echo "  13) start       : ${USAGE_START}"
+    echo "  14) status      : ${USAGE_STATUS}"
+    echo "  15) stop        : ${USAGE_STOP}"
+    echo "  16) uninstall   : ${USAGE_UNINSTALL}"
+    echo "  17) upgrade     : ${USAGE_UPGRADE}"
+    echo "  18) watchdog    : ${USAGE_WATCHDOG}"
     echo "  e.g.            : ${TOOL_NAME} status"
     echo ""
-    echo "[option_2]        : Use \" ${TOOL_NAME} [option_1] help \" to get more info"
+    echo "  [option_2]      : Use \" ${TOOL_NAME} [option_1] help \" to get more info"
     echo "  e.g.            : ${TOOL_NAME} deploy help "
 }
 
@@ -272,8 +286,11 @@ function help_2()
         uninstall)
             help_uninstall
             ;;
+        sql)
+            help_sql
+            ;;
         *)
-            add_log "ERROR" "invalid [option_1]: ${option_1}"
+            add_log "E" "invalid [option_1]: ${option_1}"
             help_1
             exit 1
             ;;

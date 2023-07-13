@@ -1,5 +1,8 @@
 #!/bin/bash
-
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
 
 # File dir
 file_dir=`cd "$(dirname "$0")" || exit; pwd`
@@ -12,33 +15,32 @@ source "${CONF_FILE}"
 script_list=("basic" "help" "precheck" "deploy" \
     "status" "start" "stop" "restart" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
-    # "mysql_to_mo" "mysql_to_mo_mac" \
-    "ddl_convert" "watchdog" "upgrade" "get_branch" \
-    "uninstall" \
+    "mysql_to_mo" "ddl_convert" "watchdog" "upgrade" \
+    "get_branch" "uninstall" "sql" \
 )
 
 for script in ${script_list[@]}; do
     source "${file_dir}/bin/${script}.sh"
 done
 
-os=`what_os`
-# add_log "DEBUG" "Current OS: ${os}"
-if [[ "${os}" == "Mac" ]] ; then
-    source "${file_dir}/bin/mysql_to_mo_mac.sh"
-else
-    source "${file_dir}/bin/mysql_to_mo.sh"
-fi 
-
-
 p_ids=""
 
 function main()
 {
     rc=0
-    option_1=$1
-    option_2=$2
-    option_3=$3
-    option_4=$4
+    all_vars="$*"
+    option_1=`echo "${all_vars}" | awk '{print $1}'`
+    option_2=`echo "${all_vars}" | awk '{print $2}'`
+    option_3=`echo "${all_vars}" | awk '{print $3}'`
+    option_4=`echo "${all_vars}" | awk '{print $4}'`
+
+    # deprecated
+    # option_1=$1
+    # option_2=$2
+    # option_3=$3
+    # option_4=$4
+
+
     if [[ ${option_2} == "help" ]]; then
         help_2
         return 0
@@ -78,8 +80,8 @@ function main()
             pprof ${option_2} ${option_3} 
             ;;
         "set_conf")
-            shift
-            set_conf $*
+            shift_vars=`echo "${all_vars#* }"`
+            set_conf "${shift_vars}"
             ;;
         "get_conf")
             get_conf ${option_2}
@@ -99,8 +101,12 @@ function main()
         "uninstall")
             uninstall
             ;;
+        "sql")
+            shift_vars=`echo "${all_vars#* }"`
+            sql "${shift_vars}"
+            ;;
         *)
-            add_log "ERROR" "Invalid option_1: ${option_1}, please refer to usage help info below"
+            add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"
             help_1
             cd ${current_path}
             return 1
@@ -113,4 +119,4 @@ function main()
     return ${rc}
 }
 
-main $*
+main "$*"

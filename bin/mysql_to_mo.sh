@@ -1,9 +1,13 @@
 #!/bin/bash
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
 # mysql_to_mo
 
 src_file=""
 tgt_file=""
-
+current_os=`what_os`
 
 ##########################
 # basics
@@ -12,9 +16,9 @@ tgt_file=""
 
 function check_files()
 {
-    add_log "INFO" "Check if source file ${src_file} and ${tgt_file} exist"
+    add_log "I" "Check if source file ${src_file} and ${tgt_file} exist"
     if [[ ! -f "${src_file}" ]]; then
-        add_log "ERROR" "Source file ${src_file} does not exist"
+        add_log "E" "Source file ${src_file} does not exist"
         return 1
     fi
 
@@ -22,7 +26,7 @@ function check_files()
         touch "${tgt_file}"
     fi
 
-    add_log "INFO" "Cleaning content of target file ${tgt_file}"
+    add_log "I" "Cleaning content of target file ${tgt_file}"
     cat /dev/null > "${tgt_file}"
 }
 
@@ -83,21 +87,21 @@ function get_data()
 function get_ddl()
 {
     rc=0
-    add_log "INFO" "Getting drop and create database ... "
+    add_log "I" "Getting drop and create database ... "
     if ! get_db; then
-        add_log "ERROR" "Failed"
+        add_log "E" "Failed"
         rc=1
     fi  
     
-    add_log "INFO" "Getting drop and create table ... "
+    add_log "I" "Getting drop and create table ... "
     if ! get_tbl; then
-        add_log "ERROR" "Failed"
+        add_log "E" "Failed"
         rc=1
     fi  
 
-    add_log "INFO" "Getting drop and create view ... "
+    add_log "I" "Getting drop and create view ... "
     if ! get_view; then
-        add_log "ERROR" "Failed"
+        add_log "E" "Failed"
         rc=1
     fi  
 #    get_index
@@ -125,27 +129,51 @@ function del_all_not_supported()
 
 
     for del_key in "${DEL_KEY_1[@]}"; do
-        add_log "INFO" "Delete content: ${del_key}=xxx, ${del_key} = xxx, ${del_key} xxx, and/or ${delkey}"
+        add_log "I" "Delete content: ${del_key}=xxx, ${del_key} = xxx, ${del_key} xxx, and/or ${delkey}"
 
-        if ! sed -i "s/$del_key=[a-zA-Z0-9_]*//gi" ${tgt_file}; then
-            add_log "ERROR" "Failed at key=xxx"
-            rc = 1
-        fi
+        if [[ "${os}" == "Mac" ]] ; then
+            if ! sed -i "" "s/$del_key=[a-zA-Z0-9_]*//gi" ${tgt_file}; then
+                add_log "E" "Failed at key=xxx"
+                rc = 1
+            fi
 
-        if ! sed -i "s/$del_key = [a-zA-Z0-9_]*//gi" ${tgt_file}; then
-            add_log "ERROR" "Failed at key = xxx"
-            rc=1
-        fi
-        
-        if [[ "${del_key}" == "AUTO_INCREMENT" ]]; then
-            if ! sed -i "s/$del_key//gi" ${tgt_file}; then
-                add_log "ERROR" "Failed at key xxx"
+            if ! sed -i "" "s/$del_key = [a-zA-Z0-9_]*//gi" ${tgt_file}; then
+                add_log "E" "Failed at key = xxx"
                 rc=1
             fi
+            
+            if [[ "${del_key}" == "AUTO_INCREMENT" ]]; then
+                if ! sed -i "" "s/$del_key//gi" ${tgt_file}; then
+                    add_log "E" "Failed at key xxx"
+                    rc=1
+                fi
+            else
+                if ! sed -i "" "s/$del_key [a-zA-Z0-9_]*//gi" ${tgt_file}; then
+                    add_log "E" "Failed at key"
+                    rc=1
+                fi
+            fi
         else
-            if ! sed -i "s/$del_key [a-zA-Z0-9_]*//gi" ${tgt_file}; then
-                add_log "ERROR" "Failed at key"
+            if ! sed -i "s/$del_key=[a-zA-Z0-9_]*//gi" ${tgt_file}; then
+                add_log "E" "Failed at key=xxx"
+                rc = 1
+            fi
+
+            if ! sed -i "s/$del_key = [a-zA-Z0-9_]*//gi" ${tgt_file}; then
+                add_log "E" "Failed at key = xxx"
                 rc=1
+            fi
+            
+            if [[ "${del_key}" == "AUTO_INCREMENT" ]]; then
+                if ! sed -i "s/$del_key//gi" ${tgt_file}; then
+                    add_log "E" "Failed at key xxx"
+                    rc=1
+                fi
+            else
+                if ! sed -i "s/$del_key [a-zA-Z0-9_]*//gi" ${tgt_file}; then
+                    add_log "E" "Failed at key"
+                    rc=1
+                fi
             fi
         fi
     done
@@ -155,20 +183,34 @@ function del_all_not_supported()
 function del_comment()
 {
     rc=0
-    add_log "INFO" "Replace content: /*! with -- /*!"
-    if ! sed -i "s#^\/\*\!#-- \/\*\!#gi" ${tgt_file}; then
-        add_log "ERROR" "Failed"
-        rc=1
+    add_log "I" "Replace content: /*! with -- /*!"
+    if [[ "${os}" == "Mac" ]] ; then
+        if ! sed -i "" "s#^\/\*\!#-- \/\*\!#gi" ${tgt_file}; then
+            add_log "E" "Failed"
+            rc=1
+        fi
+    else
+        if ! sed -i "s#^\/\*\!#-- \/\*\!#gi" ${tgt_file}; then
+            add_log "E" "Failed"
+            rc=1
+        fi
     fi
 }
 
 function del_set_var()
 {
     rc=0
-    add_log "INFO" "Delete content: SET xxx"
-    if ! sed -i "s/^SET .*//gi" ${tgt_file}; then
-        add_log "ERROR" "Failed"
-        rc=1
+    add_log "I" "Delete content: SET xxx"
+    if [[ "${os}" == "Mac" ]] ; then
+        if ! sed -i "" "s/^SET .*//gi" ${tgt_file}; then
+            add_log "E" "Failed"
+            rc=1
+        fi    
+    else
+        if ! sed -i "s/^SET .*//gi" ${tgt_file}; then
+            add_log "E" "Failed"
+            rc=1
+        fi
     fi
 
     return ${rc}
@@ -202,19 +244,25 @@ function del_unwanted()
 function format_file()
 {
     rc=0
-#    add_log "INFO" "Adding lines... "
+#    add_log "I" "Adding lines... "
 #    if ! sed -i 's/;$/;\n/g' "${tgt_file}"; then
-#        add_log "ERROR" "Failed"
+#        add_log "E" "Failed"
 #        rc=1
 #    fi
     
-    add_log "INFO" "Converting dos to unix... "
-    #if dos2unix "${tgt_file}" >/dev/null 2>&1; then
-    if sed -i "s/\r//" "${tgt_file}"; then
-        add_log "INFO" "Succeeded"
+    add_log "I" "Converting dos to unix... "
+    if [[ "${os}" == "Mac" ]] ; then
+        if sed -i "" "s/\r//" "${tgt_file}"; then
+            add_log "I" "Succeeded"
+        else
+            add_log "E" "Failed"
+        fi
     else
-        add_log "ERROR" "Failed"
-#         add_log "WARN" "Failed, please check if dos2unix is installed, the output file format may have potential issues when executing in mo. You can convert output file mannually after installing it: dos2unix ${tgt_file}"
+        if sed -i "s/\r//" "${tgt_file}"; then
+            add_log "I" "Succeeded"
+        else
+            add_log "E" "Failed"
+        fi
     fi
 
     return ${rc}
@@ -234,37 +282,37 @@ function mysql_to_mo()
         return 1
     fi
 
-#    add_log "INFO" "1. Getting ddl, please wait...  "
+#    add_log "I" "1. Getting ddl, please wait...  "
 #    if get_ddl; then
-#        add_log "INFO"  "Getting ddl succeeded"
+#        add_log "I"  "Getting ddl succeeded"
 #    else
-#        add_log "ERROR"  "Getting ddl failed"
+#        add_log "E"  "Getting ddl failed"
 #        rc=1
 #    fi
 
-    add_log "INFO" "1. Copy source file to target file, this may take a while depending on the size the source file, please wait... "
+    add_log "I" "1. Copy source file to target file, this may take a while depending on the size the source file, please wait... "
     if ! cp -pf ${src_file} ${tgt_file}; then
-        add_log "ERROR" "Failed"
+        add_log "E" "Failed"
         return 1
     fi 
 
-    add_log "INFO" "2. Delete unwanted content, please wait... "
+    add_log "I" "2. Delete unwanted content, please wait... "
     if ! del_unwanted; then
-        add_log "ERROR" "Delete unwanted content failed"
+        add_log "E" "Delete unwanted content failed"
         rc=1
     fi
 
-#    add_log "INFO" "3. Getting data, please wait...  "
+#    add_log "I" "3. Getting data, please wait...  "
 #    if get_data; then
-#        add_log "INFO"  "Getting data succeeded"
+#        add_log "I"  "Getting data succeeded"
 #    else
-#        add_log "ERROR"  "Getting data failed"
+#        add_log "E"  "Getting data failed"
 #        rc=1
 #    fi
 
-    add_log "INFO" "3. Format file, please wait... "
+    add_log "I" "3. Format file, please wait... "
     if ! format_file; then
-        add_log "ERROR" "Format file failed"
+        add_log "E" "Format file failed"
         rc=1
     fi
     

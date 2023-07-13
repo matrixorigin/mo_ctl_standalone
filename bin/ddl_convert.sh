@@ -1,4 +1,8 @@
 #!/bin/bash
+################################################################
+# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Visit us at https://www.matrixorigin.cn/
+################################################################
 # ddl_convert
 
 
@@ -10,7 +14,7 @@ function ddl_convert ()
     case ${option} in
         mysql_to_mo)
             if [[ "${src_file}" == "" ]]; then
-                add_log "INFO" "DDL_SRC_FILE is not set manually, try to get it from conf file"
+                add_log "I" "DDL_SRC_FILE is not set manually, try to get it from conf file"
                 if ! get_conf DDL_SRC_FILE; then
                     return 1
                 else
@@ -19,7 +23,7 @@ function ddl_convert ()
             fi
 
             if [[ "${tgt_file}" == "" ]]; then
-                add_log "INFO" "DDL_TGT_FILE is not set manually, try to get it from conf file"
+                add_log "I" "DDL_TGT_FILE is not set manually, try to get it from conf file"
                 if ! get_conf DDL_TGT_FILE; then
                     return 1
                 else
@@ -30,16 +34,11 @@ function ddl_convert ()
             src_file=`readlink -f ${src_file}`
             tgt_file=`readlink -f ${tgt_file}`
            
-            os=`what_os`
-            if [[ "${os}" == "Mac" ]] ; then
-                mysql_to_mo_mac ${src_file} ${tgt_file}
-            else
-                mysql_to_mo ${src_file} ${tgt_file}
-            fi 
+            mysql_to_mo ${src_file} ${tgt_file}
             
             ;;
         *)
-            add_log "ERROR" "Invaid option: ${option}"
+            add_log "E" "Invaid option: ${option}"
             help_ddl_convert
             return 1
             ;;

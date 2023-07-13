@@ -6,7 +6,32 @@ function add_log()
     level=$1
     msg="$2"
     add_line="$3"
-    nowtime=`date '+%F_%T'`
+    #format: 2023-07-13_15:37:40
+    #nowtime=`date '+%F_%T'`
+    #format: 2023-07-13_15:37:22.775
+    nowtime=`date '+%Y-%m-%d_%H:%M:%S.%N'`
+    nowtime=`echo "${nowtime}" | cut -b 1-23`
+    
+    case "${level}" in
+        "e"|"E")
+            level="ERROR"
+            ;;
+        "W"|"w")
+            level="WARN" 
+            ;;
+        "I"|"i")
+            level="INFO" 
+            ;;
+        "d"|"D")
+            level="DEBUG" 
+            ;;
+        *)
+            echo "These are valid log levels: E/e/W/w/I/i/D/d."
+            echo "   E/e: ERROR, W/w: WARN, I/i: INFO, D/d: DEBUG"
+            exit 1
+        ;;
+    esac 
+
     if [[ "${add_line}" == "n" ]]; then
         echo -n "${nowtime}    [${level}]    ${msg}"
     else
@@ -42,16 +67,16 @@ function download()
 
     for site in ${SITES[@]}; do
         URL="${site}/mo_ctl_standalone/archive/refs/heads/main.zip"
-        add_log "INFO" "Try to download mo_ctl from URL: ${URL}"
+        add_log "I" "Try to download mo_ctl from URL: ${URL}"
         if wget --timeout=60 --tries=2 ${URL} -O mo_ctl.zip; then
-            add_log "INFO" "Successfully downloaded mo_ctl"
+            add_log "I" "Successfully downloaded mo_ctl"
             rc="0"
             break;
         fi
     done
     
     if [[ "${rc}" == "1" ]]; then
-        add_log "ERROR" "Failed to download after tyring all URLs. Please check if 'wget' is installed or Internet access is ok."
+        add_log "E" "Failed to download after tyring all URLs. Please check if 'wget' is installed or Internet access is ok."
     fi
 
     return ${rc}
@@ -66,10 +91,10 @@ function install()
     mo_ctl_global_path=/usr/local/bin
     mo_ctl_local_path=~/mo_ctl
 
-    add_log "INFO" "Current os: ${os}, current user: ${os_user}"
+    add_log "I" "Current os: ${os}, current user: ${os_user}"
 
     if [[ "${os_user}" == "" ]]; then
-        add_log "ERROR" "Get current os user failed"
+        add_log "E" "Get current os user failed"
         return 1
     fi
 
@@ -81,21 +106,21 @@ function install()
         # mo_ctl_local_path="/data/mo_ctl"
         # mkdir -p /data/
     elif [[ "${os}" == "" ]]; then
-        add_log "ERROR" "Get current os failed"
+        add_log "E" "Get current os failed"
         return 1
     else
-        add_log "ERROR" "Currently only Linux or Mac is supported"
+        add_log "E" "Currently only Linux or Mac is supported"
         return 1
     fi
 
 
     if [[ ! -f ${pkg} ]]; then
-        add_log "ERROR"  "Error! Installation file ${pkg} is not found, please check again."
+        add_log "E"  "Error! Installation file ${pkg} is not found, please check again."
         return 1
     fi
 
     if [[ -d ${mo_ctl_local_path} ]]; then
-        add_log "WARN" "Path ${mo_ctl_local_path} already exists, removing it now" 
+        add_log "W" "Path ${mo_ctl_local_path} already exists, removing it now" 
         rm -rf ~/mo_ctl/
         #if [[ "${os}" == "Linux" ]]; then
         #    rm -rf /data/mo_ctl/
@@ -104,33 +129,33 @@ function install()
         #fi
     fi
 
-    add_log "INFO" "Try to install mo_ctl from file ${pkg}" 
+    add_log "I" "Try to install mo_ctl from file ${pkg}" 
     if unzip -o mo_ctl.zip &&  mv ./mo_ctl_standalone-main/ ${mo_ctl_local_path} &&     chmod +x ${mo_ctl_local_path}/mo_ctl.sh; then
-        add_log "INFO" "Successfully extracted mo_ctl file to ${mo_ctl_local_path}"
+        add_log "I" "Successfully extracted mo_ctl file to ${mo_ctl_local_path}"
     else
-        add_log "ERROR"  "Failed to extract file, please check if 'unzip' is installed or file is complete"
+        add_log "E"  "Failed to extract file, please check if 'unzip' is installed or file is complete"
         return 1
     fi
     
-    add_log "INFO" "Setting up mo_ctl to ${mo_ctl_global_path}/mo_ctl" 
+    add_log "I" "Setting up mo_ctl to ${mo_ctl_global_path}/mo_ctl" 
 
-    if sudo touch ${mo_ctl_global_path}/mo_ctl && sudo chown ${os_user} ${mo_ctl_global_path}/mo_ctl && echo "bash +x ${mo_ctl_local_path}/mo_ctl.sh \$*" > ${mo_ctl_global_path}/mo_ctl && chmod +x ${mo_ctl_global_path}/mo_ctl; then
-        add_log "INFO" "Succeeded"
+    if sudo touch ${mo_ctl_global_path}/mo_ctl && sudo chown ${os_user} ${mo_ctl_global_path}/mo_ctl && echo "bash +x ${mo_ctl_local_path}/mo_ctl.sh \"\$*\"" > ${mo_ctl_global_path}/mo_ctl && chmod +x ${mo_ctl_global_path}/mo_ctl; then
+        add_log "I" "Succeeded"
     else
-        add_log "ERROR" "Failed"
+        add_log "E" "Failed"
     fi
 
     if [[ "${os}" == "Mac" ]]; then
-        add_log "INFO" "Setting up default confs for mac: MO_PATH=/Users/${os_user}/mo"
+        add_log "I" "Setting up default confs for mac: MO_PATH=/Users/${os_user}/mo"
         if ${mo_ctl_local_path}/mo_ctl.sh set_conf MO_PATH=/Users/${os_user}/mo; then
-            add_log "INFO" "Succeeded"
+            add_log "I" "Succeeded"
         else
-            add_log "ERROR" "Failed"
+            add_log "E" "Failed"
         fi
     fi
 
-    add_log "INFO" "Done. Successfully installed mo_ctl to path ${mo_ctl_local_path}/"
-    add_log "INFO" "Use 'mo_ctl help' to get more info. Have Fun!" 
+    add_log "I" "Done. Successfully installed mo_ctl to path ${mo_ctl_local_path}/"
+    add_log "I" "Use 'mo_ctl help' to get more info. Have Fun!" 
 
 }
 
