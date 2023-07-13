@@ -101,7 +101,7 @@ Usage             : mo_ctl [option_1] [option_2]
   7) help         : print help information
   8) pprof        : collect pprof information
   9) precheck     : check pre-requisites for mo_ctl
-  10) restart     : start mo-service from the path configured
+  10) restart     : a combination operation of stop and start
   11) set_conf    : set configurations
   12) sql         : execute sql from string, or a file or a path containg multiple files
   13) start       : start mo-service from the path configured
