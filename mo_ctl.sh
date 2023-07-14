@@ -4,6 +4,13 @@
 # Visit us at https://www.matrixorigin.cn/
 ################################################################
 
+if ! pwd >/dev/null 2>&1; then
+    nowtime="`date '+%Y-%m-%d_%H:%M:%S.%N'`"
+    nowtime="`echo "${nowtime}" | cut -b 1-23`"
+    echo "${nowtime}    [ERROR]    You're currently on a path that no loner exists, please change to a valid directory and re-execute mo_ctl command"
+    exit 1
+fi
+
 # File dir
 file_dir=`cd "$(dirname "$0")" || exit; pwd`
 
