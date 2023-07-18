@@ -13,7 +13,7 @@ function exec_path()
     add_log "I" "Input ${query} is a path, listing .sql files in it: "
     ls -A ${query}/ | grep "\.sql\$"
     declare -A query_report
-    for query_file in `ls -A ${query}/ | grep "\.sql"`; do
+    for query_file in `ls -A ${query}/ | grep "\.sql\$"`; do
         add_log "I" "Begin executing query file ${query_file}"
         startTime=`date +%s.%N`
 
