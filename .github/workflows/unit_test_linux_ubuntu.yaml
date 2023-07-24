@@ -683,16 +683,12 @@ jobs:
       - name: Test_3. 'mo_ctl upgrade latest' (current stable version -> latest commit id)
         run: |
           mo_ctl stop
-          sleep 5
           echo "Sleep 5 seconds before upgrading"
-          #debug
-          echo "watchdog status:"
-          mo_ctl watchdog
-          ######
+          sleep 5
           mo_ctl upgrade latest
           mo_ctl start
-          sleep 5
           echo "Sleep 30 seconds for mo to be ready"
+          sleep 30
           if ! mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"; then
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another"
           fi
@@ -725,12 +721,12 @@ jobs:
       - name: Test_3. 'mo_ctl upgrade [current_stable_version]' (latest commit id -> current stable version)
         run: |
           mo_ctl stop
-          sleep 5
           echo "Sleep 5 seconds before upgrading"
+          sleep 5
           mo_ctl upgrade ${{ env.MO_STABLE_VERSION }}
           mo_ctl start
-          sleep 5
           echo "Sleep 30 seconds for mo to be ready"
+          sleep 30
           if ! mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"; then
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another"
           fi
@@ -763,8 +759,8 @@ jobs:
       - name: Test_3. 'mo_ctl upgrade [cid_1]' (current stable version -> cid_1)
         run: |
           mo_ctl stop
-          sleep 5
           echo "Sleep 5 seconds before upgrading"
+          sleep 5
           mo_ctl upgrade ${{ env.MO_TEST_CID_1 }}
           mo_ctl start
           echo "Sleep 30 seconds for mo to be ready"
