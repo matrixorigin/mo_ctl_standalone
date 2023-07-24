@@ -12,7 +12,9 @@ function exec_path()
     rc=0
     add_log "I" "Input ${query} is a path, listing .sql files in it: "
     ls -A ${query}/ | grep "\.sql\$"
-    declare -A query_report
+    # deprecated: Mac is using bash v3 by default, but declare -A requires bash v4, thus it will fail
+    # declare -A query_report
+    query_report=""
     for query_file in `ls -A ${query}/ | grep "\.sql\$"`; do
         add_log "I" "Begin executing query file ${query_file}"
         startTime=`date +%s.%N`
@@ -28,14 +30,27 @@ function exec_path()
             rc=1
         fi
         cost=`time_cost_ms ${startTime} ${endTime}`
-        query_report["${query_file}"]="${outcome},${cost}"
+        # deprecated: Mac is using bash v3 by default, but declare -A requires bash v4, thus it will fail
+        # query_report["${query_file}"]="${outcome},${cost}"
+        query_report="${query_report}|${query_file},${outcome},${cost}"
     done
+
     add_log "I" "Done executing all query files in path ${query}"
+    
+    # print final report:
     add_log "I" "Query report:"
     echo "query_file,outcome,time_cost_ms"
-    for query_file in ${!query_report[*]}; do
-        echo "${query_file},${query_report[${query_file}]}"
+    # deprecated: Mac is using bash v3 by default, but declare -A requires bash v4, thus it will fail
+    # for query_file in ${!query_report[*]}; do
+    #     echo "${query_file},${query_report[${query_file}]}"
+    # done
+
+    for line in $(echo ${query_report} | sed "s/|/ /g"); do
+        if [[ "${line}" != "" ]]; then
+            echo "${line}"
+        fi
     done
+
     return ${rc}
 }
 

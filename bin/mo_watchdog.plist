@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Label is a uniq sign -->
+  <key>Label</key>
+  <string>com.matrixorigin.mo.watchdog</string>
+  <!-- specify script to run -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>~/mo_ctl/bin/mo_watchdog.sh</string>
+  </array>
+  <!-- specify how to run -->
+  <!-- 1. StartInterval -->
+  <key>StartInterval</key>
+  <integer>60</integer>
+  <!-- 2. StartCalendarInterval
+  <key>StartCalendarInterval</key>
+  <dict>
+        <key>Minute</key>
+        <integer>00</integer>
+        <key>Hour</key>
+        <integer>22</integer>
+  </dict>
+   -->
+<!-- standard output file -->
+<key>StandardOutPath</key>
+<string>/dev/null</string>
+<!-- standard error file -->
+<key>StandardErrorPath</key>
+<string>/dev/null</string>
+</dict>
+</plist>

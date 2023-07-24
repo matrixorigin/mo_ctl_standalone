@@ -155,6 +155,10 @@ function to_lower()
 #   [time_cost]: time cost between start time and end time, unit: ms, such as 7230
 function time_cost_ms()
 {
+    # note:
+    # date +'%s * 1000 + 10#%-N / 1000000' with gnu date (such as liunx)
+    # date +'%s * 1000 + %-N / 1000000' with not gnu date (such as mac)
+
     start=$1
     end=$2
   
@@ -163,8 +167,14 @@ function time_cost_ms()
     end_s=$(echo $end | cut -d '.' -f 1)
     end_ns=$(echo $end | cut -d '.' -f 2)
 
-
-    cost=$(( ( 10#$end_s - 10#$start_s ) * 1000 + ( 10#$end_ns / 1000000 - 10#$start_ns / 1000000 ) ))
+    # deprecated: it depends on bc
+    # cost=`expr $time_micro/1000 | bc`
+    os=`what_os`
+    if [[ "${os}" == "Mac" ]]; then
+        cost=$(( ( $end_s - $start_s ) * 1000 + ( $end_ns / 1000000 - $start_ns / 1000000 ) ))
+    else
+        cost=$(( ( 10#$end_s - 10#$start_s ) * 1000 + ( 10#$end_ns / 1000000 - 10#$start_ns / 1000000 ) ))
+    fi
 
     echo "${cost}"
 }
