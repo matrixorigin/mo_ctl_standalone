@@ -19,7 +19,7 @@ on:
 
 # global vars
 env:
-  PATH: "/usr/local/opt/mysql-client/bin:${PATH}"
+  #PATH: "/usr/local/opt/mysql-client/bin:$PATH"
   MO_CTL_GIT_URL: "https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/"
   GO_PROXY: "https://proxy.golang.org"
   MO_HOST: "127.0.0.1"
@@ -189,6 +189,7 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Path: ${PATH}"
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
       - name: Test_1. 'mo_ctl precheck' (when precheck fails)
