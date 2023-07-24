@@ -19,7 +19,7 @@ on:
 
 # global vars
 env:
-  #PATH: "/usr/local/opt/mysql-client/bin:$PATH"
+  PATH: "/usr/local/opt/mysql-client/bin:/usr/local/lib/ruby/gems/3.0.0/bin:/usr/local/opt/ruby@3.0/bin:/usr/local/opt/pipx_bin:/Users/runner/.cargo/bin:/usr/local/opt/curl/bin:/usr/local/bin:/usr/local/sbin:/Users/runner/bin:/Users/runner/.yarn/bin:/Users/runner/Library/Android/sdk/tools:/Users/runner/Library/Android/sdk/platform-tools:/Library/Frameworks/Python.framework/Versions/Current/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/usr/bin:/bin:/usr/sbin:/sbin:/Users/runner/.dotnet/tools:/Users/runner/.ghcup/bin:/Users/runner/hostedtoolcache/stack/2.11.1/x64"
   MO_CTL_GIT_URL: "https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/"
   GO_PROXY: "https://proxy.golang.org"
   MO_HOST: "127.0.0.1"
