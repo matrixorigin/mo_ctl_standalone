@@ -18,14 +18,15 @@ function exec_path()
         startTime=`date +%s.%N`
 
         if mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv < "${query}/${query_file}"; then
+            endTime=`date +%s.%N`
             add_log "I" "End executing query file ${query_file}, succeeded"
             outcome="succeeded"
         else
+            endTime=`date +%s.%N`
             add_log "E" "End executing query file ${query_file}, failed"
             outcome="failed"
             rc=1
         fi
-        endTime=`date +%s.%N`
         cost=`time_cost_ms ${startTime} ${endTime}`
         query_report["${query_file}"]="${outcome},${cost}"
     done
@@ -45,14 +46,15 @@ function exec_file()
     add_log "I" "Begin executing query file ${query}"
     startTime=`date +%s.%N`
     if mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv < "${query}"; then
+        endTime=`date +%s.%N`
         add_log "I" "End executing query file ${query}, succeeded"
         outcome="succeeded"
     else
+        endTime=`date +%s.%N`
         add_log "E" "End executing query file ${query}, failed"
         outcome="failed"
         rc=1
     fi
-    endTime=`date +%s.%N`
     cost=`time_cost_ms ${startTime} ${endTime}`
     add_log "I" "Query report:"
     echo "query_file,outcome,time_cost_ms"

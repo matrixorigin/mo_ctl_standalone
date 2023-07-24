@@ -21,7 +21,7 @@ function get_stable_cid()
     cid="$1"
     case "${cid}" in
         "0.8.0")
-            echo "3bd05cb14f32dbca4cf57abe03fec4907450c7e7"
+            echo "daf86797160585d24c158e4ee220964264616505"
             ;;
         "0.7.0")
             echo "6d4bd173514990032372310f7b3d9d803781074a"
