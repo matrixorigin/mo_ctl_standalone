@@ -26,8 +26,14 @@ function precheck()
         # 2. check version
         case ${item} in
             "gcc")
-                version_current=`gcc --version | head -n 1 | awk -F'[)] ' '{print $2}' | awk '{print $1}'`
-                version_required="${GCC_VERSION}"
+                os=`what_os`
+                if [[ "${os}" == "Mac" ]]; then
+                    version_current=`gcc --version | head -n 1 | awk -F"Apple clang version "  '{print $2}' | awk '{print $1}' | sed 's/[[:space:]]//g'`
+                    version_required="${CLANG_VERSION}"
+                else
+                    version_current=`gcc --version | head -n 1 | awk -F'[)] ' '{print $2}' | awk '{print $1}'`
+                    version_required="${GCC_VERSION}"
+                fi
     
                 ;;
             "go")

@@ -48,7 +48,7 @@ function watchdog_status()
 
     if [[ "${OS}" == "Mac" ]]; then
         # 1. Mac
-        if launchctl list | grep "CRON_PLIST_NAME"; then
+        if launchctl list | grep "${CRON_PLIST_NAME}"; then
             add_log "I" "Plist file with name ${CRON_PLIST_NAME} is already set in launchctl list"
             add_log "I" "mo_watchdog status： enabled"
         else

@@ -72,8 +72,6 @@ function init_global_vars()
     #    ["0.1.0"]="19cc0453b573e23ae643bea492bc43c5df4758db"
     #)
 
-
-
 }
 
 
@@ -106,7 +104,7 @@ function copy_mo_path()
 {
     add_log "I" "Copying upgrade path from ${MO_PATH}/matrixone/ to ${MO_UPGRADE_PATH}/"
     mkdir -p ${MO_UPGRADE_PATH}/
-    if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-service|mo-dump" | xargs -i cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ >/dev/null 2>&1; then
+    if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-service|mo-dump" | xargs -I{} cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ >/dev/null 2>&1; then
         add_log "I" "Succeeded"
     else
         add_log "E" "Failed, exiting"

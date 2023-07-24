@@ -545,7 +545,7 @@ jobs:
       - name: Test_4. 'mo_ctl sql "[sql_file]"' (invalid)
         run: |
           echo ""
-          if mo_ctl sql /tmp/123/456/789.txt
+          if mo_ctl sql /tmp/123/456/789.txt; then
               echo "Invalid sql file does not fail as expected"
               exit 1
           fi
@@ -556,7 +556,7 @@ jobs:
       - name: Test_6. 'mo_ctl sql "[sql_path]"' (invalid)
         run: |
           echo ""
-          if mo_ctl sql /tmp/123/456/789/
+          if mo_ctl sql /tmp/123/456/789/; then
               echo "Invalid sql path does not fail as expected"
               exit 1
           fi
@@ -651,7 +651,7 @@ jobs:
           echo ""
           mo_ctl pprof
           ls -lth ${{ env.MO_PPROF_PATH }}/
-          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed s/[[:space:]]//g`" != "1" ]]; then
+          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed 's/[[:space:]]//g'`" != "1" ]]; then
               echo "No file is generated in ${{ env.MO_PPROF_PATH }}/"
               exit 1
           fi
@@ -661,7 +661,7 @@ jobs:
           echo ""
           mo_ctl pprof profile
           ls -lth ${{ env.MO_PPROF_PATH }}/
-          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed s/[[:space:]]//g`" != "1" ]]; then
+          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed 's/[[:space:]]//g'`" != "1" ]]; then
               echo "No file is generated in ${{ env.MO_PPROF_PATH }}/"
               exit 1
           fi
@@ -671,7 +671,7 @@ jobs:
           echo ""
           mo_ctl pprof profile 15
           ls -lth ${{ env.MO_PPROF_PATH }}/
-          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed s/[[:space:]]//g`" != "1" ]]; then
+          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed 's/[[:space:]]//g'`" != "1" ]]; then
               echo "No file is generated in ${{ env.MO_PPROF_PATH }}/"
               exit 1
           fi
@@ -681,7 +681,7 @@ jobs:
           echo ""
           mo_ctl pprof heap
           ls -lth ${{ env.MO_PPROF_PATH }}/
-          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed s/[[:space:]]//g`" != "1" ]]; then
+          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed 's/[[:space:]]//g'`" != "1" ]]; then
               echo "No file is generated in ${{ env.MO_PPROF_PATH }}/"
               exit 1
           fi
@@ -691,7 +691,7 @@ jobs:
           echo ""
           mo_ctl pprof allocs
           ls -lth ${{ env.MO_PPROF_PATH }}/
-          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed s/[[:space:]]//g`" != "1" ]]; then
+          if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l | sed 's/[[:space:]]//g'`" != "1" ]]; then
               echo "No file is generated in ${{ env.MO_PPROF_PATH }}/"
               exit 1
           fi
