@@ -18,7 +18,7 @@ function check_uninstall_pre_requisites()
 
     add_log "I" "Check if mo-service watchdog enabled"
     if mo_ctl watchdog; then
-        add_log "E" "mo-watchdog is enabled, please try to disable it via 'mo_ctl watchdog disable before uninstalling mo"
+        add_log "E" "mo-watchdog is enabled, please try to disable it via 'mo_ctl watchdog disable' before uninstalling mo"
         rc=1
     fi
 

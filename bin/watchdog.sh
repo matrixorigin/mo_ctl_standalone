@@ -56,6 +56,7 @@ function watchdog_status()
             add_log "I" "mo_watchdog status： disabled"
             return 1
         fi
+    else
         # 2. Linux
         if [[ -f ${CRON_PATH}/${CRON_FILE_NAME} ]]; then
             add_log "I" "Cron file ${CRON_PATH}/${CRON_FILE_NAME} already exists, trying to get content: "
@@ -121,6 +122,7 @@ function watchdog_disable()
                 add_log "E" "Failed"
                 return 1
             fi
+        else
             # 2. Linux
             add_log "I" "Disabling mo_watchdog by removing cron file ${CRON_PATH}/${CRON_FILE_NAME}"
             if cd ${CRON_PATH} && sudo rm -f ./${CRON_FILE_NAME}; then
