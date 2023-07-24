@@ -225,6 +225,7 @@ jobs:
       - name: Test_1. 'mo_ctl deploy main' (deploy latest commit id on main)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
