@@ -508,18 +508,39 @@ jobs:
           echo "select version();" > ${{ env.TEST_SQL_FILE_1 }}
           echo "select 1;" > ${{ env.TEST_SQL_FILE_2 }}
           echo "select @@sql_mode;" > ${{ env.TEST_SQL_FILE_3 }}     
-      - name: Test_1. 'mo_ctl sql "[sql_query]"'
+      - name: Test_1. 'mo_ctl sql "[sql_query]"' (valid)
         run: |
           echo ""
           mo_ctl sql "select version()"
-      - name: Test_2. 'mo_ctl sql "[sql_file]"'
+      - name: Test_2. 'mo_ctl sql "[sql_query]"' (invalid)
+        run: |
+          echo ""
+          if mo_ctl sql "select xx from xx;"; then
+              echo "Invalid sql query does not fail as expected"
+              exit 1
+          fi
+      - name: Test_3. 'mo_ctl sql "[sql_file]"' (valid)
         run: |
           echo ""
           mo_ctl sql ${{ env.TEST_SQL_FILE_1 }}
-      - name: Test_3. 'mo_ctl sql "[sql_path]"'
+      - name: Test_4. 'mo_ctl sql "[sql_file]"' (invalid)
+        run: |
+          echo ""
+          if mo_ctl sql /tmp/123/456/789.txt; then
+              echo "Invalid sql file does not fail as expected"
+              exit 1
+          fi
+      - name: Test_5. 'mo_ctl sql "[sql_path]"' (valid)
         run: |
           echo ""
           mo_ctl sql ${{ env.TEST_SQL_PATH }}
+      - name: Test_6. 'mo_ctl sql "[sql_path]"' (invalid)
+        run: |
+          echo ""
+          if mo_ctl sql /tmp/123/456/789/; then
+              echo "Invalid sql path does not fail as expected"
+              exit 1
+          fi
   # Job 9
   Test-9-Watchdog:
     runs-on: ubuntu-latest

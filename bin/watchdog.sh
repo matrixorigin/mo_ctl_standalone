@@ -115,8 +115,8 @@ function watchdog_disable()
     if watchdog_status; then
         if [[ "${OS}" == "Mac" ]]; then        
             # 1. Mac
-            add_log "I" "Disabling mo_watchdog: launchctl load -w ${CRON_PLIST_NAME}"
-            if launchctl unload -w ${CRON_PLIST_NAME}; then
+            add_log "I" "Disabling mo_watchdog: launchctl unload -w ${CRON_PLIST_FILE}"
+            if launchctl unload -w ${CRON_PLIST_FILE}; then
                 add_log "I" "Succeeded"
             else
                 add_log "E" "Failed"
