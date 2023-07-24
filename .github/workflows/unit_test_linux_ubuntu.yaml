@@ -685,6 +685,10 @@ jobs:
           mo_ctl stop
           sleep 5
           echo "Sleep 5 seconds before upgrading"
+          #debug
+          echo "watchdog status:"
+          mo_ctl watchdog
+          ######
           mo_ctl upgrade latest
           mo_ctl start
           sleep 5
