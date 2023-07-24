@@ -19,6 +19,7 @@ on:
 
 # global vars
 env:
+  PATH: "/usr/local/opt/mysql-client/bin:${PATH}"
   MO_CTL_GIT_URL: "https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/"
   GO_PROXY: "https://proxy.golang.org"
   MO_HOST: "127.0.0.1"
@@ -201,9 +202,9 @@ jobs:
           echo ""
           echo "Installing mysql client"
           brew install mysql-client
-          echo "Setting up env for mysql client"
-          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
+          #echo "Setting up env for mysql client"
+          #echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          #source /Users/runner/.bash_profile
           echo "Run precheck"
           mo_ctl precheck
           echo "'mo_ctl precheck' succeeds as expected"
