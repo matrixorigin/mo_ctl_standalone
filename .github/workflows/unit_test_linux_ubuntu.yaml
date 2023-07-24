@@ -37,10 +37,10 @@ env:
   MO_TEST_BRANCH_2: "(HEAD detached at 4f7f0b32d)"
   MO_MAIN_BRANCH: "main"
   MO_PPROF_PATH: "/home/runner/pprof_test"
-  TEST_SQL_PATH: /Users/runner/test_path
-  TEST_SQL_FILE_1: ${TEST_SQL_PATH}/q1.sql
-  TEST_SQL_FILE_2: ${TEST_SQL_PATH}/q2.sql
-  TEST_SQL_FILE_3: ${TEST_SQL_PATH}/q3.sql
+  TEST_SQL_PATH: "/home/runner/sql_test_path"
+  TEST_SQL_FILE_1: "${TEST_SQL_PATH}/q1.sql"
+  TEST_SQL_FILE_2: "${TEST_SQL_PATH}/q2.sql"
+  TEST_SQL_FILE_3: "${TEST_SQL_PATH}/q3.sql"
 
 # job def
 jobs:
