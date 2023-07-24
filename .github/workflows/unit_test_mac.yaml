@@ -244,7 +244,6 @@ jobs:
           fi
       - name: Test_4. 'mo_ctl uninstall' (uninstall mo)
         run: |
-          echo ""
           mo_ctl stop force
           echo "yes" | mo_ctl uninstall
           if [[ -d "${{ env.MO_PATH }}/${RUN_TAG}/matrixone" ]]; then
@@ -288,7 +287,6 @@ jobs:
           fi
       - name: Test_4. 'mo_ctl uninstall' (uninstall mo)
         run: |
-          echo ""
           mo_ctl stop force
           echo "yes" | mo_ctl uninstall
           if [[ -d "${{ env.MO_PATH }}/${RUN_TAG}/matrixone" ]]; then
@@ -332,7 +330,6 @@ jobs:
           fi
       - name: Test_4. 'mo_ctl uninstall' (uninstall mo)
         run: |
-          echo ""
           mo_ctl stop force
           echo "yes" | mo_ctl uninstall
           if [[ -d "${{ env.MO_PATH }}/${RUN_TAG}/matrixone" ]]; then
@@ -382,7 +379,6 @@ jobs:
           fi
       - name: Test_4. 'mo_ctl uninstall' (uninstall mo)
         run: |
-          echo ""
           mo_ctl stop force
           echo "yes" | mo_ctl uninstall
           if [[ -d "${{ env.MO_PATH }}/${RUN_TAG}/matrixone" ]]; then
@@ -575,12 +571,6 @@ jobs:
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
           mo_ctl deploy main
-          echo "Sleep 5 seconds and start mo-service"
-          sleep 5 && mo_ctl start
-          echo "Check mo-service status"
-          mo_ctl status
-          echo "Sleep 5 seconds"
-          sleep 5
       - name: Test_1. 'mo_ctl watchdog' (check disabled status)
         run: |
           echo ""
@@ -609,10 +599,13 @@ jobs:
           fi
       - name: Test_4. 'mo_ctl watchdog disable' (disable watchdog)
         run: |
-          echo ""
           echo "Stop mo-service"
-          mo_ctl stop force
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
+          echo "Disable mo watchdog"
           mo_ctl watchdog disable
+          echo "Check mo_watchdog stauts"
           if mo_ctl watchdog || mo_ctl watchdog status; then
               echo "mo_ctl watchdog does not fail as expected"
               exit 1
@@ -727,8 +720,9 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. 'mo_ctl upgrade latest' (current stable version -> latest commit id)
         run: |
-          echo ""
-          mo_ctl stop
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
           sleep 5
           echo "Sleep 5 seconds before upgrading"
           mo_ctl upgrade latest
@@ -771,8 +765,9 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. 'mo_ctl upgrade [current_stable_version]' (latest commit id -> current stable version)
         run: |
-          echo ""
-          mo_ctl stop
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
           sleep 5
           echo "Sleep 5 seconds before upgrading"
           mo_ctl upgrade ${{ env.MO_STABLE_VERSION }}
@@ -812,8 +807,9 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. 'mo_ctl upgrade [cid_1]' (current stable version -> cid_1)
         run: |
-          echo ""
-          mo_ctl stop
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
           sleep 5
           echo "Sleep 5 seconds before upgrading"
           mo_ctl upgrade ${{ env.MO_TEST_CID_1 }}
@@ -853,8 +849,9 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. 'mo_ctl upgrade [current_stable_version]' (cid_1 -> current stable version)
         run: |
-          echo ""
-          mo_ctl stop
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
           sleep 5
           echo "Sleep 5 seconds before upgrading"
           mo_ctl upgrade ${{ env.MO_STABLE_VERSION }}
@@ -894,8 +891,9 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. 'mo_ctl upgrade [cid_2]' (cid_1 -> cid_2)
         run: |
-          echo ""
-          mo_ctl stop
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
           sleep 5
           echo "Sleep 5 seconds before upgrading"
           mo_ctl upgrade ${{ env.MO_TEST_CID_2 }}
@@ -935,8 +933,9 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. 'mo_ctl upgrade [cid_1]' (cid_2 -> cid_1)
         run: |
-          echo ""
-          mo_ctl stop
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
           sleep 5
           echo "Sleep 5 seconds before upgrading"
           mo_ctl upgrade ${{ env.MO_TEST_CID_1 }}
@@ -977,8 +976,9 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. 'mo_ctl upgrade latest' (cid_1 -> latest)
         run: |
-          echo ""
-          mo_ctl stop
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
           sleep 5
           echo "Sleep 5 seconds before upgrading"
           mo_ctl upgrade latest
@@ -1018,8 +1018,9 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. 'mo_ctl upgrade [cid_1]' (latest -> cid_1)
         run: |
-          echo ""
-          mo_ctl stop
+          if ! mo_ctl stop; then
+              mo_ctl stop force
+          fi
           sleep 5
           echo "Sleep 5 seconds before upgrading"
           mo_ctl upgrade ${{ env.MO_TEST_CID_1 }}

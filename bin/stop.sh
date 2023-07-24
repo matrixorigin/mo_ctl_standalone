@@ -31,7 +31,7 @@ function stop()
                 break;
             else
                 if [[ "${i}" == "${max_times}" ]] ; then
-                    add_log "ERRPR" "Stop failed after a maximum of ${max_times} times"
+                    add_log "E" "Stop failed after a maximum of ${max_times} times"
                     return 1
                 else
                     add_log "E" "Stop failed, will try again now"
