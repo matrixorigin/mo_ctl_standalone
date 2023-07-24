@@ -37,6 +37,10 @@ env:
   MO_TEST_BRANCH_2: "(HEAD detached at 4f7f0b32d)"
   MO_MAIN_BRANCH: "main"
   MO_PPROF_PATH: "/Users/runner/pprof_test"
+  TEST_SQL_PATH: /Users/runner/test_path
+  TEST_SQL_FILE_1: ${TEST_SQL_PATH}/q1.sql
+  TEST_SQL_FILE_2: ${TEST_SQL_PATH}/q2.sql
+  TEST_SQL_FILE_3: ${TEST_SQL_PATH}/q3.sql
 
 # job def
 jobs:
@@ -210,6 +214,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -252,6 +261,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -294,6 +308,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile        
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -336,6 +355,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -383,6 +407,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -402,6 +431,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -453,6 +487,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -486,18 +525,17 @@ jobs:
   # Job 8
   Test-8-Sql:
     runs-on: macos-latest
-    env:
-      TEST_SQL_PATH: /Users/runner/test_path
-      TEST_SQL_FILE_1: ${TEST_SQL_PATH}/q1.sql
-      TEST_SQL_FILE_2: ${TEST_SQL_PATH}/q2.sql
-      TEST_SQL_FILE_3: ${TEST_SQL_PATH}/q3.sql
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
-
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
@@ -531,10 +569,14 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
-
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
@@ -593,10 +635,14 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
-
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
@@ -665,6 +711,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -703,6 +754,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -741,6 +797,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -779,6 +840,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -817,6 +883,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -855,6 +926,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -893,6 +969,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -931,6 +1012,11 @@ jobs:
     steps:
       - name: Initialize environment
         run: |
+          echo "Installing mysql client"
+          brew install mysql-client
+          echo "Setting up env for mysql client"
+          echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
+          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
