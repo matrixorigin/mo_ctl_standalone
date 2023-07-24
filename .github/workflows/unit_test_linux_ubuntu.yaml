@@ -540,7 +540,7 @@ jobs:
           fi
   # Job 9
   Test-9-Watchdog:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
         run: |
