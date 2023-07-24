@@ -218,7 +218,6 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
@@ -266,13 +265,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deoloy 0.8.0' (deploy current stable version)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_STABLE_VERSION }}"
@@ -313,13 +312,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile        
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deoloy 38888f7' (deploy a valid commit id)
         run: |
           echo ""
+          source /Users/runner/.bash_profile        
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_TEST_CID_1 }}"
@@ -360,13 +359,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy main force' (deploy latest commit id on main with force option)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           mkdir -p ${{ env.MO_PATH }}/${RUN_TAG}
@@ -412,13 +411,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deoloy 12345678' (deploy an invalid commit id)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy 12345678"
@@ -440,7 +439,6 @@ jobs:
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
-
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
@@ -510,10 +508,12 @@ jobs:
       - name: Test_1. 'mo_ctl connect' (mo-service running)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           echo "select version()" | mo_ctl connect
       - name: Test_2. 'mo_ctl connect' (mo-service not running)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           mo_ctl stop force
           if mo_ctl status; then
               echo "Failed to stop mo-service"
@@ -555,14 +555,17 @@ jobs:
       - name: Test_1. 'mo_ctl sql "[sql_query]"'
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           mo_ctl sql "select version()"
       - name: Test_2. 'mo_ctl sql "[sql_file]"'
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           mo_ctl sql ${{ env.TEST_SQL_FILE_1 }}
       - name: Test_3. 'mo_ctl sql "[sql_path]"'
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           mo_ctl sql ${{ env.TEST_SQL_PATH }}
   # Job 9
   Test-9-Watchdog:
@@ -662,6 +665,8 @@ jobs:
           mo_ctl pprof
           ls -lth ${{ env.MO_PPROF_PATH }}/
           if [[ "`ls ${{ env.MO_PPROF_PATH }}/ | wc -l`" != "1" ]]; then
+              # debug
+              ls ${{ env.MO_PPROF_PATH }}/ | wc -l
               echo "No file is generated in ${{ env.MO_PPROF_PATH }}/"
               exit 1
           fi
@@ -716,13 +721,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy [current_stable_version]' (deploy current stable version)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           
@@ -759,13 +764,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy main' (deploy latest commit id)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           
@@ -802,13 +807,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy [current_stable_version]' (deploy current stable version)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           
@@ -845,13 +850,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy [cid_1]' (deploy cid_1)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           
@@ -888,13 +893,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy [cid_1]' (deploy cid_1)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           
@@ -931,13 +936,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy [cid_2]' (deploy cid_2)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           
@@ -974,13 +979,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy [cid_1]' (deploy cid_1)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           
@@ -1017,13 +1022,13 @@ jobs:
           brew install mysql-client
           echo "Setting up env for mysql client"
           echo 'export PATH="/usr/local/opt/mysql-client/bin:$PATH"' >> /Users/runner/.bash_profile
-          source /Users/runner/.bash_profile
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
       - name: Test_1. 'mo_ctl deploy main' (deploy latest)
         run: |
           echo ""
+          source /Users/runner/.bash_profile
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
           mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
           
