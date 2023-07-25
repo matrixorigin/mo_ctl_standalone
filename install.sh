@@ -144,6 +144,7 @@ function install()
         add_log "I" "Succeeded"
     else
         add_log "E" "Failed"
+        return 1
     fi
 
     if [[ "${os}" == "Mac" ]]; then
@@ -152,7 +153,14 @@ function install()
             add_log "I" "Succeeded"
         else
             add_log "E" "Failed"
+            return 1
         fi
+    fi
+
+    add_log "I" "Adding executable permission to scripts: chmod +x ${mo_ctl_local_path}/bin/*.sh"
+    if ! chmod +x ${mo_ctl_local_path}/bin/*.sh; then
+        add_log "E" "Failed"
+        return 1
     fi
 
     add_log "I" "Done. Successfully installed mo_ctl to path ${mo_ctl_local_path}/"

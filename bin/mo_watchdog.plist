@@ -8,7 +8,7 @@
   <!-- specify script to run -->
   <key>ProgramArguments</key>
   <array>
-    <string>~/mo_ctl/bin/mo_watchdog.sh</string>
+    <string>/Users/PLACEHOLDER/mo_ctl/bin/mo_watchdog.sh</string>
   </array>
   <!-- specify how to run -->
   <!-- 1. StartInterval -->

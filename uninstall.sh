@@ -63,11 +63,13 @@ function tool_uninstall()
         return 1
     fi
     add_log "I" "Uninstalling mo_ctl now"
-    add_log "I" "Removing path ${mo_ctl_local_path}"
+    add_log "I" "Removing path ${mo_ctl_local_path}: rm -rf ~/mo_ctl"
     rm -rf ~/mo_ctl
     add_log "I" "Done"
-    add_log "I" "Removing file ${mo_ctl_global_path}/mo_ctl"
-    rm -f ${mo_ctl_global_path}/mo_ctl
+    add_log "I" "Removing file ${mo_ctl_global_path}/mo_ctl: sudo rm -f ${mo_ctl_global_path}/mo_ctl"
+    add_log "I" "If you're running on MacOS, we need your confirmation with password to run sudo commands" 
+
+    sudo rm -f ${mo_ctl_global_path}/mo_ctl
     add_log "I" "Done"
     add_log "I" "All done, exiting"
 }

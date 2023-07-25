@@ -48,7 +48,8 @@ function watchdog_status()
 
     if [[ "${OS}" == "Mac" ]]; then
         # 1. Mac
-        if launchctl list | grep "${CRON_PLIST_NAME}"; then
+        add_log "I" "Check if ${CRON_PLIST_NAME} is in launchctl list: launchctl list \"${CRON_PLIST_NAME}\""
+        if launchctl list "${CRON_PLIST_NAME}"; then
             add_log "I" "Plist file with name ${CRON_PLIST_NAME} is already set in launchctl list"
             add_log "I" "mo_watchdog status： enabled"
         else
@@ -81,6 +82,15 @@ function watchdog_enable()
     if ! watchdog_status; then
         if [[ "${OS}" == "Mac" ]]; then
             # 1. Mac
+            current_user=`whoami`
+            place_holder="PLACEHOLDER"
+            add_log "I" "Replacing user in ${CRON_PLIST_FILE}: sed -i \"\" \"s#${place_holder}#${current_user}#g\" ${CRON_PLIST_FILE}"
+            if sed -i "" "s#${place_holder}#${current_user}#g" ${CRON_PLIST_FILE}; then
+                add_log "I" "Succeeded"
+            else
+                add_log "E" "Failed"
+                return 1
+            fi
             add_log "I" "Loading plist file : launchctl load -w ${CRON_PLIST_FILE}"
             if launchctl load -w ${CRON_PLIST_FILE}; then
                 add_log "I" "Succeeded"
@@ -117,6 +127,15 @@ function watchdog_disable()
             # 1. Mac
             add_log "I" "Disabling mo_watchdog: launchctl unload -w ${CRON_PLIST_FILE}"
             if launchctl unload -w ${CRON_PLIST_FILE}; then
+                add_log "I" "Succeeded"
+            else
+                add_log "E" "Failed"
+                return 1
+            fi
+            current_user=`whoami`
+            place_holder="PLACEHOLDER"
+            add_log "I" "Replacing user in ${CRON_PLIST_FILE}: sed -i \"\" \"s#${current_user}#${place_holder}#g\" ${CRON_PLIST_FILE}"
+            if sed -i "" "s#${current_user}#${place_holder}#g" ${CRON_PLIST_FILE}; then
                 add_log "I" "Succeeded"
             else
                 add_log "E" "Failed"

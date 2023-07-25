@@ -5,6 +5,31 @@
 ################################################################
 # basic funtions
 
+# fuction: return os name of current machine
+# usage: what_os
+# in: none
+# out: os name, available: Mac | Linux | OtherOS
+function what_os()
+{    
+    system=`uname`
+    os=""
+    case "${system}" in
+        "")
+            return 1
+            ;;
+        "Darwin")
+            os="Mac"
+            ;;
+        "Linux")
+            os="Linux"
+            ;;            
+        *)
+            os="OtherOS"
+            ;;
+    esac
+    echo "${os}"
+}
+
 # function: print log with given log level and message
 # usage: add_log [level] [msg] []
 # e.g. : add_log "I" "This is a demo log message"
@@ -75,30 +100,6 @@ function cmp_version_old()
     return $rc
 }
 
-# fuction: return os name of current machine
-# usage: what_os
-# in: none
-# out: os name, available: Mac | Linux | OtherOS
-function what_os()
-{    
-    system=`uname`
-    os=""
-    case "${system}" in
-        "")
-            return 1
-            ;;
-        "Darwin")
-            os="Mac"
-            ;;
-        "Linux")
-            os="Linux"
-            ;;            
-        *)
-            os="OtherOS"
-            ;;
-    esac
-    echo "${os}"
-}
 
 function pos_int_range()
 # function: check if a given string is a valid positive integer and is less than the second given number
