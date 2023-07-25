@@ -6,12 +6,34 @@ function add_log()
     level=$1
     msg="$2"
     add_line="$3"
-    #format: 2023-07-13_15:37:40
-    #nowtime=`date '+%F_%T'`
-    #format: 2023-07-13_15:37:22.775
-    nowtime=`date '+%Y-%m-%d_%H:%M:%S.%N'`
-    nowtime=`echo "${nowtime}" | cut -b 1-23`
-    
+
+    os=`uname`
+    if [[ "${os}" == "Darwin" ]]; then
+        # 1. for Mac
+        # format: 2023-07-25 17:39:24.904 UTC+0800
+        timezone="UTC+0800"
+        if which python3 >/dev/null 2>&1; then
+            # in millisecond 
+            timestamp_ms=`python3 -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23`
+        elif which python >/dev/null 2>&1; then
+            # in millisecond 
+            timestamp_ms=`python -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23`
+        else
+            # in second
+            timestamp_ms=`date '+%Y-%m-%d %H:%M:%S'`
+        fi
+        nowtime="${timestamp_ms} ${timezone}"
+    else
+        # 2. for Linux
+        # format: 2023-07-13 15:37:40
+        # nowtime=`date '+%F %T'`
+        # format: 2023-07-25 17:39:24.904 UTC+0800
+        nowtime="`date '+%Y-%m-%d %H:%M:%S.%N UTC%z'`"
+        timestamp_ms="`echo "${nowtime}" | cut -b 1-23`"
+        timezone="`echo "${nowtime}" | cut -b 31-39`"
+        nowtime="${timestamp_ms} ${timezone}"
+    fi
+
     case "${level}" in
         "e"|"E")
             level="ERROR"
@@ -80,6 +102,14 @@ function download()
     fi
 
     return ${rc}
+
+}
+
+function mac_install_gdate()
+{
+    if ! which brew; then
+        add_log "I" "brew is not installed, try to install it: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"""
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
 }
 
