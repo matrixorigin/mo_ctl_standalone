@@ -30,6 +30,32 @@ function what_os()
     echo "${os}"
 }
 
+function get_nanosecond()
+{
+    os=`what_os`
+    if [[ "${os}" == "Mac" ]]; then
+        # 1. for Mac
+        # format: 1690284688.93481087684631347656
+        if which python3 >/dev/null 2>&1; then
+            # in nanosecond
+            nanosec=`python3 -c "import time; print('%.9f' % time.time())"`
+        elif which python >/dev/null 2>&1; then
+            # in nanosecond
+            nanosec=`python -c "import time; print('%.9f' % time.time())"`
+        else
+            # in second
+            nanosec=`date +%s.0000000000`
+        fi
+    else
+        # 2. for Linux
+        # format: 1690284688.93481087684631347656
+        # in nanosecond
+        nanosec=`date +%s.%N`
+    fi
+    echo "${nanosec}"
+}
+
+
 # function: print log with given log level and message
 # usage: add_log [level] [msg] []
 # e.g. : add_log "I" "This is a demo log message"
@@ -44,12 +70,34 @@ function add_log()
     level=$1
     msg="$2"
     add_line="$3"
-    #format: 2023-07-13_15:37:40
-    #nowtime=`date '+%F_%T'`
-    #format: 2023-07-13_15:37:22.775
-    nowtime="`date '+%Y-%m-%d_%H:%M:%S.%N'`"
-    nowtime="`echo "${nowtime}" | cut -b 1-23`"
-    
+
+    os=`what_os`
+    if [[ "${os}" == "Mac" ]]; then
+        # 1. for Mac
+        # format: 2023-07-25 17:39:24.904 UTC+0800
+        timezone="UTC+0800"
+        if which python3 >/dev/null 2>&1; then
+            # in millisecond 
+            timestamp_ms=`python3 -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23`
+        elif which python >/dev/null 2>&1; then
+            # in millisecond 
+            timestamp_ms=`python -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23`
+        else
+            # in second
+            timestamp_ms=`date '+%Y-%m-%d %H:%M:%S'`
+        fi
+        nowtime="${timestamp_ms} ${timezone}"
+    else
+        # 2. for Linux
+        # format: 2023-07-13 15:37:40
+        # nowtime=`date '+%F %T'`
+        # format: 2023-07-25 17:39:24.904 UTC+0800
+        nowtime="`date '+%Y-%m-%d %H:%M:%S.%N UTC%z'`"
+        timestamp_ms="`echo "${nowtime}" | cut -b 1-23`"
+        timezone="`echo "${nowtime}" | cut -b 31-39`"
+        nowtime="${timestamp_ms} ${timezone}"
+    fi
+
     case "${level}" in
         "e"|"E")
             level="ERROR"
@@ -171,11 +219,11 @@ function time_cost_ms()
     # deprecated: it depends on bc
     # cost=`expr $time_micro/1000 | bc`
     os=`what_os`
-    if [[ "${os}" == "Mac" ]]; then
-        cost=$(( ( $end_s - $start_s ) * 1000 + ( $end_ns / 1000000 - $start_ns / 1000000 ) ))
-    else
+    #if [[ "${os}" == "Mac" ]]; then
+    #    cost=$(( ( $end_s - $start_s ) * 1000 + ( $end_ns / 1000000 - $start_ns / 1000000 ) ))
+    #else
         cost=$(( ( 10#$end_s - 10#$start_s ) * 1000 + ( 10#$end_ns / 1000000 - 10#$start_ns / 1000000 ) ))
-    fi
+    #fi
 
     echo "${cost}"
 }

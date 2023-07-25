@@ -10,6 +10,7 @@ query=""
 function exec_path()
 {
     rc=0
+    os=`what_os`
     add_log "I" "Input ${query} is a path, listing .sql files in it: "
     ls -A ${query}/ | grep "\.sql\$"
     # deprecated: Mac is using bash v3 by default, but declare -A requires bash v4, thus it will fail
@@ -17,14 +18,15 @@ function exec_path()
     query_report=""
     for query_file in `ls -A ${query}/ | grep "\.sql\$"`; do
         add_log "I" "Begin executing query file ${query_file}"
-        startTime=`date +%s.%N`
+
+        startTime=`get_nanosecond`
 
         if mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv < "${query}/${query_file}"; then
-            endTime=`date +%s.%N`
+            endTime=`get_nanosecond`
             add_log "I" "End executing query file ${query_file}, succeeded"
             outcome="succeeded"
         else
-            endTime=`date +%s.%N`
+            endTime=`get_nanosecond`
             add_log "E" "End executing query file ${query_file}, failed"
             outcome="failed"
             rc=1
@@ -59,13 +61,13 @@ function exec_file()
     rc=0
     add_log "I" "Input ${query} is a file"
     add_log "I" "Begin executing query file ${query}"
-    startTime=`date +%s.%N`
+    startTime=`get_nanosecond`
     if mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv < "${query}"; then
-        endTime=`date +%s.%N`
+        endTime=`get_nanosecond`
         add_log "I" "End executing query file ${query}, succeeded"
         outcome="succeeded"
     else
-        endTime=`date +%s.%N`
+        endTime=`get_nanosecond`
         add_log "E" "End executing query file ${query}, failed"
         outcome="failed"
         rc=1
@@ -82,13 +84,13 @@ function exec_query()
 {
     add_log "I" "Input \"${query}\" is not a path or a file, try to execute it as a query"
     add_log "I" "Begin executing query \"${query}\""
-    startTime=`date +%s.%N`
+    startTime=`get_nanosecond`
     if mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv -e "${query}"; then
-        endTime=`date +%s.%N`
+        endTime=`get_nanosecond`
         add_log "I" "End executing query ${query}, succeeded"
         outcome="succeeded"
     else
-        endTime=`date +%s.%N`
+        endTime=`get_nanosecond`
         add_log "E" "End executing query ${query}, failed"
         outcome="failed"
         rc=1
