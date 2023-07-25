@@ -105,14 +105,6 @@ function download()
 
 }
 
-function mac_install_gdate()
-{
-    if ! which brew; then
-        add_log "I" "brew is not installed, try to install it: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"""
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-}
-
 function install()
 {
     pkg=$1
