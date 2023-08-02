@@ -67,11 +67,12 @@ function set_conf()
         else
             if [[ "${key}" == "MO_GIT_URL" ]]; then
                 if [[ -d ${MO_PATH}/matrixone/.git/ ]]; then
-                    add_log "I" "Key is MO_GIT_URL, thus setting mo git remote url"
+                    add_log "I" "Key is MO_GIT_URL, setting mo git remote url"
                     if git remote set-url origin ${value}; then
                         add_log "I" "Succeeded"
                     else
                         add_log "E" "Failed"
+                        rc=1
                     fi
                 fi
             fi
