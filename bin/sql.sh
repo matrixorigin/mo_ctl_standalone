@@ -21,7 +21,7 @@ function exec_path()
 
         startTime=`get_nanosecond`
 
-        if mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv < "${query}/${query_file}"; then
+        if mysql --local-infile -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv < "${query}/${query_file}"; then
             endTime=`get_nanosecond`
             add_log "I" "End executing query file ${query_file}, succeeded"
             outcome="succeeded"
@@ -62,7 +62,7 @@ function exec_file()
     add_log "I" "Input ${query} is a file"
     add_log "I" "Begin executing query file ${query}"
     startTime=`get_nanosecond`
-    if mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv < "${query}"; then
+    if mysql --local-infile -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv < "${query}"; then
         endTime=`get_nanosecond`
         add_log "I" "End executing query file ${query}, succeeded"
         outcome="succeeded"
@@ -85,7 +85,7 @@ function exec_query()
     add_log "I" "Input \"${query}\" is not a path or a file, try to execute it as a query"
     add_log "I" "Begin executing query \"${query}\""
     startTime=`get_nanosecond`
-    if mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv -e "${query}"; then
+    if mysql --local-infile -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -p"${MO_PW}" -vvv -e "${query}"; then
         endTime=`get_nanosecond`
         add_log "I" "End executing query ${query}, succeeded"
         outcome="succeeded"
