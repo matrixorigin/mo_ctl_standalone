@@ -262,8 +262,9 @@ function upgrade_build_mo_service()
 }
 function upgrade_build_mo_dump()
 {
-    add_log "I" "Try to build mo-dump: make build modump"
-    if cd ${MO_UPGRADE_PATH}/ && make build modump; then
+    add_log "I" "Try to build mo-dump: make cgo && make modump"
+#    if cd ${MO_UPGRADE_PATH}/ && make build modump; then
+    if cd ${MO_UPGRADE_PATH}/ && make cgo && make modump; then
         add_log "I" "Build succeeded"
     else
         add_log "E" "Build failed"
