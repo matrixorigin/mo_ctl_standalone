@@ -42,6 +42,8 @@ env:
   TEST_SQL_FILE_1: ${TEST_SQL_PATH}/q1.sql
   TEST_SQL_FILE_2: ${TEST_SQL_PATH}/q2.sql
   TEST_SQL_FILE_3: ${TEST_SQL_PATH}/q3.sql
+  MO_GIT_URL_1: https://ghproxy.com/github.com/matrixorigin/matrixone.git
+  MO_GIT_URL_2: https://ghproxy.com/github.com/matrixorigin/matrixone.git
 
 # job def
 jobs:
@@ -181,6 +183,19 @@ jobs:
           echo "test_cmd: mo_ctl set_conf xx || mo_ctl set_conf MO_USER=\"mike\",yy || mo_ctl set_conf MO_USER=\"mike\",yy=\"test\" || mo_ctl set_conf MO_USER=\"mike\" yy=\"test\""
           if mo_ctl set_conf xx || mo_ctl set_conf MO_USER="mike",yy ||mo_ctl set_conf MO_USER="mike",yy="test" || mo_ctl set_conf MO_USER="mike" yy="test"; then
               echo "'mo_ctl set_conf' does not fail as expected"
+              exit 1
+          fi
+      - name: Test_9. 'mo_ctl set_conf MO_GIT_URL' (special settings)
+        run: |
+          echo ""
+          echo "test_cmd: mo_ctl set_conf ${{ env.MO_GIT_URL_1 }}"
+          if mo_ctl set_conf ${{ env.MO_GIT_URL_1 }}; then
+              echo "failed"
+              exit 1
+          fi
+          echo "test_cmd: mo_ctl set_conf ${{ env.MO_GIT_URL_2 }}"
+          if mo_ctl set_conf ${{ env.MO_GIT_URL_2 }}; then
+              echo "failed"
               exit 1
           fi
   # Job 4
@@ -553,6 +568,12 @@ jobs:
         run: |
           echo ""
           if mo_ctl sql /tmp/123/456/789/; then
+              echo "Invalid sql path does not fail as expected"
+              exit 1
+          fi
+      - name: Test_6. 'mo_ctl sql ""' (empty input)
+        run: |
+          if mo_ctl sql || mo_sql sql ""; then
               echo "Invalid sql path does not fail as expected"
               exit 1
           fi

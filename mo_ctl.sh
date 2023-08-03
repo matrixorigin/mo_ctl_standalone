@@ -36,6 +36,7 @@ function main()
 {
     rc=0
     all_vars="$*"
+    var_2=`echo ${all_vars} | awk '{print $2}'`
     option_1=`echo "${all_vars}" | awk '{print $1}'`
     option_2=`echo "${all_vars}" | awk '{print $2}'`
     option_3=`echo "${all_vars}" | awk '{print $3}'`
@@ -88,6 +89,11 @@ function main()
             ;;
         "set_conf")
             shift_vars=`echo "${all_vars#* }"`
+            if [[ "${var_2}" == "" ]]; then
+                add_log "E" "Set content is empty, please check again"
+                help_set_conf
+                return 1
+            fi
             set_conf "${shift_vars}"
             ;;
         "get_conf")
@@ -109,6 +115,11 @@ function main()
             uninstall
             ;;
         "sql")
+            if [[ "${var_2}" == "" ]]; then
+                add_log "E" "Query is empty, please check again"
+                help_sql
+                return 1
+            fi
             shift_vars=`echo "${all_vars#* }"`
             sql "${shift_vars}"
             ;;

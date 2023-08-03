@@ -109,7 +109,7 @@ function sql()
     # 1. empty query
     if [[ "${query}" == "" ]]; then
         add_log "E" "Query is empty, please check again"
-        help_query
+        help_sql
         return 1
     # 2. input is a path
     elif [[ -d "${query}" ]]; then
