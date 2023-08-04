@@ -11,29 +11,31 @@ if ! pwd >/dev/null 2>&1; then
     exit 1
 fi
 
-# File dir
-file_dir=`cd "$(dirname "$0")" || exit; pwd`
-
-# Get confs and scripts
+# Work dir
+WORK_DIR=`cd "$(dirname "$0")" || exit; pwd`
 # confs
-CONF_FILE="${file_dir}/conf/env.sh"
-source "${CONF_FILE}"
+CONF_FILE="${WORK_DIR}/conf/env.sh"
+BIN_DIR="${WORK_DIR}/bin"
 # scripts
-script_list=("basic" "help" "precheck" "deploy" \
+SCRIPT_LIST=("basic" "help" "precheck" "deploy" \
     "status" "start" "stop" "restart" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
     "mysql_to_mo" "ddl_convert" "watchdog" "upgrade" \
     "get_branch" "uninstall" "sql" \
 )
-
-for script in ${script_list[@]}; do
-    source "${file_dir}/bin/${script}.sh"
-done
-
-p_ids=""
+PIDS=""
 
 function main()
 {
+
+    # Get confs and scripts
+    source "${CONF_FILE}"
+
+
+    for script in ${SCRIPT_LIST[@]}; do
+        source "${BIN_DIR}/${script}.sh"
+    done
+
     rc=0
     all_vars="$*"
     var_2=`echo ${all_vars} | awk '{print $2}'`

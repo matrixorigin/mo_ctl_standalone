@@ -553,7 +553,7 @@ jobs:
               echo "Invalid sql path does not fail as expected"
               exit 1
           fi
-      - name: Test_6. 'mo_ctl sql ""' (empty input)
+      - name: Test_7. 'mo_ctl sql ""' (empty input)
         run: |
           if mo_ctl sql || mo_sql sql ""; then
               echo "Invalid sql path does not fail as expected"

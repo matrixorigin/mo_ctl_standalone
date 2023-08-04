@@ -13,10 +13,11 @@ function stop()
         kill_option="-9"
     fi
     max_times=10
+    # get PIDS
     if status; then
         for ((i=1;i<=${max_times};i++)); do
             add_log "I" "Try stop all mo-services found for a maximum of ${max_times} times, try no: $i"
-            for pid in ${p_ids}; do
+            for pid in ${PIDS}; do
                 add_log "I" "Stopping mo-service with pid ${pid} with command: kill ${kill_option} ${pid}"
                 if kill ${kill_option} ${pid}; then
                     add_log "I" "kill succeeded"

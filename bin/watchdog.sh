@@ -10,10 +10,10 @@ CRON_FILE_NAME="mo_watchdog"
 CRON_FILE_PATH="${CRON_PATH}/${CRON_FILE_NAME}"
 CRON_SCHEDULE="* * * * *"
 CRON_USER=`whoami`
-CRON_SCRIPT="`cat ~/mo_ctl/bin/mo_watchdog.sh`"
+CRON_SCRIPT="`cat ${WORK_DIR}/bin/mo_watchdog.sh`"
 CRON_CONTENT="${CRON_SCHEDULE} ${CRON_USER} ${CRON_SCRIPT}"
 CRON_PLIST_NAME="com.matrixorigin.mo.watchdog"
-CRON_PLIST_FILE=~/mo_ctl/bin/mo_watchdog.plist
+CRON_PLIST_FILE="${WORK_DIR}/bin/mo_watchdog.plist"
 OS=`what_os`
 
 function watchdog_check_pre_requistes()
