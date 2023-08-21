@@ -1088,6 +1088,8 @@ jobs:
       - name: Test_11. 'mo_ctl pprof'
         run: |
           echo ""
+          mkdir -p ${{ env.MO_PPROF_PATH }}
+          mo_ctl set_conf PPROF_OUT_PATH="${{ env.MO_PPROF_PATH }}"
           mo_ctl pprof
           mo_ctl pprof profile
           mo_ctl pprof profile 30
