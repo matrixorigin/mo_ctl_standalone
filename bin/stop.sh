@@ -21,21 +21,15 @@ function stop()
     if status; then
         for ((i=1;i<=${max_times};i++)); do
             add_log "I" "Try stop all mo-services found for a maximum of ${max_times} times, try no: $i"
-            for pid in ${PIDS}; do
-                if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
-                    add_log "I" "Stopping mo container: docker ${docker_option} ${MO_CONTAINER_NAME}"
-                    docker ${docker_option} "${MO_CONTAINER_NAME}"
-                else
+            if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
+                add_log "I" "Stopping mo container: docker ${docker_option} ${MO_CONTAINER_NAME}"
+                docker ${docker_option} "${MO_CONTAINER_NAME}"
+            else
+                for pid in ${PIDS}; do
                     add_log "I" "Stopping mo-service with pid ${pid} with command: kill ${kill_option} ${pid}"
-                    kill ${kill_option} ${pid};
-                fi
-
-                if [[ $? -eq 0 ]]; then
-                        add_log "I" "kill succeeded"
-                else
-                        add_log "E" "kill failed"
-                fi
-            done
+                    kill ${kill_option} ${pid}
+                done
+            fi
             add_log "I" "Wait for ${STOP_INTERVAL} seconds"
             sleep ${STOP_INTERVAL}
             if ! status; then
