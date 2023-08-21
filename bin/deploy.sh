@@ -130,7 +130,7 @@ function deploy_docker()
 {
     mo_version=$1
 
-    add "I" "MO deploy mode is set to docker, checking docker status: systemctl status docker"
+    add_log "I" "MO deploy mode is set to docker, checking docker status: systemctl status docker"
     if ! systemctl status docker; then
         add "E" "It seems docker is not running normally, please try restart it via 'systemctl restart docker'"
         return 1
