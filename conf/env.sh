@@ -64,7 +64,7 @@ START_INTERVAL="2"
 # debug port that mo-service uses when it is started, which can be used to collect pprof info
 MO_DEBUG_PORT="9876"
 # conf file used to start mo-service
-MO_CONF_FILE="${MO_PATH}/matrixone/etc/launch-tae-CN-tae-DN/launch.toml"
+MO_CONF_FILE="${MO_PATH}/matrixone/etc/launch/launch.toml"
 
 
 

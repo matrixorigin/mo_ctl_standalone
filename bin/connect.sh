@@ -8,9 +8,9 @@
 function connect()
 {
     add_log "I" "Checking connectivity"
-    if mysql -u${MO_USER} -P${MO_PORT} -h${MO_HOST} -p${MO_PW} -e "select 1" >/dev/null 2>&1; then
+    if MYSQL_PWD="${MO_PW}" mysql -u${MO_USER} -P${MO_PORT} -h${MO_HOST} -e "select 1" >/dev/null 2>&1; then
         add_log "I" "Ok, connecting for user ... "
-        mysql -u${MO_USER} -P${MO_PORT} -h${MO_HOST} -p${MO_PW}
+        MYSQL_PWD="${MO_PW}" mysql -u${MO_USER} -P${MO_PORT} -h${MO_HOST}
         add_log "I" "Connect succeeded and finished. Bye"
 
     else
