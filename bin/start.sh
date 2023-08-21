@@ -14,14 +14,18 @@ function start()
     fi
 
     if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
-        if docker ps -a | grep "${MO_CONTAINER_NAME}" >/dev/null 2>&1; then 
-            add_log "I" "Start mo container: docker start ${MO_CONTAINER_NAME}"
+
+        dp_info=`docker ps -a --filter "name=${MO_CONTAINER_NAME}"`
+        dp_name=`docker ps -a --filter "name=${MO_CONTAINER_NAME}" --format "table {{.Names}}" | tail -n 1`
+        if [[ "${dp_name}" == "${MO_CONTAINER_NAME}" ]]; then
+            add_log "I" "Container named ${MO_CONTAINER_NAME} found. Start mo container: docker start ${MO_CONTAINER_NAME}"
             docker start ${MO_CONTAINER_NAME}
         else
             # initial start
             add_log "I" "Initial start mo container: docker run -d -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME} --privileged=true  ${MO_IMAGE_FULL}"
             docker run -d -p ${MO_PORT}:${MO_CONTAINER_PORT} -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} --name ${MO_CONTAINER_NAME} --privileged=true  ${MO_IMAGE_FULL}
         fi
+
     else
         mkdir -p ${MO_LOG_PATH}
         RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
