@@ -35,4 +35,5 @@ function start()
             add_log "E" "Start failed"
             return 1
         fi
+    fi
 }
