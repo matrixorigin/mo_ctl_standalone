@@ -1084,7 +1084,7 @@ jobs:
         run: |
           echo ""
           mo_ctl restart force && mo_ctl status
-          sleep 10
+          sleep 30
       - name: Test_11. 'mo_ctl pprof'
         run: |
           echo ""
