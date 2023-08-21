@@ -1017,3 +1017,92 @@ jobs:
           if ! mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"; then
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another. Ignoring... "
           fi
+  # Job 12
+  Test-12-Docker-Test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initialize environment
+        run: |
+          echo "install mo_ctl with Internet(no proxy)"
+          wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
+          mo_ctl set_conf MO_DEPLOY_MODE="docker"
+      - name: Install docker
+        uses: docker-practice/actions-setup-docker@master
+        timeout-minutes: 12
+      - name: Test_1. 'mo_ctl precheck'
+        run: |
+          echo ""
+          if ! mo_ctl status; then 
+              echo "'mo_ctl status' fails as expected"
+          fi
+      - name: Test_1. 'mo_ctl status' (no mo-service running)
+        run: |
+          echo ""
+          if ! mo_ctl status; then 
+              echo "'mo_ctl status' fails as expected"
+          fi
+      - name: Test_2. 'mo_ctl deploy main'
+        run: |
+          echo ""
+          mo_ctl deoloy main
+      - name: Test_3. 'mo_ctl status' (mo-service not running)
+        run: |
+          echo ""
+          if ! mo_ctl status; then
+              echo "'mo_ctl status' failed as expected"
+          else
+              exit 1
+          fi
+      - name: Test_4. 'mo_ctl start'
+        run: |
+          echo ""
+          mo_ctl start && mo_ctl status
+      - name: Test_5. 'mo_ctl status' (mo-service running)
+        run: |
+          echo ""
+          mo_ctl status
+          echo "'mo_ctl status' succeeds as expected"
+      - name: Test_6. 'mo_ctl stop'
+        run: |
+          echo ""
+          mo_ctl stop
+          if ! mo_ctl status; then 
+              echo "Stop as expected"
+          fi
+      - name: Test_7. 'mo_ctl restart'
+        run: |
+          echo ""
+          mo_ctl restart && mo_ctl status
+      - name: Test_6. 'mo_ctl stop force'
+        run: |
+          echo ""
+          mo_ctl stop force
+          if ! mo_ctl status; then 
+              echo "Stop force as expected"
+          fi
+      - name: Test_7. 'mo_ctl restart force'
+        run: |
+          echo ""
+          mo_ctl restart force && mo_ctl status
+          sleep 10
+      - name: Test_8. 'mo_ctl pprof'
+        run: |
+          echo ""
+          mo_ctl pprof
+          mo_ctl pprof profile
+          mo_ctl pprof profile 30
+          mo_ctl pprof allocs
+          mo_ctl pprof heap
+      - name: Test_9. 'mo_ctl connect'
+        run: |
+          echo ""
+          echo "select @@version" | mo_ctl connect
+      - name: Test_10. 'mo_ctl sql'
+        run: |
+          echo ""
+          mo_ctl sql 'select @@version' 
+      - name: Test_11. 'mo_ctl uninstall'
+        run: |
+          echo ""
+          mo_ctl stop
+          echo "yes" | mo_ctl uninstall

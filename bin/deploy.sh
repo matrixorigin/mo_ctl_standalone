@@ -136,7 +136,7 @@ function deploy_docker()
         return 1
     fi
 
-    if [[ "${mo_version}" == "latest" ]]; then
+    if [[ "${mo_version}" == "main" ]]; then
         MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
     elif echo "${mo_version}" | grep "." >/dev/null 2>&1; then
         MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
