@@ -12,9 +12,19 @@ function precheck()
 
     for item in ${CHECK_LIST[@]}; do
         add_log "I" "Precheck on pre-requisite: ${item}"
-        
+
+        if [[ "${item}" == "docker" ]]; then
+            # ignore docker in case deploy mode is not docker
+            if [[ "${MO_DEPLOY_MODE}" != "docker" ]]; then
+                continue
+            fi
+        fi
+
         # 1. check if installed
         if ! which ${item} >/dev/null 2>&1; then
+
+
+
             add_log "E" "Nok. Please check if it is installed or exists in your \$PATH env"
             list_nok="$item ${list_nok}"
             rc=1

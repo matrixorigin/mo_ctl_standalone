@@ -325,8 +325,15 @@ function upgrade()
 {
     target_cid=$1
 
+    if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
+        add_log "E" "Currently mo_ctl does not support upgrade when mo deploy mode is docker"
+        return 1
+    fi
+
     # 0. initialize global variables
     init_global_vars
+
+
     
     # 1. check if target_cid is not empty and mo-service not running and mo-watchdog disabled
     if ! check_upgrade_pre_requisites; then

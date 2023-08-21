@@ -126,6 +126,35 @@ function build_all()
     fi
 }
 
+function deploy_docker()
+{
+    mo_version=$1
+
+    add "I" "MO deploy mode is set to docker, checking docker status: systemctl status docker"
+    if ! systemctl status docker; then
+        add "E" "It seems docker is not running normally, please try restart it via 'systemctl restart docker'"
+        return 1
+    fi
+
+    if [[ "${mo_version}" == "latest" ]]; then
+        MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
+    elif echo "${mo_version}" | grep "." >/dev/null 2>&1; then
+        MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
+    else
+        MO_IMAGE_FULL="${MO_REPO}:${MO_IMAGE_PREFIX}-${mo_version}"
+    fi
+
+    set_conf MO_IMAGE_FULL="${MO_IMAGE_FULL}"
+
+    add_log "I" "Pulling image ${MO_IMAGE_FULL}"
+    if ! docker pull ${MO_IMAGE_FULL}; then
+        add_log "E" "Failed to pull docker image, please check if ${MO_IMAGE_FULL} is a correct image or it might be a network issue"
+        return 1
+    fi
+
+    add_log "I" "Successfully pulled image ${MO_IMAGE_FULL}"
+}
+
 function deploy()
 {
     mo_version=$1
@@ -136,31 +165,34 @@ function deploy()
         mo_version=${MO_DEFAULT_VERSION}
     elif [[ ${mo_version} == "force" ]]; then
         mo_version=${MO_DEFAULT_VERSION}
-        force="force"        
+        force="force"
     fi
 
-
-    # 0. Precheck
-    if ! precheck; then
-        add_log "I" "Precheck failed, exiting"
-        return 1
+    if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
+        deploy_docker ${mo_version}
     else
-        add_log "I" "Precheck passed, deploying mo now"
-    fi
+        # 0. Precheck
+        if ! precheck; then
+            add_log "I" "Precheck failed, exiting"
+            return 1
+        else
+            add_log "I" "Precheck passed, deploying mo now"
+        fi
 
-    # 1. Install
-    if ! git_clone ${mo_version} ${force}; then
-        return 1
-    fi
+        # 1. Install
+        if ! git_clone ${mo_version} ${force}; then
+            return 1
+        fi
 
-    # 2. Build
-    if ! build_all ${force}; then
-        return 1
-    fi
+        # 2. Build
+        if ! build_all ${force}; then
+            return 1
+        fi
 
-    # 3. Create logs folder
-    add_log "I" "Creating mo logs ${MO_LOG_PATH} path in case it does not exist"
-    mkdir -p ${MO_LOG_PATH}
-    add_log "I" "Deoloy succeeded"
+        # 3. Create logs folder
+        add_log "I" "Creating mo logs ${MO_LOG_PATH} path in case it does not exist"
+        mkdir -p ${MO_LOG_PATH}
+        add_log "I" "Deoloy succeeded"
+    fi
 
 }

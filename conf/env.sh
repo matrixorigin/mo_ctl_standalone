@@ -25,14 +25,21 @@ MO_PORT="6001"
 MO_USER="root"
 # password of the user to connect to mo, please use your own password 
 MO_PW="111"
-
+# mo deploy mode: docker | host
+MO_DEPLOY_MODE="host"
+MO_REPO="matrixorigin/matrixone"
+MO_IMAGE_PREFIX="nightly"
+MO_IMAGE_FULL=""
+MO_CONTAINER_NAME="mo"
+MO_CONTAINER_PORT="6001"
+MO_CONTAINER_DEBUG_PORT="12345"
 
 ###########################################
 # no need to set below conf for most cases 
 ###########################################
 
 # for precheck
-CHECK_LIST=("go" "gcc" "git" "mysql")
+CHECK_LIST=("go" "gcc" "git" "mysql" "docker")
 GCC_VERSION="8.5.0"
 CLANG_VERSION="13.0"
 GO_VERSION="1.20"

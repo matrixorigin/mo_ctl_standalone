@@ -8,9 +8,13 @@
 function stop()
 {
     force=$1
+
+
     kill_option=""
+    docker_option="stop"
     if [[ "${force}" == "force" ]]; then
         kill_option="-9"
+        docker_option="kill"
     fi
     max_times=10
     # get PIDS
@@ -18,11 +22,19 @@ function stop()
         for ((i=1;i<=${max_times};i++)); do
             add_log "I" "Try stop all mo-services found for a maximum of ${max_times} times, try no: $i"
             for pid in ${PIDS}; do
-                add_log "I" "Stopping mo-service with pid ${pid} with command: kill ${kill_option} ${pid}"
-                if kill ${kill_option} ${pid}; then
-                    add_log "I" "kill succeeded"
+                if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
+                    add_log "I" "Stopping mo container: docker ${docker_option} ${MO_CONTAINER_NAME}"
+                    docker ${docker_option} "${MO_CONTAINER_NAME}"
                 else
-                    add_log "E" "kill fail"
+                    add_log "I" "Stopping mo-service with pid ${pid} with command: kill ${kill_option} ${pid}"
+                    kill ${kill_option} ${pid};
+                fi
+
+                if [[ $? -eq 0 ]]; then
+                        add_log "I" "kill succeeded"
+                    else
+                        add_log "E" "kill failed"
+                    fi
                 fi
             done
             add_log "I" "Wait for ${STOP_INTERVAL} seconds"

@@ -11,9 +11,16 @@ function check_uninstall_pre_requisites()
     add_log "I" "Checking pre-requisites before uninstalling MO"
 
     add_log "I" "Check if mo-service running"
-    if mo_ctl status | grep "${MO_PATH}/matrixone"; then
-        add_log "E" "Detected mo-service running with path ${MO_PATH}/matrixone, please try to stop it first via 'mo_ctl stop [force]' before uninstalling mo"
-        rc=1
+
+    if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
+        if mo_ctl status; then
+            add_log "E" "Detected mo container named ${MO_CONTAINER_NAME} running, please try to stop it first via 'mo_ctl stop [force]' before uninstalling mo"
+        fi
+    else
+        if mo_ctl status | grep "${MO_PATH}/matrixone"; then
+            add_log "E" "Detected mo-service running with path ${MO_PATH}/matrixone, please try to stop it first via 'mo_ctl stop [force]' before uninstalling mo"
+            rc=1
+        fi
     fi
 
     add_log "I" "Check if mo-service watchdog enabled"
@@ -33,25 +40,58 @@ function check_uninstall_pre_requisites()
 
 function uninstall()
 {
-    add_log "W" "You're uninstalling MO from path ${MO_PATH}/matrixone, are you sure? (Yes/No)"
-    read -t 30 user_confirm
-    if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
-        add_log "E" "User input not confirmed or timed out, exiting"
-        return 1
-    fi
 
-    if ! check_uninstall_pre_requisites; then
-        return 1
-    fi
+    if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
+        add_log "W" "You're uninstalling MO image ${MO_IMAGE_FULL}, are you sure? (Yes/No)"
+        read -t 30 user_confirm
+        if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
+            add_log "E" "User input not confirmed or timed out, exiting"
+            return 1
+        fi
 
-    if [[ -d "${MO_PATH}/matrixone" ]]; then
-        if cd ${MO_PATH} && rm -rf ./matrixone/; then
-            add_log "I" "Uninstall MO succeeded."
-        else
+        if ! check_uninstall_pre_requisites; then
+            return 1
+        fi
+
+        add_log "I" "Removing container ${MO_CONTAINER_NAME}"
+        if ! docker rm ${MO_CONTAINER_NAME}; then
+            add_log "E" "Failed"
             add_log "E" "Uninstall MO failed."
             return 1
         fi
+
+        add_log "I" "Removing image ${MO_IMAGE_FULL}"
+        if ! docker rmi ${MO_IMAGE_FULL}; then
+            add_log "E" "Failed"
+            add_log "E" "Uninstall MO failed."
+            return 1
+        fi
+
+        add_log "I" "Uninstall MO succeeded."
+
+
     else
-        add_log "I" "${MO_PATH}/matrixone does not exist, thus no need to uninstall"
+        add_log "W" "You're uninstalling MO from path ${MO_PATH}/matrixone, are you sure? (Yes/No)"
+        read -t 30 user_confirm
+        if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
+            add_log "E" "User input not confirmed or timed out, exiting"
+            return 1
+        fi
+
+        if ! check_uninstall_pre_requisites; then
+            return 1
+        fi
+
+        if [[ -d "${MO_PATH}/matrixone" ]]; then
+            if cd ${MO_PATH} && rm -rf ./matrixone/; then
+                add_log "I" "Uninstall MO succeeded."
+            else
+                add_log "E" "Uninstall MO failed."
+                return 1
+            fi
+        else
+            add_log "I" "${MO_PATH}/matrixone does not exist, thus no need to uninstall"
+        fi
+
     fi
 }

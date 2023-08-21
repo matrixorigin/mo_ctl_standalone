@@ -9,6 +9,11 @@ function get_cid()
 {
     option=$1
 
+    if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
+        add_log "E" "Currently mo_ctl does not support get_cid when mo deploy mode is docker"
+        return 1
+    fi
+
     add_log "I" "Try get mo commit id"
     if [[ ! -d ${MO_PATH}/matrixone ]]; then
         add_log "E" "Path ${MO_PATH}/matrixone does not exist, please make sure mo is deployed properly"
