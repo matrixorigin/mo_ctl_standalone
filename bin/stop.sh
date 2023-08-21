@@ -32,9 +32,8 @@ function stop()
 
                 if [[ $? -eq 0 ]]; then
                         add_log "I" "kill succeeded"
-                    else
+                else
                         add_log "E" "kill failed"
-                    fi
                 fi
             done
             add_log "I" "Wait for ${STOP_INTERVAL} seconds"

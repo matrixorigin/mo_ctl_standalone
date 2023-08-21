@@ -21,6 +21,7 @@ function start()
             # initial start
             add_log "I" "Initial start mo container: docker run -d -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME} --privileged=true  ${MO_IMAGE_FULL}"
             docker run -d -p ${MO_PORT}:${MO_CONTAINER_PORT} -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} --name ${MO_CONTAINER_NAME} --privileged=true  ${MO_IMAGE_FULL}
+        fi
     else
         mkdir -p ${MO_LOG_PATH}
         RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
