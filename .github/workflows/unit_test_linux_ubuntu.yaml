@@ -1098,11 +1098,11 @@ jobs:
       - name: Test_12. 'mo_ctl connect'
         run: |
           echo ""
-          echo "select @@version" | mo_ctl connect
+          echo "show databases;" | mo_ctl connect
       - name: Test_13. 'mo_ctl sql'
         run: |
           echo ""
-          mo_ctl sql 'select @@version' 
+          mo_ctl sql 'select version();' 
       - name: Test_14. 'mo_ctl uninstall'
         run: |
           echo ""
