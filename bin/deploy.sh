@@ -131,14 +131,24 @@ function deploy_docker()
     mo_version=$1
 
     add_log "I" "MO deploy mode is set to docker, checking docker status: systemctl status docker"
-    if ! systemctl status docker; then
-        add "E" "It seems docker is not running normally, please try restart it via 'systemctl restart docker'"
-        return 1
+    os=`what_os`
+    if [[ "${os}" == "Linux" ]]; then
+        if ! systemctl status docker >/dev/null 2>&1; then
+            add_log "E" "It seems docker is not running normally, please try restart it via 'systemctl restart docker'"
+            return 1
+        fi
+    else
+        if ! docker info >/dev/null 2>&1; then
+            add_log "E" "It seems docker is not running normally, please try restart it via 'open -a Docker'"
+            return 1
+        fi
     fi
+
+    cid=`get_stable_cid ${mo_version}`
 
     if [[ "${mo_version}" == "main" ]]; then
         MO_IMAGE_FULL="${MO_REPO}:latest"
-    elif echo "${mo_version}" | grep "." >/dev/null 2>&1; then
+    elif [[ "${mo_version}" != "${cid}" ]]; then
         MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
     else
         MO_IMAGE_FULL="${MO_REPO}:${MO_IMAGE_PREFIX}-${mo_version}"

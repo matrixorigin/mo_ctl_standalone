@@ -16,40 +16,7 @@ action_type=""
 is_cid_notlatest_notstable_valid=""
 #declare -A stable_list
 
-function get_stable_cid()
-{
-    cid="$1"
-    case "${cid}" in
-        "0.8.0")
-            echo "daf86797160585d24c158e4ee220964264616505"
-            ;;
-        "0.7.0")
-            echo "6d4bd173514990032372310f7b3d9d803781074a"
-            ;;
-        "0.6.0")
-            echo "c3262c1b58d030b00534283b9bd22cc83c888a2a"
-            ;;
-        "0.5.1")
-            echo "c9491645c681c9e239817a6fa71fb71df25003e2"
-            ;;
-        "0.4.0")
-            echo "aefc440bf6d6c2a5e96ba411fb0c98ae0b8bd657"
-            ;;
-        "0.3.0")
-            echo "56fcd3ff8e4aa3b5a8b9d08c420fa90f7462c579"
-            ;;
-        "0.2.0")
-            echo "c22aa58f948cef7e59acef1ebabb8f8dfd4154cd"
-            ;;
-        "0.1.0")
-            echo "19cc0453b573e23ae643bea492bc43c5df4758db"
-            ;;                                                                    
-        *)
-            echo "${cid}"
-            ;;
-    esac
-    
-}
+
 
 function init_global_vars()
 {

@@ -16,7 +16,7 @@ function status()
             add_log "I" "Info of: docker ps --filter name=${MO_CONTAINER_NAME}"
             echo "${dp_info}"
         else
-            add_log "E" "No container named ${MO_CONTAINER_NAME} is running"
+            add_log "I" "No container named ${MO_CONTAINER_NAME} is running"
             return 1
         fi
     else
