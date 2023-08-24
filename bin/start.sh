@@ -24,7 +24,7 @@ function start()
             # initial start
             docker_ser_ver=`docker version --format='{{.Server.Version}}'`
             # if docker_ser_ver ≥ DOCKER_SERVER_VERSION
-            if cmp_version "${docker_ser_ver}" "${DOCKER_SERVER_VERSION}"; then;
+            if cmp_version "${docker_ser_ver}" "${DOCKER_SERVER_VERSION}"; then
                 docker_init_cmd="docker run -d -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME} ${MO_IMAGE_FULL}"
             else
                 docker_init_cmd="docker run -d -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME} --privileged=true  ${MO_IMAGE_FULL}"
