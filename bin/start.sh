@@ -30,7 +30,8 @@ function start()
                 docker_init_cmd="docker run -d -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME} --privileged=true  ${MO_IMAGE_FULL}"
             fi 
             add_log "I" "Initial start mo container: ${docker_init_cmd}"
-            ${docker_init_cmd}        fi
+            ${docker_init_cmd}
+        fi
     else
         mkdir -p ${MO_LOG_PATH}
         RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
