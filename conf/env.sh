@@ -43,6 +43,7 @@ CHECK_LIST=("go" "gcc" "git" "mysql" "docker")
 GCC_VERSION="8.5.0"
 CLANG_VERSION="13.0"
 GO_VERSION="1.20"
+DOCKER_SERVER_VERSION="20"
 
 # for deploy
 # which url to be used for git cloning mo
@@ -56,7 +57,7 @@ MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 #)
 
 # default version of which mo to be deployed
-MO_DEFAULT_VERSION="0.8.0"
+MO_DEFAULT_VERSION="1.0.0-rc1"
 # which go proxy to be used when downloading go dependencies
 # you can set this go proxy when building mo-service
 GOPROXY="https://goproxy.cn,direct"
