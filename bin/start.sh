@@ -22,17 +22,22 @@ function start()
             docker start ${MO_CONTAINER_NAME}
         else
             # initial start
-            docker_ser_ver=`docker version --format='{{.Server.Version}}'`
-            # if docker_ser_ver ≥ DOCKER_SERVER_VERSION, don't use privileged
-            if cmp_version "${docker_ser_ver}" "${DOCKER_SERVER_VERSION}"; then
-                docker_init_cmd="docker run -d -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME} ${MO_IMAGE_FULL}"
+            docker_server_ver=`docker version --format='{{.Server.Version}}'`
+
+            docker_init_cmd="docker run -d -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME}"
+
+            # if docker_server_ver ≥ DOCKER_SERVER_VERSION, don't use privileged
+            if ! cmp_version "${docker_server_ver}" "${DOCKER_SERVER_VERSION}"; then
+                docker_init_cmd="${docker_init_cmd} --privileged=true"
+            fi
+
+            # if conf path exists
+            if [[ -d ${MO_CONTAINER_CONF_HOST_PATH} ]]; then
+                docker_init_cmd="${docker_init_cmd} -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_IMAGE_FULL} -launch ${MO_CONTAINER_CONF_CON_FILE}"
             else
-                if [[ -d ${MO_CONTAINER_CONF_HOST_PATH} ]]; then
-                    docker_init_cmd="docker run -d -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME} --privileged=true ${MO_IMAGE_FULL} -v ${MO_CONTAINER_CONF_HOST_PATH}/:/etc:rw" --entrypoint "/mo-service -launch ${MO_CONTAINER_CONF_CON_FILE}"
-                else
-                    docker_init_cmd="docker run -d -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME} --privileged=true ${MO_IMAGE_FULL}"
-                fi
-            fi 
+                docker_init_cmd="${docker_init_cmd} ${MO_IMAGE_FULL}"
+            fi
+
             add_log "I" "Initial start mo container: ${docker_init_cmd}"
             ${docker_init_cmd}
         fi
