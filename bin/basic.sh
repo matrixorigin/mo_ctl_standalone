@@ -232,6 +232,9 @@ function get_stable_cid()
 {
     cid="$1"
     case "${cid}" in
+        "1.0.0-rc1")
+            echo "6c08c6a45191d63f9f89e5bfef5ff37194713b5f"
+            ;;
         "0.8.0")
             echo "daf86797160585d24c158e4ee220964264616505"
             ;;
