@@ -33,6 +33,8 @@ MO_IMAGE_FULL=""
 MO_CONTAINER_NAME="mo"
 MO_CONTAINER_PORT="6001"
 MO_CONTAINER_DEBUG_PORT="12345"
+MO_CONTAINER_CONF_HOST_PATH="/dev/null"
+MO_CONTAINER_CONF_CON_FILE="/etc/quickstart/launch.toml"
 
 ###########################################
 # no need to set below conf for most cases 

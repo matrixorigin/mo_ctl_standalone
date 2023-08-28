@@ -13,7 +13,7 @@ function status()
         dp_info=`docker ps --filter "name=${MO_CONTAINER_NAME}"`
         dp_name=`docker ps --filter "name=${MO_CONTAINER_NAME}" --format "table {{.Names}}" | tail -n 1`
         if [[ "${dp_name}" == "${MO_CONTAINER_NAME}" ]]; then
-            add_log "I" "Info of: docker ps --filter name=${MO_CONTAINER_NAME}"
+            add_log "I" "Info of: docker ps --no-trunc --filter name=${MO_CONTAINER_NAME}"
             echo "${dp_info}"
         else
             add_log "I" "No container named ${MO_CONTAINER_NAME} is running"
