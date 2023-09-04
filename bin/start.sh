@@ -44,8 +44,24 @@ function start()
     else
         mkdir -p ${MO_LOG_PATH}
         RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-        add_log "I" "Starting mo-service: cd ${MO_PATH}/matrixone/ && ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
-        cd ${MO_PATH}/matrixone/ && ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+        total_mem=`free -m | awk 'NR==2{print $2}'`
+        add_log "I" "Check total memory on current machine, command: free -m | awk 'NR==2{print $2}', result(Mi): ${total_mem}"
+        go_mem_limit=""
+        if [[ "${total_mem}" != "" ]]; then
+            let go_mem_limit=total_mem*${GO_MEM_LIMIT_RATIO}/100
+            add_log "I" "GO memory limit(Mi): ${go_mem_limit}"
+        fi
+
+        if [[ "${go_mem_limit}" == "" ]]; then
+            add_log "W" "GO memory limit seems to be empty, thus will not set this limit"
+            add_log "I" "Starting mo-service: cd ${MO_PATH}/matrixone/ && ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
+            cd ${MO_PATH}/matrixone/ && ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+        else
+            add_log "I" "Start command will add GOMEMLIMIT=${go_mem_limit}MiB"
+            add_log "I" "Starting mo-service: cd ${MO_PATH}/matrixone/ && GOMEMLIMIT=${go_mem_limit}MiB ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
+            cd ${MO_PATH}/matrixone/ && GOMEMLIMIT=${go_mem_limit}MiB ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+        fi
+        
         add_log "I" "Wait for ${START_INTERVAL} seconds"
         sleep ${START_INTERVAL}
         if status; then

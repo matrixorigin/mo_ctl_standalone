@@ -75,8 +75,8 @@ START_INTERVAL="2"
 MO_DEBUG_PORT="9876"
 # conf file used to start mo-service
 MO_CONF_FILE="${MO_PATH}/matrixone/etc/launch/launch.toml"
-
-
+# GO memory limit ratio, x%. By default, 90% is recommended
+GO_MEM_LIMIT_RATIO=90
 
 # for restart
 # interval between stop and start, unit: seconds

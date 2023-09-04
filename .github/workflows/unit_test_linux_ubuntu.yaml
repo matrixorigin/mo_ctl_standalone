@@ -27,8 +27,8 @@ env:
   MO_PW: "111"
   OPTION_LIST: "connect,ddl_convert,deploy,get_branch,get_cid,get_conf,pprof,precheck,restart,set_conf,start,status,stop,uninstall,upgrade,watchdog"
   MO_PATH: "/home/runner/mo"
-  MO_STABLE_VERSION: "0.8.0"
-  MO_STABLE_BRANCH: "0.8.0"
+  MO_STABLE_VERSION: "1.0.0-rc1"
+  MO_STABLE_BRANCH: "1.0.0-rc1"
   # last updated: 2023/7/22
   MO_STABLE_CID: "daf86797160585d24c158e4ee220964264616505"
   MO_TEST_CID_1: "38888f7"
