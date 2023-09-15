@@ -15,6 +15,7 @@ function check_uninstall_pre_requisites()
     if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
         if mo_ctl status; then
             add_log "E" "Detected mo container named ${MO_CONTAINER_NAME} running, please try to stop it first via 'mo_ctl stop [force]' before uninstalling mo"
+            rc=1
         fi
     else
         if mo_ctl status | grep "${MO_PATH}/matrixone"; then
