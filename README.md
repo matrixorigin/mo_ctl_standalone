@@ -245,6 +245,9 @@ Usage         : mo_ctl setconf [conf_list] # set configurations
  [conf_list]  : configuration list in key=value format, seperated by comma
   e.g.        : mo_ctl setconf MO_PATH=/data/mo/20230629/matrixone,MO_PW=M@trix0riginR0cks,MO_PORT=6101  # set multiple configurations
               : mo_ctl setconf MO_PATH=/data/mo/20230629/matrixone                                       # set single configuration
+              # Note: 
+              # in case you want to set a conf whose value contains a '$', e.g. MO_CONF_FILE="${MO_PATH}/matrixone/etc/launch-tae-CN-tae-DN/launch.toml", please add \ before $, like this: 
+              # mo_ctl set_conf MO_CONF_FILE="\${MO_PATH}/matrixone/etc/launch-tae-CN-tae-DN/launch.toml"
 ```
 ### sql - execute sql
 
