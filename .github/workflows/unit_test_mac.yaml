@@ -30,12 +30,12 @@ env:
   MO_PATH: "/Users/runner/mo"
   MO_STABLE_VERSION: "1.0.0-rc1"
   MO_STABLE_BRANCH: "1.0.0-rc1"
-  # last updated: 2023/7/22
+  # last updated: 2023/10/9
   MO_STABLE_CID: "daf86797160585d24c158e4ee220964264616505"
-  MO_TEST_CID_1: "38888f7"
-  MO_TEST_BRANCH_1: "(HEAD detached at 38888f7b0)"
-  MO_TEST_CID_2: "4f7f0b3"
-  MO_TEST_BRANCH_2: "(HEAD detached at 4f7f0b32d)"
+  MO_TEST_CID_1: "654ce16"
+  MO_TEST_BRANCH_1: "(HEAD detached at 654ce16d5)"
+  MO_TEST_CID_2: "6fb41d2"
+  MO_TEST_BRANCH_2: "(HEAD detached at 6fb41d210)"
   MO_MAIN_BRANCH: "main"
   MO_PPROF_PATH: "/Users/runner/pprof_test"
   TEST_SQL_PATH: /Users/runner/test_path
