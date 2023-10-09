@@ -13,7 +13,15 @@ function start()
         return 0
     fi
 
-    total_mem=`free -m | awk 'NR==2{print $2}'`
+    os=`what_os`
+
+    if [[ "${os}" == "Mac" ]]; then
+        total_mem_bytes=`sysctl hw.memsize | awk -F ":" '{print $2}' | sed 's/ //g'`
+        total_mem=`expr $total_mem_bytes / 1024 / 1024`
+    else
+        total_mem=`free -m | awk 'NR==2{print $2}'`
+    fi
+
     add_log "D" "Check total memory on current machine, command: free -m | awk 'NR==2{print $2}', result(Mi): ${total_mem}"
     docker_mem_limit=""
     go_mem_limit=""

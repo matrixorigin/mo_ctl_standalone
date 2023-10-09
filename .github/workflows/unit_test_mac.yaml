@@ -1098,6 +1098,9 @@ jobs:
       - name: Test_5. 'mo_ctl start'
         run: |
           echo ""
+          RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
+          mkdir -p ${{ env.MO_PATH }}/${RUN_TAG}
+          mo_ctl set_conf MO_CONTAINER_DATA_HOST_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
           mo_ctl start && mo_ctl status
       - name: Test_6. 'mo_ctl status' (mo-service running)
         run: |
