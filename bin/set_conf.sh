@@ -11,23 +11,7 @@ function set_kv()
     value=$2
 
 
-    # 0. reset conf
-    tmp_key=`to_lower "${key}"`
-    if [[ "${tmp_key}" == "reset" ]]; then
-        add_log "I" "You're about to set all confs, which will be replaced by default settings. This could be dangerous since all of your current settings will be lost!!! Are you sure? (Yes/No)"
-        read -t 30 user_confirm
-        if [[ "$(to_lower ${key})" != "yes" ]]; then
-            add_log "E" "User input not confirmed or timed out, exiting"
-            return 1
-        fi
-        
-        if cp -pf ${CONF_FILE_DEFAULT} ${CONF_FILE}; then
-            add_log "E" "Reset all confs succeeded"
-        else
-            add_log "E" "Reset confs failed"
-            return 1
-        fi
-    fi
+
 
     # 1. check if key is in conf list, that is, a valid key
     if ! grep "^${key}=.*" "${CONF_FILE}" >/dev/null 2>&1; then
@@ -64,12 +48,31 @@ function set_kv()
 function set_conf()
 {
     list=$*
+    tmp_key=`to_lower "${list}"`
 
+    # list cannot be empty
     if [[ "${list}" == "" ]]; then
         add_log "E" "Set list cannot be empty"
         help_set_conf
         return 1
+    # reset conf
+    elif [[ "${tmp_key}" == "reset" ]]; then
+        add_log "I" "You're about to set all confs, which will be replaced by default settings. This could be dangerous since all of your current settings will be lost!!! Are you sure? (Yes/No)"
+        read -t 30 user_confirm
+        if [[ "$(to_lower ${key})" != "yes" ]]; then
+            add_log "E" "User input not confirmed or timed out, exiting"
+            return 1
+        fi
+        
+        if cp -pf ${CONF_FILE_DEFAULT} ${CONF_FILE}; then
+            add_log "E" "Reset all confs succeeded"
+            return 0
+        else
+            add_log "E" "Reset confs failed"
+            return 1
+        fi
     fi
+
 
     rc=0
     for kv in $(echo $list | sed "s/,/ /g")
