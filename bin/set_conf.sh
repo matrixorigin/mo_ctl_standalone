@@ -59,7 +59,7 @@ function set_conf()
     elif [[ "${tmp_key}" == "reset" ]]; then
         add_log "I" "You're about to set all confs, which will be replaced by default settings. This could be dangerous since all of your current settings will be lost!!! Are you sure? (Yes/No)"
         read -t 30 user_confirm
-        if [[ "$(to_lower ${key})" != "yes" ]]; then
+        if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
             add_log "E" "User input not confirmed or timed out, exiting"
             return 1
         fi
