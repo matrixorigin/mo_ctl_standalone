@@ -16,6 +16,7 @@ function precheck()
         if [[ "${item}" == "docker" ]]; then
             # ignore docker in case deploy mode is not docker
             if [[ "${MO_DEPLOY_MODE}" != "docker" ]]; then
+                add_log "I" "Conf MO_DEPLOY_MODE is set to '${MO_DEPLOY_MODE}', ignoring docker"
                 continue
             fi
         fi

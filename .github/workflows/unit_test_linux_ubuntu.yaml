@@ -197,6 +197,11 @@ jobs:
               echo "failed"
               exit 1
           fi          
+      - name: Test_10. 'mo_ctl set_conf reset' (reset all confs to default)
+        run: |
+          echo ""
+          echo "test_cmd: echo \"yes\" | mo_ctl set_conf reset"
+          echo "yes"| mo_ctl set_conf reset
   # Job 4
   Test-4-Precheck:
     runs-on: ubuntu-latest
@@ -220,7 +225,7 @@ jobs:
               echo "'mo_ctl precheck' fails as expected"
           fi
   # Job 5-1
-  Test-5-1-Deloy-Uninstall-Latest:
+  Test-5-1-Deloy-Uninstall-Latest-Version:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -252,7 +257,11 @@ jobs:
               echo "Failed to get_cid or cid is not that as expected"
               exit 1
           fi
-      - name: Test_4. 'mo_ctl uninstall' (uninstall mo)
+      - name: Test_4. 'mo_ctl version' (get mo_ctl and mo version)
+        run: |
+          echo ""
+          mo_ctl version
+      - name: Test_5. 'mo_ctl uninstall' (uninstall mo)
         run: |
           echo ""
           mo_ctl stop force

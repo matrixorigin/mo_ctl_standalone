@@ -7,16 +7,17 @@
 
 #confs
 TOOL_NAME="mo_ctl"
-USAGE_OPTION_LIST="connect | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | sql | start | status | stop | uninstall | upgrade | watchdog"
+USAGE_OPTION_LIST="connect | csv_convert | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | sql | start | status | stop | uninstall | upgrade | version | watchdog"
 USAGE_CONNECT="connect to mo via mysql client using connection info configured"
-USAGE_DDL_CONVERT="convert ddl file to mo format from other types of database"
+USAGE_CSV_CONVERT="convert a csv file to a sql file in format \"insert into values\" or \"load data inline format='csv'\""
+USAGE_DDL_CONVERT="convert a ddl file to mo format from other types of database"
 USAGE_DEPLOY="deploy mo onto the path configured"
 USAGE_GET_BRANCH="print which git branch mo is currently on"
 USAGE_GET_CID="print mo git commit id from the path configured"
 USAGE_GET_CONF="get configurations"
 USAGE_HELP="print help information"
 USAGE_PATH="print mo path configured"
-USAGE_PRECHECK="check pre-requisites for mo_ctl"
+USAGE_PRECHECK="check pre-requisites for ${TOOL_NAME}"
 USAGE_PPROF="collect pprof information"
 USAGE_RESTART="a combination operation of stop and start"
 USAGE_SET_CONF="set configurations"
@@ -26,6 +27,7 @@ USAGE_START="start mo-service from the path configured"
 USAGE_STOP="stop all mo-service processes found on this machine"
 USAGE_UNINSTALL="uninstall mo from path MO_PATH=${MO_PATH}/matrixone"
 USAGE_UPGRADE="upgrade or downgrade mo from current version to a target commit id or stable version"
+USAGE_VERSION="show ${TOOL_NAME} and mo version"
 USAGE_WATCHDOG="setup a watchdog crontab task for mo-service to keep it alive"
 
 function help_precheck()
@@ -130,6 +132,7 @@ function help_set_conf()
     echo " [conf_list]  : configuration list in key=value format, seperated by comma"
     echo "  e.g.        : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629/matrixone,MO_PW=M@trix0riginR0cks,MO_PORT=6101  # set multiple configurations"
     echo "              : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629/matrixone                                       # set single configuration"
+    echo "              : ${TOOL_NAME} set_conf reset        # reset all confs to default, note this could be dangerous as all of your current settings will be lost. Use it very carefully!!!"
 }
 
 function help_get_conf()
@@ -204,29 +207,64 @@ function help_sql()
     echo "                : ${TOOL_NAME} ${option} /data/                  # execute all sql files with .sql postfix in /data/"
 }
 
+function help_csv_convert()
+{
+    option="csv_convert"
+    echo "Usage           : ${TOOL_NAME} ${option}                        # ${USAGE_CSV_CONVERT}"
+    echo "Note: please set below configurations first before you run this option"
+    echo "      1. CSV_CONVERT_SRC_FILE: source csv file to convert, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_SRC_FILE=\"/data/test.csv\""
+    echo "      2. CSV_CONVERT_BATCH_SIZE: batch size of target file, note max batch size is limited to ${CSV_CONVERT_MAX_BATCH_SIZE}, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_BATCH_SIZE=8192"
+    echo "      3. CSV_CONVERT_TGT_DIR: a directory to generate target file, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_TGT_DIR=/data/target_dir/"
+    echo "      4. CSV_CONVERT_TYPE: [OPTIONAL, default: 3] convert type: 1|2|3, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_TYPE=3"
+    echo "          1: insert into values"
+    echo "          2: load data inline format='csv', data='1\n2\n' into table db_1.tb_1;"
+    echo "          3: "
+    echo "              load data  inline format='csv', data=\$XXX\$"
+    echo "              1,2,3"
+    echo "              11,22,33"
+    echo "              111,222,333"
+    echo "              \$XXX\$ "
+    echo "              into table db_1.tb_1;"
+    echo "      5. CSV_CONVERT_META_DB: database name, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_META_DB=school"
+    echo "      6. CSV_CONVERT_META_TABLE: table name, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_META_TABLE=student"
+    echo "      7. CSV_CONVERT_META_COLUMN_LIST: [OPTIONAL, default: empty] column list, seperated by ',' , e.g. ${TOOL_NAME} set_conf CSV_CONVERT_META_COLUMN_LIST=id,name,age"
+    echo "      8. CSV_CONVERT_TN_TYPE: [OPTIONAL, default: 1] transaction type: 1|2, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_TN_TYPE=1"
+    echo "          1: multi transactions"
+    echo "          2: single transation(will add 'begin;' at first line and 'end;' at last line)"
+    echo "      9. CSV_CONVERT_TMP_DIR: [OPTIONAL, default: /tmp] a directory to contain temporary files, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_TMP_DIR=/tmp/"
+}
+
+function help_version()
+{
+    option="version"
+    echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_VERSION}"
+}
+
 function help_1()
 {
     echo "Usage             : ${TOOL_NAME} [option_1] [option_2]"
     echo ""
     echo "  [option_1]      : available: ${USAGE_OPTION_LIST}"
     echo "  1) connect      : ${USAGE_CONNECT}"
-    echo "  2) ddl_convert  : ${USAGE_DDL_CONVERT}"
-    echo "  3) deploy       : ${USAGE_DEPLOY}"
-    echo "  4) get_branch   : ${USAGE_UPGRADE}"
-    echo "  5) get_cid      : ${USAGE_GET_CID}"
-    echo "  6) get_conf     : ${USAGE_GET_CONF}"
-    echo "  7) help         : ${USAGE_HELP}"
-    echo "  8) pprof        : ${USAGE_PPROF}"
-    echo "  9) precheck     : ${USAGE_PRECHECK}"
-    echo "  10) restart     : ${USAGE_RESTART}"
-    echo "  11) set_conf    : ${USAGE_SET_CONF}"
-    echo "  12) sql         : ${USAGE_SQL}"
-    echo "  13) start       : ${USAGE_START}"
-    echo "  14) status      : ${USAGE_STATUS}"
-    echo "  15) stop        : ${USAGE_STOP}"
-    echo "  16) uninstall   : ${USAGE_UNINSTALL}"
-    echo "  17) upgrade     : ${USAGE_UPGRADE}"
-    echo "  18) watchdog    : ${USAGE_WATCHDOG}"
+    echo "  2) csv_convert  : ${USAGE_CSV_CONVERT}"
+    echo "  3) ddl_convert  : ${USAGE_DDL_CONVERT}"
+    echo "  4) deploy       : ${USAGE_DEPLOY}"
+    echo "  5) get_branch   : ${USAGE_UPGRADE}"
+    echo "  6) get_cid      : ${USAGE_GET_CID}"
+    echo "  7) get_conf     : ${USAGE_GET_CONF}"
+    echo "  8) help         : ${USAGE_HELP}"
+    echo "  9) pprof        : ${USAGE_PPROF}"
+    echo "  10) precheck     : ${USAGE_PRECHECK}"
+    echo "  11) restart     : ${USAGE_RESTART}"
+    echo "  12) set_conf    : ${USAGE_SET_CONF}"
+    echo "  13) sql         : ${USAGE_SQL}"
+    echo "  14) start       : ${USAGE_START}"
+    echo "  15) status      : ${USAGE_STATUS}"
+    echo "  16) stop        : ${USAGE_STOP}"
+    echo "  17) uninstall   : ${USAGE_UNINSTALL}"
+    echo "  18) upgrade     : ${USAGE_UPGRADE}"
+    echo "  19) version     : ${USAGE_VERSION}"
+    echo "  20) watchdog    : ${USAGE_WATCHDOG}"
     echo "  e.g.            : ${TOOL_NAME} status"
     echo ""
     echo "  [option_2]      : Use \" ${TOOL_NAME} [option_1] help \" to get more info"
@@ -289,6 +327,12 @@ function help_2()
             ;;
         sql)
             help_sql
+            ;;
+        csv_convert)
+            help_csv_convert
+            ;;
+        version)
+            help_version
             ;;
         *)
             add_log "E" "invalid [option_1]: ${option_1}"

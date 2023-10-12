@@ -15,13 +15,15 @@ fi
 WORK_DIR=`cd "$(dirname "$0")" || exit; pwd`
 # confs
 CONF_FILE="${WORK_DIR}/conf/env.sh"
+CONF_FILE_DEFAULT="${WORK_DIR}/conf/env.sh.default"
 BIN_DIR="${WORK_DIR}/bin"
 # scripts
 SCRIPT_LIST=("basic" "help" "precheck" "deploy" \
     "status" "start" "stop" "restart" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
     "mysql_to_mo" "ddl_convert" "watchdog" "upgrade" \
-    "get_branch" "uninstall" "sql" \
+    "get_branch" "uninstall" "sql" "csv_convert" \
+    "version" \
 )
 PIDS=""
 
@@ -124,6 +126,12 @@ function main()
             fi
             shift_vars=`echo "${all_vars#* }"`
             sql "${shift_vars}"
+            ;;
+        "csv_convert")
+            csv_convert
+            ;;
+        "version")
+            version
             ;;
         *)
             add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"

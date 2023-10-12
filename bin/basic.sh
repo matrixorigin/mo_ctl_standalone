@@ -150,7 +150,7 @@ function cmp_version_old()
 
 
 function pos_int_range()
-# function: check if a given string is a valid positive integer and is less than the second given number
+# function: check if a given string is a valid positive integer and is not larger than the second given number
 # usage: pos_int_range [num1] [num2]
 # e.g. : pos_int_range 10 100
 # in:
@@ -194,6 +194,28 @@ function to_lower()
     echo $(echo $1 | tr '[A-Z]' '[a-z]') 
 }
 
+# function: return the round up value of quotient of the 2 given positive integer number
+# tmp = num1 / num2
+# return : floor(tmp)
+# e.g. 6/4=1.5, return 2; 6/3=2, return 2
+function floor_quotient()
+{
+    n1=$1
+    n2=$2
+    if [[ ${n1} -gt 0 ]] 2>/dev/null && [[ ${n2} -gt 0 ]] 2>/dev/null; then
+        quotient=`expr ${n1} / ${n2}`
+        remainder=`expr ${n1} % ${n2}`
+        if [[ ${remainder} -ne 0 ]]; then
+            quotient=`expr ${quotient} + 1`
+        fi
+
+        echo "${quotient}"
+    else
+        add_log "E" "Either input number ${n1} or ${n2} is not a valid positive number"
+    fi
+}
+
+
 # function: get time cost between start time and end time
 # usage: get_timing [start_time] [end_time]
 # e.g. : get_timing "1689217282.184130282" "1689217289.414088786"
@@ -228,6 +250,7 @@ function time_cost_ms()
     echo "${cost}"
 }
 
+# function: get latest commit id of a given release version
 function get_stable_cid()
 {
     cid="$1"
@@ -264,4 +287,33 @@ function get_stable_cid()
             ;;
     esac
     
+}
+
+# function: get cpu cores of current machine
+function get_cpu_cores()
+{
+    os=`what_os`
+    cpu_cores=""
+    if [[ "${os}" == "Mac" ]]; then
+        cpu_cores=`sysctl -n machdep.cpu.core_count`
+    else
+        cpu_cores=`cat /proc/cpuinfo | grep "processor" | wc -l`
+    fi
+    echo "${cpu_cores}"
+}
+
+# function: get memory size in megabytes of current machine 
+function get_mem_mb()
+{
+    os=`what_os`
+    total_mem=""
+
+    if [[ "${os}" == "Mac" ]]; then
+        total_mem_bytes=`sysctl hw.memsize | awk -F ":" '{print $2}' | sed 's/ //g'`
+        total_mem=`expr $total_mem_bytes / 1024 / 1024`
+    else
+        total_mem=`free -m | awk 'NR==2{print $2}'`
+    fi
+
+    echo "${total_mem}"
 }

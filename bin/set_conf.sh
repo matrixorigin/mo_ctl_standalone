@@ -11,6 +11,24 @@ function set_kv()
     value=$2
 
 
+    # 0. reset conf
+    tmp_key=`to_lower "${key}"`
+    if [[ "${tmp_key}" == "reset" ]]; then
+        add_log "I" "You're about to set all confs, which will be replaced by default settings. This could be dangerous since all of your current settings will be lost!!! Are you sure? (Yes/No)"
+        read -t 30 user_confirm
+        if [[ "$(to_lower ${key})" != "yes" ]]; then
+            add_log "E" "User input not confirmed or timed out, exiting"
+            return 1
+        fi
+        
+        if cp -pf ${CONF_FILE_DEFAULT} ${CONF_FILE}; then
+            add_log "E" "Reset all confs succeeded"
+        else
+            add_log "E" "Reset confs failed"
+            return 1
+        fi
+    fi
+
     # 1. check if key is in conf list, that is, a valid key
     if ! grep "^${key}=.*" "${CONF_FILE}" >/dev/null 2>&1; then
         add_log "E" "Conf ${key} is not a valid item in conf file ${CONF_FILE}, skipping"
@@ -19,9 +37,17 @@ function set_kv()
 
     # 2. check if value is not empty, that is, a valid value
     if [[ "${value}" == "" ]]; then
-        add_log "E" "The value of conf ${key} is empty, which is not allowed"
-        rc=1
-        return 1
+        case "${key}" in
+            "MO_CONTAINER_DATA_HOST_PATH" | "MO_CONTAINER_CONF_HOST_PATH" | "CSV_CONVERT_META_COLUMN_LIST")
+                :
+                ;;
+            *)
+                add_log "E" "The value of conf ${key} is empty, which is not allowed"
+                rc=1
+                return 1
+            ;;
+        esac 
+
     fi
 
     # 3. Set conf key=value
