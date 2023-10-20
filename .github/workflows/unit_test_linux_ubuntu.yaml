@@ -25,7 +25,7 @@ env:
   MO_PORT: "6001"
   MO_USER: "dump"
   MO_PW: "111"
-  OPTION_LIST: "connect,ddl_convert,deploy,get_branch,get_cid,get_conf,pprof,precheck,restart,set_conf,start,status,stop,uninstall,upgrade,watchdog"
+  OPTION_LIST: "auto_backup,backup,clean_backup,connect,ddl_convert,deploy,get_branch,get_cid,get_conf,pprof,precheck,restart,set_conf,start,status,stop,uninstall,upgrade,watchdog"
   MO_PATH: "/home/runner/mo"
   MO_STABLE_VERSION: "1.0.0-rc1"
   MO_STABLE_BRANCH: "1.0.0-rc1"
@@ -180,6 +180,7 @@ jobs:
       - name: Test_8. 'mo_ctl set_conf xxx' (wrong way to set conf)
         run: |
           echo ""
+          #echo "test_cmd: mo_ctl set_conf xx || mo_ctl set_conf MO_USER=\"mike\",yy || mo_ctl set_conf MO_USER=\"mike\",yy=\"test\" || mo_ctl set_conf MO_USER=\"mike\" yy=\"test\""
           echo "test_cmd: mo_ctl set_conf xx || mo_ctl set_conf yy=\"test\""
           #if mo_ctl set_conf xx || mo_ctl set_conf MO_USER="mike",yy ||mo_ctl set_conf MO_USER="mike",yy="test" || mo_ctl set_conf MO_USER="mike" yy="test"; then
           if mo_ctl set_conf xx || mo_ctl set_conf yy="test"; then
@@ -1119,8 +1120,8 @@ jobs:
           echo ""
           mo_ctl stop
           echo "yes" | mo_ctl uninstall
-  # Job 12
-  Test-12-Auto-Backup:
+  # Job 13
+  Test-13-Auto-Backup:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1168,7 +1169,19 @@ jobs:
           echo "----------------------------------"
           echo "Test backup automatically"
           echo ""
+          if ! mo_ctl auto_backup; then
+              echo "auto_backup status failed as expected"
+          fi
+
+          if ! mo_ctl auto_backup status; then
+              echo "auto_backup status failed as expected"
+          fi
+
+          echo "Enabling auto_backup"
+          mo_ctl auto_backup enable
           mo_ctl auto_backup
+
+
           echo "Wait for 120s"
           sleep 120
           echo "Show backup path"
@@ -1194,4 +1207,8 @@ jobs:
           ls -lth ${{ env.BACKUP_PATH }}/
           ls -lth ${{ env.BACKUP_PATH }}/*/
         
-          
+          echo "Disabling auto_backup"
+          mo_ctl auto_backup disable
+          if ! mo_ctl auto_backup; then
+              echo "auto_backup status failed as expected"
+          fi
