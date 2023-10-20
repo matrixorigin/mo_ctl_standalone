@@ -196,7 +196,7 @@ function auto_backup_enable()
     fi
 
     if ! auto_backup_status; then
-        add_log "I" "Enabling ${option_name}"
+        add_log "I" "Enabling ${ab_name} and ${cb_name}"
         
         add_log "D" "Creating log folder: mkdir -p ${LOG_DIR}/${ab_name}/ ${LOG_DIR}/${cb_name}/"
         mkdir -p ${LOG_DIR}/${ab_name}/ ${LOG_DIR}/${cb_name}/
