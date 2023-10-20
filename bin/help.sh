@@ -8,6 +8,9 @@
 #confs
 TOOL_NAME="mo_ctl"
 USAGE_OPTION_LIST="connect | csv_convert | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | sql | start | status | stop | uninstall | upgrade | version | watchdog"
+USAGE_AUTO_BACKUP="setup a crontab task to backup your databases automatically"
+USAGE_BACKUP="create a backup of your databases manually"
+USAGE_CLEAN_BACKUP="clean old backups older than conf ${BACKUP_CLEAN_DAYS_BEFORE} days manually"
 USAGE_CONNECT="connect to mo via mysql client using connection info configured"
 USAGE_CSV_CONVERT="convert a csv file to a sql file in format \"insert into values\" or \"load data inline format='csv'\""
 USAGE_DDL_CONVERT="convert a ddl file to mo format from other types of database"
@@ -27,7 +30,7 @@ USAGE_START="start mo-service from the path configured"
 USAGE_STOP="stop all mo-service processes found on this machine"
 USAGE_UNINSTALL="uninstall mo from path MO_PATH=${MO_PATH}/matrixone"
 USAGE_UPGRADE="upgrade or downgrade mo from current version to a target commit id or stable version"
-USAGE_VERSION="show ${TOOL_NAME} and mo version"
+USAGE_VERSION="show ${TOOL_NAME} and matrixone version"
 USAGE_WATCHDOG="setup a watchdog crontab task for mo-service to keep it alive"
 
 function help_precheck()
@@ -127,12 +130,13 @@ function help_pprof()
 
 function help_set_conf()
 {
-    option="setconf"
+    option="set_conf"
     echo "Usage         : ${TOOL_NAME} ${option} [conf_list] # ${USAGE_SET_CONF}"
-    echo " [conf_list]  : configuration list in key=value format, seperated by comma"
-    echo "  e.g.        : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629/matrixone,MO_PW=M@trix0riginR0cks,MO_PORT=6101  # set multiple configurations"
-    echo "              : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629/matrixone                                       # set single configuration"
-    echo "              : ${TOOL_NAME} set_conf reset        # reset all confs to default, note this could be dangerous as all of your current settings will be lost. Use it very carefully!!!"
+    echo " [conf_list]  : configuration list in key=value format, note that setting multiple confs at the same time is not supported"
+    echo "              : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629"
+    echo "              : ${TOOL_NAME} ${option} BACKUP_CRON_SCHEDULE=\"30 23 * * *\"             # in case your conf value contains a special character like '*', use double \" to quote it"
+    echo "              : ${TOOL_NAME} ${option} MO_LOG_PATH=\"\\\${MO_PATH}/matrixone/logs\"      # in case your conf value contains a special character like '$', use double \" and \\ to quote it"
+    echo "              : ${TOOL_NAME} ${option} reset                                            # reset all confs to default, note this could be dangerous as all of your current settings will be lost. Use it very carefully!!!"
 }
 
 function help_get_conf()
@@ -228,7 +232,7 @@ function help_csv_convert()
     echo "      5. CSV_CONVERT_META_DB: database name, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_META_DB=school"
     echo "      6. CSV_CONVERT_META_TABLE: table name, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_META_TABLE=student"
     echo "      7. CSV_CONVERT_META_COLUMN_LIST: [OPTIONAL, default: empty] column list, seperated by ',' , e.g. ${TOOL_NAME} set_conf CSV_CONVERT_META_COLUMN_LIST=id,name,age"
-    echo "      8. CSV_CONVERT_TN_TYPE: [OPTIONAL, default: 1] transaction type: 1|2, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_TN_TYPE=1"
+    echo "      8. CSV_CONVERT_TN_TYPE: [OPTIONAL, default: 1] transaction type, choose from: 1|2, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_TN_TYPE=1"
     echo "          1: multi transactions"
     echo "          2: single transation(will add 'begin;' at first line and 'end;' at last line)"
     echo "      9. CSV_CONVERT_TMP_DIR: [OPTIONAL, default: /tmp] a directory to contain temporary files, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_TMP_DIR=/tmp/"
@@ -240,31 +244,76 @@ function help_version()
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_VERSION}"
 }
 
+function help_bk_notes()
+{
+    echo "  Note          : currently ${option} is only supported on linux systems"
+    echo "                : please set below configurations first before you run the [enable] option"
+    echo "      1. BACKUP_DB_LIST [OPTIONAL, default: all_no_sysdb]: backup databases, seperated by ',' for each database. Note: 'all' and 'all_no_sysdb' are special settings. e.g. mo_ctl set_conf BACKUP_DB_LIST=\"db1,db2,db3\""
+    echo "          all: all databases, including all system and user databases"
+    echo "          all_no_sysdb: all databases, including all user databases, but no system databases"
+    echo "          other settings by user: e.g. db1,db2,db3"
+    echo "      2. BACKUP_TYPE [OPTIONAL, default: logical]: backup type choose from \"logical | physical\". e.g. mo_ctl set_conf BACKUP_TYPE=\"logical\""
+    echo "  Note          : currently only \"logical\" is supported, and \"physical\" will be supported in the future"
+    echo "      3. BACKUP_CRON_SCHEDULE [OPTIONAL, default: 30 23 * * *]: cron expression to control backup schedule time and frequency, in standard cron format (https://crontab.guru/). e.g. mo_ctl set_conf BACKUP_TYPE=\"30 23 * * *\""
+    echo "      4. BACKUP_DATA_TYPE [OPTIONAL, default: insert]: (only valid when BACKUP_TYPE=logical)backup data type, choose from: insert | csv . e.g. mo_ctl set_conf BACKUP_DATA_TYPE=\"insert\""
+    echo "      5. BACKUP_PATH [OPTIONAL, default: /data/mo-backup]: backup directory. e.g. mo_ctl set_conf BACKUP_PATH=/data/mo-backup"
+    echo "      6. BACKUP_CLEAN_DAYS_BEFORE [OPTIONAL, default: 7]: clean old backup files before [x] (default: 7) days. e.g. mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=7"
+    echo "      7. BACKUP_CLEAN_CRON_SCHEDULE [OPTIONAL, default: 0 6 * * *]: cron to control auto clean of old backups. e.g. mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE=\"0 6 * * *\""
+
+}
+
+function help_auto_backup()
+{
+    option="auto_backup"
+    echo "Usage           : ${TOOL_NAME} ${option} [options]   # ${USAGE_AUTO_BACKUP}"
+    echo " [options]      : available: enable | disable | status"
+    echo "  e.g.          : ${TOOL_NAME} ${option} enable      # enable auto backup for your databases"
+    echo "                : ${TOOL_NAME} ${option} disable     # disable auto backup for your databases"
+    echo "                : ${TOOL_NAME} ${option} status      # check if auto backup is enabled or disabled"
+    echo "                : ${TOOL_NAME} ${option}             # same as ${TOOL_NAME} ${option} status"
+    help_bk_notes
+}
+
+function help_backup()
+{
+    option="backup"
+    echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_BACKUP}"
+    help_bk_notes
+}
+
+function help_clean_backup()
+{
+    option="clean_backup"
+    echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_CLEAN_BACKUP}"
+    help_bk_notes
+}
+
 function help_1()
 {
     echo "Usage             : ${TOOL_NAME} [option_1] [option_2]"
     echo ""
     echo "  [option_1]      : available: ${USAGE_OPTION_LIST}"
-    echo "  1) connect      : ${USAGE_CONNECT}"
-    echo "  2) csv_convert  : ${USAGE_CSV_CONVERT}"
-    echo "  3) ddl_convert  : ${USAGE_DDL_CONVERT}"
-    echo "  4) deploy       : ${USAGE_DEPLOY}"
-    echo "  5) get_branch   : ${USAGE_UPGRADE}"
-    echo "  6) get_cid      : ${USAGE_GET_CID}"
-    echo "  7) get_conf     : ${USAGE_GET_CONF}"
-    echo "  8) help         : ${USAGE_HELP}"
-    echo "  9) pprof        : ${USAGE_PPROF}"
-    echo "  10) precheck     : ${USAGE_PRECHECK}"
-    echo "  11) restart     : ${USAGE_RESTART}"
-    echo "  12) set_conf    : ${USAGE_SET_CONF}"
-    echo "  13) sql         : ${USAGE_SQL}"
-    echo "  14) start       : ${USAGE_START}"
-    echo "  15) status      : ${USAGE_STATUS}"
-    echo "  16) stop        : ${USAGE_STOP}"
-    echo "  17) uninstall   : ${USAGE_UNINSTALL}"
-    echo "  18) upgrade     : ${USAGE_UPGRADE}"
-    echo "  19) version     : ${USAGE_VERSION}"
-    echo "  20) watchdog    : ${USAGE_WATCHDOG}"
+    echo "  1) auto_backup  : ${USAGE_AUTO_BACKUP}"
+    echo "  2) connect      : ${USAGE_CONNECT}"
+    echo "  3) csv_convert  : ${USAGE_CSV_CONVERT}"
+    echo "  4) ddl_convert  : ${USAGE_DDL_CONVERT}"
+    echo "  5) deploy       : ${USAGE_DEPLOY}"
+    echo "  6) get_branch   : ${USAGE_UPGRADE}"
+    echo "  7) get_cid      : ${USAGE_GET_CID}"
+    echo "  8) get_conf     : ${USAGE_GET_CONF}"
+    echo "  9) help         : ${USAGE_HELP}"
+    echo "  10) pprof        : ${USAGE_PPROF}"
+    echo "  11) precheck     : ${USAGE_PRECHECK}"
+    echo "  12) restart     : ${USAGE_RESTART}"
+    echo "  13) set_conf    : ${USAGE_SET_CONF}"
+    echo "  14) sql         : ${USAGE_SQL}"
+    echo "  15) start       : ${USAGE_START}"
+    echo "  16) status      : ${USAGE_STATUS}"
+    echo "  17) stop        : ${USAGE_STOP}"
+    echo "  18) uninstall   : ${USAGE_UNINSTALL}"
+    echo "  19) upgrade     : ${USAGE_UPGRADE}"
+    echo "  20) version     : ${USAGE_VERSION}"
+    echo "  21) watchdog    : ${USAGE_WATCHDOG}"
     echo "  e.g.            : ${TOOL_NAME} status"
     echo ""
     echo "  [option_2]      : Use \" ${TOOL_NAME} [option_1] help \" to get more info"
@@ -276,7 +325,7 @@ function help_1()
 function help_2()
 {
     option=$1
-    case ${option_1} in
+    case "${option_1}" in
         precheck)
             help_precheck
             ;;
@@ -333,6 +382,15 @@ function help_2()
             ;;
         version)
             help_version
+            ;;
+        auto_backup)
+            help_auto_backup
+            ;;
+        backup)
+            help_backup
+            ;;
+        clean_backup)
+            help_clean_backup
             ;;
         *)
             add_log "E" "invalid [option_1]: ${option_1}"

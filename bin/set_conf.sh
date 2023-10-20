@@ -7,10 +7,13 @@
 
 function set_kv()
 {
-    key=$1
-    value=$2
+    key="$1"
+    value="$2"
 
+    # replace '*' with '\*'
+    value=`echo "${value}" |sed "s/\*/\\\\\*/g"`
 
+    add_log "D" "key: ${key}, value: ${value}"
 
 
     # 1. check if key is in conf list, that is, a valid key
@@ -35,7 +38,7 @@ function set_kv()
     fi
 
     # 3. Set conf key=value
-    add_log "I" "Setting conf ${key}=${value}"
+    add_log "I" "Setting conf ${key}=\"${value}\""
     os=`what_os`
     if [[ ${os} == "Linux" ]] ; then
         sed -i "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
@@ -47,8 +50,10 @@ function set_kv()
 
 function set_conf()
 {
-    list=$*
+    list="$*"
     tmp_key=`to_lower "${list}"`
+
+    add_log "D" "conf list: ${list}"
 
     # list cannot be empty
     if [[ "${list}" == "" ]]; then
@@ -65,7 +70,7 @@ function set_conf()
         fi
         
         if cp -pf ${CONF_FILE_DEFAULT} ${CONF_FILE}; then
-            add_log "E" "Reset all confs succeeded"
+            add_log "I" "Reset all confs succeeded"
             return 0
         else
             add_log "E" "Reset confs failed"
@@ -75,22 +80,27 @@ function set_conf()
 
 
     rc=0
-    for kv in $(echo $list | sed "s/,/ /g")
-    do
+    
+    # deprecated: setting multiple confs in a time is no longer supported
+    # for kv in $(echo "$list")
+    # deprecated: seperated by ',' is no longer supported   
+    # for kv in $(echo $list | sed "s/,/ /g")
+    # do
+    kv="${list}"
         # 1. check if format is key=value
-        if ! echo ${kv} | grep "=" >/dev/null 2>&1; then
+        if ! echo "${kv}" | grep "=" >/dev/null 2>&1; then
             add_log "E" "Conf ${kv} is an invalid format, please set conf as key=value, skipping"
             rc=1
             continue
         fi
 
         # 2. seperate key=value
-        key=`echo ${kv} | awk -F"=" '{print $1}'`
-        value=`echo ${kv} | awk -F"=" '{print $2}'`
+        key=`echo "${kv}" | awk -F"=" '{print $1}'`
+        value=`echo "${kv}" | awk -F"=" '{print $2}'`
 
 
         # 3. set key=value
-        add_log "I" "Try to set conf: ${key}=${value}"
+        add_log "I" "Try to set conf: ${key}=\"${value}\""
         if ! set_kv "${key}" "${value}"; then
             rc=1
         else
@@ -106,7 +116,7 @@ function set_conf()
                 fi
             fi
         fi
-    done
+    # done
 
     return ${rc}
 }

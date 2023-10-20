@@ -55,6 +55,18 @@ function get_nanosecond()
     echo "${nanosec}"
 }
 
+# function: convert an input string to upper format
+# usage: to_upper [string]
+# e.g. : to_upper aBcdEfgHI
+# in:
+#   [string]: string in alphabet format
+# out:
+#   [string]: upper format of input string, e.g. aBcdEfgHI -> ABCDEFGHI
+function to_upper()
+{
+    echo $(echo $1 | tr '[a-z]' '[A-Z]') 
+}
+
 
 # function: print log with given log level and message
 # usage: add_log [level] [msg] []
@@ -98,18 +110,47 @@ function add_log()
         nowtime="${timestamp_ms} ${timezone}"
     fi
 
+    level=`to_upper ${level}`
+    display_log_level=`to_upper ${TOOL_LOG_LEVEL}`
+    if [[ "${display_log_level}" == "" ]]; then
+        display_log_level="I"
+    fi
     case "${level}" in
-        "e"|"E")
+        "E")
             level="ERROR"
             ;;
-        "W"|"w")
-            level="WARN" 
+        "W")
+            level="WARN"
+            case "${display_log_level}" in
+                "E")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
             ;;
-        "I"|"i")
+        "I")
             level="INFO" 
+            case "${display_log_level}" in
+                "E"|"W")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
             ;;
-        "d"|"D")
+        "D")
             level="DEBUG" 
+            case "${display_log_level}" in
+                "E"|"W"|"I")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
             ;;
         *)
             echo "These are valid log levels: E/e/W/w/I/i/D/d."
@@ -170,17 +211,6 @@ function pos_int_range()
     fi
 }
 
-# function: convert an input string to upper format
-# usage: to_upper [string]
-# e.g. : to_upper aBcdEfgHI
-# in:
-#   [string]: string in alphabet format
-# out:
-#   [string]: upper format of input string, e.g. aBcdEfgHI -> ABCDEFGHI
-function to_upper()
-{
-    echo $(echo $1 | tr '[a-z]' '[A-Z]') 
-}
 
 # function: convert an input string to lower format
 # usage: to_lower [string]

@@ -9,6 +9,10 @@
 # set below confs on demand
 ###########################################
 
+# General
+# D|d: Debug, I|i: INFO, W|w: WARN, E|e: ERROR
+TOOL_LOG_LEVEL="I"
+
 # For deploy
 # path to deploy matrixone, recommanded path: /data/mo/${DATE}/
 MO_PATH="/data/mo/"
@@ -133,9 +137,27 @@ CSV_CONVERT_TN_TYPE=1
 CSV_CONVERT_TMP_DIR="/tmp"
 
 
-
 # for version
 MO_TOOL_NAME="mo_ctl"
 MO_TOOL_VERSION="V1.0"
 MO_SERVER_NAME="超融合数据库MatrixOne企业版软件"
 MO_SERVER_VERSION="V1.0"
+
+# for auto backup, currently only linux is supported
+# backup databases, seperated by ',' for each database. Note: 'all' and 'all_no_system' are special settings
+# all: all databases, including all system and user databases
+# all_no_sysdb: (default) all databases, including all user databases, but no system databases
+# other settings by user, e.g. db1,db2,db3
+BACKUP_DB_LIST="all_no_sysdb"
+# backup type: logical(default)|physical
+BACKUP_TYPE="logical"
+# cron to control auto backup schedule time and frequency, in standard cron format (https://crontab.guru/)
+BACKUP_CRON_SCHEDULE="30 23 * * *"
+# backup data type(only valid when BACKUP_TYPE=logical) : insert(default) | csv
+BACKUP_DATA_TYPE="insert"
+# backup directory
+BACKUP_PATH="/data/mo-backup"
+# clean old backup files before [x] (default: 7) days
+BACKUP_CLEAN_DAYS_BEFORE="7"
+# cron to control auto clean of old backups
+BACKUP_CLEAN_CRON_SCHEDULE="0 6 * * *"

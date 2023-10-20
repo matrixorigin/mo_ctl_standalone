@@ -17,13 +17,14 @@ WORK_DIR=`cd "$(dirname "$0")" || exit; pwd`
 CONF_FILE="${WORK_DIR}/conf/env.sh"
 CONF_FILE_DEFAULT="${WORK_DIR}/conf/env.sh.default"
 BIN_DIR="${WORK_DIR}/bin"
+LOG_DIR="${WORK_DIR}/log"
 # scripts
 SCRIPT_LIST=("basic" "help" "precheck" "deploy" \
     "status" "start" "stop" "restart" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
     "mysql_to_mo" "ddl_convert" "watchdog" "upgrade" \
     "get_branch" "uninstall" "sql" "csv_convert" \
-    "version" \
+    "version" "auto_backup" \
 )
 PIDS=""
 
@@ -132,6 +133,15 @@ function main()
             ;;
         "version")
             version
+            ;;
+        "auto_backup")
+            auto_backup ${option_2}
+            ;;
+        "backup")
+            backup
+            ;;
+        "clean_backup")
+            clean_backup
             ;;
         *)
             add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"
