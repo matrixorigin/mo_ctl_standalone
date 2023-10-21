@@ -33,9 +33,9 @@ function auto_clean_logs_status()
         :
     else
         # 2. Linux
-        if [[ -f ${CLEAN_LOGS_CRON_PATH}/${CLEAN_CRON_FILE_NAME} ]]; then
-            add_log "D" "Cron file ${CLEAN_LOGS_CRON_PATH}/${CLEAN_CRON_FILE_NAME} for ${acl_name} already exists, trying to get content: "
-            acl_content=`cat ${CLEAN_LOGS_CRON_PATH}/${CLEAN_CRON_FILE_NAME}`
+        if [[ -f ${CLEAN_LOGS_CRON_PATH}/${CLEAN_LOGS_CRON_FILE_NAME} ]]; then
+            add_log "D" "Cron file ${CLEAN_LOGS_CRON_PATH}/${CLEAN_LOGS_CRON_FILE_NAME} for ${acl_name} already exists, trying to get content: "
+            acl_content=`cat ${CLEAN_LOGS_CRON_PATH}/${CLEAN_LOGS_CRON_FILE_NAME}`
             add_log "D" "${acl_content}"
             if [[ "${acl_content}" == "" ]];then
                 add_log "E" "Content seems to be empty, something might be wrong when enabling ${acl_name}." 
@@ -45,7 +45,7 @@ function auto_clean_logs_status()
             fi
             add_log "I" "${acl_name} status：enabled"
         else
-            add_log "D" "Cron file ${CLEAN_LOGS_CRON_PATH}/${CLEAN_CRON_FILE_NAME} for ${acl_name} does not exist"
+            add_log "D" "Cron file ${CLEAN_LOGS_CRON_PATH}/${CLEAN_LOGS_CRON_FILE_NAME} for ${acl_name} does not exist"
             add_log "I" "${acl_name} status：disabled"
             rc=1
         fi
