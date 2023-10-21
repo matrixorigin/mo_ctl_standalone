@@ -1204,7 +1204,11 @@ jobs:
           mo_ctl clean_backup
           echo "Show backup path"
           ls -lth ${{ env.BACKUP_PATH }}
-          ls -lth ${{ env.BACKUP_PATH }}/*/
+          for dir in `ls ${{ env.BACKUP_PATH }}`; do
+              echo "----------------------------------"
+              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
+          done
           echo "----------------------------------"
           echo "Test backup manually"
           echo ""
@@ -1273,6 +1277,7 @@ jobs:
           mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
       - name: Test_3. Set confs
         run: |
+          mo_ctl set_conf TOOL_LOG_LEVEL=D
           mo_ctl set_conf CLEAN_LOGS_DAYS_BEFORE="0"
           mo_ctl set_conf CLEAN_LOGS_TABLE_LIST="statement_info,rawlog,metric"
           mo_ctl set_conf CLEAN_LOGS_CRON_SCHEDULE="* * * * *"
