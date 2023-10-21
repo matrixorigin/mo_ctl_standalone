@@ -134,6 +134,7 @@ function watchdog_disable()
             fi
         fi
         watchdog_status
+        return 0
     else
         add_log "I" "No need to disable ${wd_name} as it is already disabled, exiting"
         return 0

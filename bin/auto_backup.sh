@@ -216,8 +216,7 @@ function auto_backup_enable()
             fi
 
         fi
-            auto_backup_status
-            return 0
+        auto_backup_status
     else
         add_log "I" "No need to enable ${ab_name} as it is already enabled, exiting"
         return 0
@@ -252,6 +251,7 @@ function auto_backup_disable()
 
         fi
         auto_backup_status
+        return 0
     else
         add_log "I" "No need to disable ${ab_name} as it is already disabled, exiting"
         return 0

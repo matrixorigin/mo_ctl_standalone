@@ -115,6 +115,7 @@ function auto_clean_logs_disable()
             fi
         fi
         auto_clean_logs_status
+        return 0
     else
         add_log "I" "No need to disable ${acl_name} as it is already disabled, exiting"
         return 0

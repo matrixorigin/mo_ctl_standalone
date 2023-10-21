@@ -1233,8 +1233,10 @@ jobs:
               ls -lth ${{ env.BACKUP_PATH }}/${dir}/
           done
 
-          echo "check log path"
-          ls -lth ~/mo_ctl/log/auto_clean_logs/
+          echo "check log path ~/mo_ctl/log/auto_backup/"
+          ls -lth ~/mo_ctl/log/auto_backup/
+          echo "check log path ~/mo_ctl/log/auto_clean_old_backup/"
+          ls -lth ~/mo_ctl/log/auto_clean_old_backup/
           echo "check cron.d path and file"
           ls -lth /etc/cron.d/
           echo "content of file /etc/cron.d/mo_backup"
