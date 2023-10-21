@@ -21,24 +21,6 @@ CLEAN_BK_CRON_SCRIPT="/usr/local/bin/mo_ctl clean_backup"
 # BACKUP_CRON_PLIST_FILE="${WORK_DIR}/bin/mo_autobacup.plist"
 OS=""
 
-function auto_backup_check_pre_requistes()
-{
-    if [[ "${OS}" == "Mac" ]]; then
-        # 1. Mac
-        add_log "E" "Currently ${ab_name} is not supported on Mac OS, exiting"
-        return 1
-
-    else
-        # 2. Linux
-        add_log "D" "Get status of service cron which ${ab_name} depends on."
-        if systemctl status cron >/dev/null 2>&1 || service cron status >/dev/null 2>&1 || systemctl status crond >/dev/null 2>&1 || service crond status >/dev/null 2>&1; then
-            add_log "D" "Succeeded. Service cron seems to be running."
-        else
-            add_log "E" "Failed. Please check again via 'systemctl status crond' or 'systemctl status cron' to make sure it's running. Or try to restart it via 'systemctl restart cron'."
-            return 1
-        fi
-    fi
-}
 
 function backup()
 {
@@ -191,7 +173,12 @@ function auto_backup_status()
 
 function auto_backup_enable()
 {
-    if ! auto_backup_check_pre_requistes; then
+
+    if [[ "${os}" == "Mac" ]]; then
+        add_log "E" "Currently ${ab_name} is not supported on MacOS system"
+    fi
+
+    if ! check_cron_service; then
         return 1
     fi
 
@@ -265,7 +252,6 @@ function auto_backup_disable()
 
         fi
         auto_backup_status
-        return 0
     else
         add_log "I" "No need to disable ${ab_name} as it is already disabled, exiting"
         return 0

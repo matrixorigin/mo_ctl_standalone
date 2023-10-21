@@ -24,7 +24,7 @@ SCRIPT_LIST=("basic" "help" "precheck" "deploy" \
     "connect" "pprof" "set_conf" "get_conf" "get_cid" \
     "mysql_to_mo" "ddl_convert" "watchdog" "upgrade" \
     "get_branch" "uninstall" "sql" "csv_convert" \
-    "version" "auto_backup" \
+    "version" "auto_backup" "auto_clean_logs" \
 )
 PIDS=""
 
@@ -142,6 +142,12 @@ function main()
             ;;
         "clean_backup")
             clean_backup
+            ;;
+        "clean_logs")
+            clean_logs
+            ;;
+        "auto_clean_logs")
+            auto_clean_logs ${option_2}
             ;;
         *)
             add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"

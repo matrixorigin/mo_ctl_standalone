@@ -1221,11 +1221,89 @@ jobs:
           echo "Clean backup automatically"
           echo "Sleep 320s"
           sleep 320
+          echo "Show backup path"
           ls -lth ${{ env.BACKUP_PATH }}/
-          ls -lth ${{ env.BACKUP_PATH }}/*/
-        
+          for dir in `ls ${{ env.BACKUP_PATH }}`; do
+              echo "----------------------------------"
+              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
+          done
+
+          echo "check log path"
+          ls -lth ~/mo_ctl/log/auto_clean_logs/
+          echo "check cron.d path and file"
+          ls -lth /etc/cron.d/
+          echo "content of file /etc/cron.d/mo_backup"
+          cat /etc/cron.d/mo_backup
+          echo "content of file /etc/cron.d/mo_clean_old_backup"
+          cat /etc/cron.d/mo_clean_old_backup
+            
           echo "Disabling auto_backup"
           mo_ctl auto_backup disable
           if ! mo_ctl auto_backup; then
               echo "auto_backup status failed as expected"
+          fi
+  # Job 14
+  Test-14-Auto-Clean-Logs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initialize environment
+        run: |
+          echo "install mo_ctl with Internet(no proxy)"
+          wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
+          mkdir -p ${{ env.MO_PATH }}
+      - name: Test_1. 'mo_ctl deploy main' (deploy latest)
+        run: |
+          echo ""
+          RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          
+          echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
+          mo_ctl deploy main
+          mo_ctl get_cid
+      - name: Test_2. 'mo_ctl start' (start mo-service) and prepare some data
+        run: |
+          mo_ctl start
+          echo "Sleeping 30 seconds for mo to be ready"
+          sleep 30
+          echo "Prepare some data"
+          mo_ctl sql "create database test; use test; create table tb1(id int, name varchar(50)); insert into test.tb1 values (1, 'Andy'),(2,'Becky'),(3,'Cindy'),(4,'David'),(5,'Emma'),(6,'Francis')"
+          mo_ctl sql "create database test2; use test2; create table tb2(id int, name varchar(50)); insert into test.tb1 values (1, 'Andy'),(2,'Becky'),(3,'Cindy'),(4,'David'),(5,'Emma'),(6,'Francis')"
+
+          mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
+      - name: Test_3. Set confs
+        run: |
+          mo_ctl set_conf CLEAN_LOGS_DAYS_BEFORE="0"
+          mo_ctl set_conf CLEAN_LOGS_TABLE_LIST="statement_info,rawlog,metric"
+          mo_ctl set_conf CLEAN_LOGS_CRON_SCHEDULE="* * * * *"
+      - name: Test_4. Clean logs manually and automatically
+        run: |
+          echo "----------------------------------"
+          echo "Clean logs manually"
+          mo_ctl clean_logs
+          
+          echo "----------------------------------"
+          echo "Check auto clean logs"
+          if ! mo_ctl auto_clean_logs; then
+              echo "failed as expected"
+          fi
+          if ! mo_ctl auto_clean_logs status; then
+              echo "failed as expected"
+          fi
+
+          echo "----------------------------------"
+          echo "Enable auto clean logs"
+          mo_ctl auto_clean_logs enable
+          sleep 5
+          echo "check log path"
+          ls -lth ~/mo_ctl/log/auto_clean_logs/
+          echo "check cron.d path and file"
+          ls -lth /etc/cron.d/
+          echo "content of file /etc/cron.d/mo_clean_logs"
+          cat /etc/cron.d/mo_clean_logs
+
+          echo "Disabling auto clean logs"
+          mo_ctl auto_clean_logs disable
+          if ! mo_ctl auto_clean_logs; then
+              echo "auto_clean_logs status failed as expected"
           fi

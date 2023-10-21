@@ -347,3 +347,28 @@ function get_mem_mb()
 
     echo "${total_mem}"
 }
+
+# function: check if cron is enabled
+function check_cron_service()
+{
+    if [[ "${OS}" == "Mac" ]]; then
+        # 1. Mac
+        add_log "D" "Get status of service cron"
+        add_log "I" "On MacOS, we need you confirmation with password to continue this operation: sudo launchctl list | grep cron"
+        if sudo launchctl list | grep -i cron; then
+            add_log "D" "Succeeded. Service cron seems to be running."
+        else
+            add_log "E" "Failed. Please check again 'sudo launchctl list | grep -i cron' to make sure it's running. Refer to 'https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/ScheduledJobs.html' for more info"
+            return 1
+        fi
+    else
+        # 2. Linux
+        add_log "D" "Get status of service cron"
+        if systemctl status cron >/dev/null 2>&1 || service cron status >/dev/null 2>&1 || systemctl status crond >/dev/null 2>&1 || service crond status >/dev/null 2>&1; then
+            add_log "D" "Succeeded. Service cron seems to be running."
+        else
+            add_log "E" "Failed. Please check again via 'systemctl status crond' or 'systemctl status cron' to make sure it's running. Or try to restart it via 'systemctl restart cron'."
+            return 1
+        fi
+    fi
+}

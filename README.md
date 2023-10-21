@@ -7,6 +7,8 @@ Depending on whether your machine has access to the Internet or not, you can cho
 ```bash
 # Option-A. install with the Internet
 wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/install.sh && bash +x ./install.sh
+# download from gitee.com
+# wget https://gitee.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh && bash +x ./install.sh
 
 # Option-B. install without the Internet
 # 1. download them to your local pc first, then upload them to your server machine

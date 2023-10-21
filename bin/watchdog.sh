@@ -17,33 +17,11 @@ WD_CRON_PLIST_NAME="com.matrixorigin.mo.watchdog"
 WD_CRON_PLIST_FILE="${WORK_DIR}/bin/mo_watchdog.plist"
 OS=""
 
-function watchdog_check_pre_requistes()
-{
-    if [[ "${OS}" == "Mac" ]]; then
-        # 1. Mac
-        add_log "D" "Get status of service cron which ${wd_name} depends on."
-        add_log "I" "On MacOS, we need you confirmation with password to continue this operation: sudo launchctl list | grep cron"
-        if sudo launchctl list | grep -i cron; then
-            add_log "D" "Succeeded. Service cron seems to be running."
-        else
-            add_log "E" "Failed. Please check again 'sudo launchctl list | grep -i cron' to make sure it's running. Refer to 'https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/ScheduledJobs.html' for more info"
-            return 1
-        fi
-    else
-        # 2. Linux
-        add_log "D" "Get status of service cron which ${wd_name} depends on."
-        if systemctl status cron >/dev/null 2>&1 || service cron status >/dev/null 2>&1 || systemctl status crond >/dev/null 2>&1 || service crond status >/dev/null 2>&1; then
-            add_log "D" "Succeeded. Service cron seems to be running."
-        else
-            add_log "E" "Failed. Please check again via 'systemctl status crond' or 'systemctl status cron' to make sure it's running. Or try to restart it via 'systemctl restart cron'."
-            return 1
-        fi
-    fi
-}
 
 function watchdog_status()
 {
-    if ! watchdog_check_pre_requistes; then
+
+    if ! check_cron_service; then
         return 1
     fi
 
@@ -156,7 +134,6 @@ function watchdog_disable()
             fi
         fi
         watchdog_status
-        return 0
     else
         add_log "I" "No need to disable ${wd_name} as it is already disabled, exiting"
         return 0
@@ -171,8 +148,11 @@ function watchdog()
 
     OS=`what_os`
     WD_CRON_USER=`whoami`
+
+    date_expr="\$(date '+\\%Y\\%m\\%d_\\%H\\%M\\%S')"
     #WD_CRON_SCRIPT="`cat ${WORK_DIR}/bin/${WD_CRON_FILE_NAME}.sh`"
     WD_CRON_CONTENT="${WD_CRON_SCHEDULE} ${WD_CRON_USER} ${WD_CRON_SCRIPT}"
+    #WD_CRON_CONTENT="${WD_CRON_SCHEDULE} ${WD_CRON_USER} ${WD_CRON_SCRIPT} > ${LOG_DIR}/${ab_name}/log.${date_expr}.log 2>&1"
 
     case "${option}" in
         "" | "status")

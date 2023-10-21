@@ -7,10 +7,13 @@
 
 #confs
 TOOL_NAME="mo_ctl"
-USAGE_OPTION_LIST="connect | csv_convert | ddl_connect | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | sql | start | status | stop | uninstall | upgrade | version | watchdog"
+USAGE_OPTION_LIST="auto_backup | auto_clean_logs | backup | clean_backup | clean_logs | connect | csv_convert | ddl_convert | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | sql | start | status | stop | uninstall | upgrade | version | watchdog"
+
 USAGE_AUTO_BACKUP="setup a crontab task to backup your databases automatically"
+USAGE_AUTO_CLEAN_LOGS="set up a crontab task to clean system log table data automatically"
 USAGE_BACKUP="create a backup of your databases manually"
 USAGE_CLEAN_BACKUP="clean old backups older than conf ${BACKUP_CLEAN_DAYS_BEFORE} days manually"
+USAGE_CLEAN_LOGS="clean system log table data manually"
 USAGE_CONNECT="connect to mo via mysql client using connection info configured"
 USAGE_CSV_CONVERT="convert a csv file to a sql file in format \"insert into values\" or \"load data inline format='csv'\""
 USAGE_DDL_CONVERT="convert a ddl file to mo format from other types of database"
@@ -246,7 +249,7 @@ function help_version()
 
 function help_bk_notes()
 {
-    echo "  Note          : currently ${option} is only supported on linux systems"
+    echo "  Note          : currently only supported on linux systems"
     echo "                : please set below configurations first before you run the [enable] option"
     echo "      1. BACKUP_DB_LIST [OPTIONAL, default: all_no_sysdb]: backup databases, seperated by ',' for each database. Note: 'all' and 'all_no_sysdb' are special settings. e.g. mo_ctl set_conf BACKUP_DB_LIST=\"db1,db2,db3\""
     echo "          all: all databases, including all system and user databases"
@@ -257,7 +260,7 @@ function help_bk_notes()
     echo "      3. BACKUP_CRON_SCHEDULE [OPTIONAL, default: 30 23 * * *]: cron expression to control backup schedule time and frequency, in standard cron format (https://crontab.guru/). e.g. mo_ctl set_conf BACKUP_TYPE=\"30 23 * * *\""
     echo "      4. BACKUP_DATA_TYPE [OPTIONAL, default: insert]: (only valid when BACKUP_TYPE=logical)backup data type, choose from: insert | csv . e.g. mo_ctl set_conf BACKUP_DATA_TYPE=\"insert\""
     echo "      5. BACKUP_PATH [OPTIONAL, default: /data/mo-backup]: backup directory. e.g. mo_ctl set_conf BACKUP_PATH=/data/mo-backup"
-    echo "      6. BACKUP_CLEAN_DAYS_BEFORE [OPTIONAL, default: 7]: clean old backup files before [x] (default: 7) days. e.g. mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=7"
+    echo "      6. BACKUP_CLEAN_DAYS_BEFORE [OPTIONAL, default: 31]: clean old backup files before [x] days. e.g. mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=31"
     echo "      7. BACKUP_CLEAN_CRON_SCHEDULE [OPTIONAL, default: 0 6 * * *]: cron to control auto clean of old backups. e.g. mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE=\"0 6 * * *\""
 
 }
@@ -288,32 +291,59 @@ function help_clean_backup()
     help_bk_notes
 }
 
+function help_cl_notes()
+{
+    echo "  Note          : currently only supported on linux systems"
+    echo "                : please set below configurations first before you run the [enable] option"
+    echo "      1. CLEAN_LOGS_DAYS_BEFORE [OPTIONAL, default: 31]: clean old system log table data before [x] (default: 31) days. e.g. mo_ctl set_conf CLEAN_LOGS_DAYS_BEFORE=31"
+    echo "      2. CLEAN_LOGS_TABLE_LIST [OPTIONAL, default: statement_info,rawlog,metric]: log tables to clean, choose one or multiple(seperated by ',') values from: statement_info | rawlog | metric. e.g. mo_ctl set_conf CLEAN_LOGS_TABLE_LIST=\"statement_info,rawlog,metric\""
+    echo "      3. CLEAN_LOGS_CRON_SCHEDULE [OPTIONAL, default: 0 3 * * *]: cron to control auto clean of old system log table data. e.g. mo_ctl set_conf CLEAN_LOGS_CRON_SCHEDULE=\"0 3 * * *\""
+}
+
+function help_clean_logs()
+{
+    option="clean_logs"
+    echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_CLEAN_LOGS}"
+    help_cl_notes
+}
+
+function help_auto_clean_logs()
+{
+    option="auto_clean_logs"
+    echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_AUTO_CLEAN_LOGS}"
+    help_cl_notes
+}
+
 function help_1()
 {
     echo "Usage             : ${TOOL_NAME} [option_1] [option_2]"
     echo ""
     echo "  [option_1]      : available: ${USAGE_OPTION_LIST}"
-    echo "  1) auto_backup  : ${USAGE_AUTO_BACKUP}"
-    echo "  2) connect      : ${USAGE_CONNECT}"
-    echo "  3) csv_convert  : ${USAGE_CSV_CONVERT}"
-    echo "  4) ddl_convert  : ${USAGE_DDL_CONVERT}"
-    echo "  5) deploy       : ${USAGE_DEPLOY}"
-    echo "  6) get_branch   : ${USAGE_UPGRADE}"
-    echo "  7) get_cid      : ${USAGE_GET_CID}"
-    echo "  8) get_conf     : ${USAGE_GET_CONF}"
-    echo "  9) help         : ${USAGE_HELP}"
-    echo "  10) pprof        : ${USAGE_PPROF}"
-    echo "  11) precheck     : ${USAGE_PRECHECK}"
-    echo "  12) restart     : ${USAGE_RESTART}"
-    echo "  13) set_conf    : ${USAGE_SET_CONF}"
-    echo "  14) sql         : ${USAGE_SQL}"
-    echo "  15) start       : ${USAGE_START}"
-    echo "  16) status      : ${USAGE_STATUS}"
-    echo "  17) stop        : ${USAGE_STOP}"
-    echo "  18) uninstall   : ${USAGE_UNINSTALL}"
-    echo "  19) upgrade     : ${USAGE_UPGRADE}"
-    echo "  20) version     : ${USAGE_VERSION}"
-    echo "  21) watchdog    : ${USAGE_WATCHDOG}"
+    echo "  auto_backup     : ${USAGE_AUTO_BACKUP}"
+    echo "  auto_clean_logs : ${USAGE_AUTO_CLEAN_LOGS}"
+    echo "  backup          : ${USAGE_CONNECT}"
+    echo "  clean_backup    : ${USAGE_CLEAN_BACKUP}"
+    echo "  clean_logs      : ${USAGE_CLEAN_LOGS}"
+    echo "  connect         : ${USAGE_CONNECT}"
+    echo "  csv_convert     : ${USAGE_CSV_CONVERT}"
+    echo "  ddl_convert     : ${USAGE_DDL_CONVERT}"
+    echo "  deploy          : ${USAGE_DEPLOY}"
+    echo "  get_branch      : ${USAGE_UPGRADE}"
+    echo "  get_cid         : ${USAGE_GET_CID}"
+    echo "  get_conf        : ${USAGE_GET_CONF}"
+    echo "  help            : ${USAGE_HELP}"
+    echo "  pprof           : ${USAGE_PPROF}"
+    echo "  precheck        : ${USAGE_PRECHECK}"
+    echo "  restart         : ${USAGE_RESTART}"
+    echo "  set_conf        : ${USAGE_SET_CONF}"
+    echo "  sql             : ${USAGE_SQL}"
+    echo "  start           : ${USAGE_START}"
+    echo "  status          : ${USAGE_STATUS}"
+    echo "  stop            : ${USAGE_STOP}"
+    echo "  uninstall       : ${USAGE_UNINSTALL}"
+    echo "  upgrade         : ${USAGE_UPGRADE}"
+    echo "  version         : ${USAGE_VERSION}"
+    echo "  watchdog        : ${USAGE_WATCHDOG}"
     echo "  e.g.            : ${TOOL_NAME} status"
     echo ""
     echo "  [option_2]      : Use \" ${TOOL_NAME} [option_1] help \" to get more info"
@@ -391,6 +421,12 @@ function help_2()
             ;;
         clean_backup)
             help_clean_backup
+            ;;
+        clean_logs)
+            help_clean_logs
+            ;;
+        auto_clean_backup)
+            help_auto_clean_logs
             ;;
         *)
             add_log "E" "invalid [option_1]: ${option_1}"

@@ -157,7 +157,16 @@ BACKUP_CRON_SCHEDULE="30 23 * * *"
 BACKUP_DATA_TYPE="insert"
 # backup directory
 BACKUP_PATH="/data/mo-backup"
-# clean old backup files before [x] (default: 7) days
-BACKUP_CLEAN_DAYS_BEFORE="7"
+# clean old backup files before [x] (default: 31) days
+BACKUP_CLEAN_DAYS_BEFORE="31"
 # cron to control auto clean of old backups
 BACKUP_CLEAN_CRON_SCHEDULE="0 6 * * *"
+
+
+# for auto clean sysdb logs
+# clean old sysdb logs before [x] (default: 31) days
+CLEAN_LOGS_DAYS_BEFORE="31"
+# log tables to clean, choose one or multiple(seperated by ',') values from: statement_info | rawlog | metric
+CLEAN_LOGS_TABLE_LIST="statement_info,rawlog,metric"
+# cron to control auto clean of old backups
+CLEAN_LOGS_CRON_SCHEDULE="0 3 * * *"
