@@ -33,9 +33,16 @@ function start()
             
             # host data path
             mkdir -p ${MO_CONTAINER_DATA_HOST_PATH}
+
+            if [[ "${MO_CONTAINER_EXTRA_MOUNT_OPTION}" != "" ]]; then
+                cmd_params="-d -v ${MO_CONTAINER_EXTRA_MOUNT_OPTION} -v ${MO_CONTAINER_DATA_HOST_PATH}:/mo-data:rw -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME}"
+            else
+                cmd_params="-d  -v ${MO_CONTAINER_DATA_HOST_PATH}:/mo-data:rw -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME}"
+            fi
             
-            cmd_params="-d  -v ${MO_CONTAINER_DATA_HOST_PATH}:/mo-data:rw -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME}"
             docker_init_cmd="docker run"
+
+
 
             if [[ "${total_mem}" != "" ]]; then
                 let docker_mem_limit=total_mem*${MO_CONTAINER_MEMORY_RATIO}/100
@@ -82,6 +89,8 @@ function start()
             else
                 docker_init_cmd="docker run ${cmd_params} ${MO_IMAGE_FULL}"              
             fi
+
+
 
             #docker_init_cmd="${docker_init_cmd} --hostname ${MO_CONTAINER_HOSTNAME}  -v ${MO_CONTAINER_DATA_HOST_PATH}:/mo-data:rw -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_IMAGE_FULL} -launch ${MO_CONTAINER_CONF_CON_FILE}"
 

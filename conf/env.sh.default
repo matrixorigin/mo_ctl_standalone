@@ -41,6 +41,7 @@ MO_CONTAINER_CONF_CON_FILE="/etc/quickstart/launch.toml"
 MO_CONTAINER_DATA_HOST_PATH="/data/mo/"
 MO_CONTAINER_HOSTNAME="705203be8a9e"
 MO_CONTAINER_MEMORY_RATIO=90
+MO_CONTAINER_EXTRA_MOUNT_OPTION=""
 
 ###########################################
 # no need to set below conf for most cases 
