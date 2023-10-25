@@ -150,10 +150,11 @@ function deploy_docker()
 
     if [[ "${mo_version}" == "main" ]]; then
         MO_IMAGE_FULL="${MO_REPO}:latest"
-    elif [[ "${mo_version}" != "${cid}" ]]; then
-        MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
+    #elif [[ "${mo_version}" != "${cid}" ]]; then
+    #    MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
     else
-        MO_IMAGE_FULL="${MO_REPO}:${MO_IMAGE_PREFIX}-${mo_version}"
+        #MO_IMAGE_FULL="${MO_REPO}:${MO_IMAGE_PREFIX}-${mo_version}"
+        MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
     fi
 
     set_conf MO_IMAGE_FULL="${MO_IMAGE_FULL}"

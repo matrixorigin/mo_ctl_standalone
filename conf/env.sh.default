@@ -32,7 +32,6 @@ MO_PW="111"
 # mo deploy mode: docker | host
 MO_DEPLOY_MODE="host"
 MO_REPO="matrixorigin/matrixone"
-MO_IMAGE_PREFIX="nightly"
 MO_IMAGE_FULL=""
 MO_CONTAINER_NAME="mo"
 MO_CONTAINER_PORT="6001"
