@@ -258,7 +258,7 @@ function help_bk_notes()
     echo "      2. BACKUP_TYPE [OPTIONAL, default: logical]: backup type choose from \"logical | physical\". e.g. mo_ctl set_conf BACKUP_TYPE=\"logical\""
     echo "  Note          : currently only \"logical\" is supported, and \"physical\" will be supported in the future"
     echo "      3. BACKUP_CRON_SCHEDULE [OPTIONAL, default: 30 23 * * *]: cron expression to control backup schedule time and frequency, in standard cron format (https://crontab.guru/). e.g. mo_ctl set_conf BACKUP_TYPE=\"30 23 * * *\""
-    echo "      4. BACKUP_DATA_TYPE [OPTIONAL, default: insert]: (only valid when BACKUP_TYPE=logical)backup data type, choose from: insert | csv . e.g. mo_ctl set_conf BACKUP_DATA_TYPE=\"insert\""
+    echo "      4. BACKUP_DATA_TYPE [OPTIONAL, default: csv]: (only valid when BACKUP_TYPE=logical)backup data type, choose from: insert | csv . e.g. mo_ctl set_conf BACKUP_DATA_TYPE=\"csv\""
     echo "      5. BACKUP_PATH [OPTIONAL, default: /data/mo-backup]: backup directory. e.g. mo_ctl set_conf BACKUP_PATH=/data/mo-backup"
     echo "      6. BACKUP_CLEAN_DAYS_BEFORE [OPTIONAL, default: 31]: clean old backup files before [x] days. e.g. mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=31"
     echo "      7. BACKUP_CLEAN_CRON_SCHEDULE [OPTIONAL, default: 0 6 * * *]: cron to control auto clean of old backups. e.g. mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE=\"0 6 * * *\""
