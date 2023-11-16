@@ -43,7 +43,7 @@ function uninstall()
 {
 
     if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
-        add_log "W" "You're uninstalling MO image ${MO_IMAGE_FULL}, are you sure? (Yes/No)"
+        add_log "W" "You're uninstalling MO image ${MO_CONTAINER_IMAGE}, are you sure? (Yes/No)"
         read -t 30 user_confirm
         if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
             add_log "E" "User input not confirmed or timed out, exiting"
@@ -61,8 +61,8 @@ function uninstall()
             return 1
         fi
 
-        add_log "I" "Removing image ${MO_IMAGE_FULL}"
-        if ! docker rmi ${MO_IMAGE_FULL}; then
+        add_log "I" "Removing image ${MO_CONTAINER_IMAGE}"
+        if ! docker rmi ${MO_CONTAINER_IMAGE}; then
             add_log "E" "Failed"
             add_log "E" "Uninstall MO failed."
             return 1
