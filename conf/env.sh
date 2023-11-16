@@ -39,10 +39,10 @@ MO_REPO="matrixorigin/matrixone"
 MO_CONTAINER_IMAGE="matrixorigin/matrixone:1.0.0"
 # mo container name
 MO_CONTAINER_NAME="mo"
-# mo container sql port
+# mo container sql port (PS: constant value, DONT CHANGE)
 MO_CONTAINER_PORT="6001"
-# mo container debug port
-MO_CONTAINER_DEBUG_PORT="9876"
+# mo container debug port (PS: constant value, DONT CHANGE)
+MO_CONTAINER_DEBUG_PORT="12345"
 # mo container conf host path
 MO_CONTAINER_CONF_HOST_PATH=""
 # mo container conf file inside container
