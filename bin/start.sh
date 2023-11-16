@@ -79,6 +79,12 @@ function start()
                 fi
             fi
 
+            # auto restart
+            auto_restart=`to_lower "${MO_CONTAINER_AUTO_RESTART}"`
+            if [[ "${auto_restart}" == "yes" ]]; then
+                cmd_params="${cmd_params} --restart=always"
+            fi
+
             # get hostname
             this_hostname=`hostname`
             if [[ "${this_hostname}" == "" ]]; then 

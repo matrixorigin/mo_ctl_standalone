@@ -28,8 +28,8 @@ env:
   MO_PW: "111"
   OPTION_LIST: "auto_backup,backup,clean_backup,connect,ddl_convert,deploy,get_branch,get_cid,get_conf,pprof,precheck,restart,set_conf,start,status,stop,uninstall,upgrade,watchdog"
   MO_PATH: "/Users/runner/mo"
-  MO_STABLE_VERSION: "1.0.0-rc1"
-  MO_STABLE_BRANCH: "1.0.0-rc1"
+  MO_STABLE_VERSION: "v1.0.0"
+  MO_STABLE_BRANCH: "v1.0.0"
   # last updated: 2023/10/9
   MO_STABLE_CID: "daf86797160585d24c158e4ee220964264616505"
   MO_TEST_CID_1: "654ce16"
@@ -244,7 +244,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
           mo_ctl deploy main
       - name: Test_2. 'mo_ctl get_branch' (get current branch)
@@ -291,7 +292,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_STABLE_VERSION }}"
           mo_ctl deploy ${{ env.MO_STABLE_VERSION }}
       - name: Test_2. 'mo_ctl get_branch' (get current branch)
@@ -378,7 +380,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           mkdir -p ${{ env.MO_PATH }}/${RUN_TAG}
           echo "123" > ${{ env.MO_PATH }}/${RUN_TAG}/123.txt
           echo "listing test file and its content: ${{ env.MO_PATH }}/${RUN_TAG}/123.txt"
@@ -445,7 +448,8 @@ jobs:
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
           mo_ctl deploy main
       - name: Test_1. 'mo_ctl status' (no mo-service running)
@@ -498,7 +502,8 @@ jobs:
           mkdir -p ${{ env.MO_PATH }}
 
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
           mo_ctl deploy main
           echo "Sleep 5 seconds and start mo-service"
@@ -535,7 +540,8 @@ jobs:
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
           mo_ctl deploy main
           echo "Sleep 5 seconds and start mo-service"
@@ -600,7 +606,8 @@ jobs:
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
           mo_ctl deploy main
       - name: Test_1. 'mo_ctl watchdog' (check disabled status)
@@ -660,7 +667,8 @@ jobs:
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mkdir -p ${{ env.MO_PATH }}
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
           mo_ctl deploy main
           echo "Sleep 5 seconds and start mo-service"
@@ -736,7 +744,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_STABLE_VERSION }}"
           mo_ctl deploy ${{ env.MO_STABLE_VERSION }}
@@ -781,7 +790,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy latest"
           mo_ctl deploy main
@@ -825,7 +835,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_STABLE_VERSION }}"
           mo_ctl deploy ${{ env.MO_STABLE_VERSION }}
@@ -868,7 +879,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"        
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"        
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_TEST_CID_1 }}"
           mo_ctl deploy ${{ env.MO_TEST_CID_1 }}
           mo_ctl get_cid
@@ -912,7 +924,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"         
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"         
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_TEST_CID_1 }}"
           mo_ctl deploy ${{ env.MO_TEST_CID_1 }}
           mo_ctl get_cid
@@ -954,7 +967,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"        
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"        
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_TEST_CID_2 }}"
           mo_ctl deploy ${{ env.MO_TEST_CID_2 }}
           mo_ctl get_cid
@@ -998,7 +1012,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
           
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy ${{ env.MO_TEST_CID_1 }}"
           mo_ctl deploy ${{ env.MO_TEST_CID_1 }}
@@ -1041,7 +1056,8 @@ jobs:
         run: |
           echo ""
           RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}",GOPROXY="${{ env.GO_PROXY }}"         
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"         
           echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
           mo_ctl deploy main
           mo_ctl get_cid
@@ -1079,6 +1095,10 @@ jobs:
           echo "install mo_ctl with Internet(no proxy)"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
           mo_ctl set_conf MO_DEPLOY_MODE="docker"
+          mo_ctl set_conf MO_CONTAINER_DATA_HOST_PATH="${{ env.MO_PATH }}"
+          mo_ctl set_conf MO_CONTAINER_LIMIT_CPU="1"
+          mo_ctl set_conf MO_CONTAINER_AUTO_RESTART="yes"
+          mo_ctl set_conf MO_CONTAINER_IMAGE="matrixorigin/matrixone:latest"
       - name: Install docker
         uses: docker-practice/actions-setup-docker@master
         timeout-minutes: 12
