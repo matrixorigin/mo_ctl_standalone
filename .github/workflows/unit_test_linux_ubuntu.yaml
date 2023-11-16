@@ -28,7 +28,7 @@ env:
   OPTION_LIST: "auto_backup,backup,clean_backup,connect,ddl_convert,deploy,get_branch,get_cid,get_conf,pprof,precheck,restart,set_conf,start,status,stop,uninstall,upgrade,watchdog"
   MO_PATH: "/home/runner/mo"
   MO_STABLE_VERSION: "v1.0.0"
-  MO_STABLE_BRANCH: "v1.0.0"
+  MO_STABLE_BRANCH: "(HEAD detached at v1.0.0)"
   # last updated: 2023/10/9
   MO_STABLE_CID: "daf86797160585d24c158e4ee220964264616505"
   MO_TEST_CID_1: "654ce16"
@@ -299,9 +299,10 @@ jobs:
         run: |
           mo_ctl get_branch
           branch=`mo_ctl get_branch | tail -n 1 | awk -F'current branch: ' '{print $2}'`
-          echo "branch is ${branch}"
+          echo "branch is: ${branch}"
           if [[ "${branch}" != "${{ env.MO_STABLE_BRANCH }}" ]]; then
-              echo "Failed to get_branch or branch is not that as expected"
+              echo "Failed to get_branch or branch is not that as expected: ${{ env.MO_STABLE_BRANCH }}"
+              echo "expected branch: ${{ env.MO_STABLE_BRANCH }}, actual branch: ${${branch}}"
               exit 1
           fi
       - name: Test_3. 'mo_ctl get_cid' (get commit id)

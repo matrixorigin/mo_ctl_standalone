@@ -57,8 +57,8 @@ function start()
             if [[ "${docker_mem_limit}" == "" ]]; then
                 add_log "W" "Docker memory limit seems to be empty, thus will not set this limit"
             else
-                add_log "D" "Start command will add: --memory ${docker_mem_limit}m"
-                cmd_params="${cmd_params} --memory ${docker_mem_limit}m"
+                add_log "D" "Start command will add: --memory=${docker_mem_limit}m"
+                cmd_params="${cmd_params} --memory=${docker_mem_limit}m"
             fi
 
             if [[ "${go_mem_limit}" == "" ]]; then
@@ -73,7 +73,8 @@ function start()
                 total_cpu_cores=`get_cpu_cores`
                 add_log "D" "Conf MO_CONTAINER_LIMIT_CPU is set as ${MO_CONTAINER_LIMIT_CPU}, total cpu cores: ${total_cpu_cores}"
                 if pos_int_range ${MO_CONTAINER_LIMIT_CPU} ${total_cpu_cores}; then
-                    cmd_params="${cmd_params} --cpu ${MO_CONTAINER_LIMIT_CPU}"
+                    add_log "D" "Start command will add: --cpus=${MO_CONTAINER_LIMIT_CPU}"
+                    cmd_params="${cmd_params} --cpus=${MO_CONTAINER_LIMIT_CPU}"
                 else
                     add_log "W" "Conf MO_CONTAINER_LIMIT_CPU is not a valid positive integer or greater than total cpu cores, ignoring this conf"
                 fi
@@ -82,6 +83,7 @@ function start()
             # auto restart
             auto_restart=`to_lower "${MO_CONTAINER_AUTO_RESTART}"`
             if [[ "${auto_restart}" == "yes" ]]; then
+                add_log "D" "Start command will add: --restart=always"
                 cmd_params="${cmd_params} --restart=always"
             fi
 
