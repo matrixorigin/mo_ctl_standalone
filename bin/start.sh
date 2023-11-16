@@ -16,7 +16,7 @@ function start()
     total_mem=`get_mem_mb`
 
     add_log "D" "Check total memory on current machine, command: free -m | awk 'NR==2{print $2}', result(Mi): ${total_mem}"
-    docker_mem_limit=""
+    docker_mem_limit="${MO_CONTAINER_LIMIT_MEMORY}"
     go_mem_limit=""
     
 
@@ -42,10 +42,14 @@ function start()
             
             docker_init_cmd="docker run"
 
-
-
+            # memory limit
             if [[ "${total_mem}" != "" ]]; then
-                let docker_mem_limit=total_mem*${MO_CONTAINER_MEMORY_RATIO}/100
+                if [[ "${docker_mem_limit}" == "" ]]; then
+                    add_log "D" "Conf MO_CONTAINER_LIMIT_MEMORY is empty, will set docker memory limit as ${MO_CONTAINER_MEMORY_RATIO}% of total memory"
+                    let docker_mem_limit=total_mem*${MO_CONTAINER_MEMORY_RATIO}/100
+                else
+                    add_log "D" "Will set docker memory limit as conf MO_CONTAINER_LIMIT_MEMORY value"
+                fi
                 let go_mem_limit=docker_mem_limit*${GO_MEM_LIMIT_RATIO}/100
                 add_log "D" "Docker memory limit(Mi): ${docker_mem_limit}, GO memory limit(Mi): ${go_mem_limit}"
             fi
@@ -62,6 +66,17 @@ function start()
             else
                 add_log "D" "Start command will add: --env GOMEMLIMIT=${go_mem_limit}MiB"
                 cmd_params="${cmd_params} --env GOMEMLIMIT=${go_mem_limit}MiB"
+            fi
+
+            # cpu limit
+            if [[ "${MO_CONTAINER_LIMIT_CPU}" != "" ]]; then
+                total_cpu_cores=`get_cpu_cores`
+                add_log "D" "Conf MO_CONTAINER_LIMIT_CPU is set as ${MO_CONTAINER_LIMIT_CPU}, total cpu cores: ${total_cpu_cores}"
+                if pos_int_range ${MO_CONTAINER_LIMIT_CPU} ${total_cpu_cores}; then
+                    cmd_params="${cmd_params} --cpu ${MO_CONTAINER_LIMIT_CPU}"
+                else
+                    add_log "W" "Conf MO_CONTAINER_LIMIT_CPU is not a valid positive integer or greater than total cpu cores, ignoring this conf"
+                fi
             fi
 
             # get hostname
@@ -85,14 +100,14 @@ function start()
 
             # if conf path exists
             if [[ -d ${MO_CONTAINER_CONF_HOST_PATH} ]]; then
-                docker_init_cmd="docker run ${cmd_params} -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_IMAGE_FULL} -launch ${MO_CONTAINER_CONF_CON_FILE}"
+                docker_init_cmd="docker run ${cmd_params} -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_CONTAINER_IMAGE} -launch ${MO_CONTAINER_CONF_CON_FILE}"
             else
-                docker_init_cmd="docker run ${cmd_params} ${MO_IMAGE_FULL}"              
+                docker_init_cmd="docker run ${cmd_params} ${MO_CONTAINER_IMAGE}"              
             fi
 
 
 
-            #docker_init_cmd="${docker_init_cmd} --hostname ${MO_CONTAINER_HOSTNAME}  -v ${MO_CONTAINER_DATA_HOST_PATH}:/mo-data:rw -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_IMAGE_FULL} -launch ${MO_CONTAINER_CONF_CON_FILE}"
+            #docker_init_cmd="${docker_init_cmd} --hostname ${MO_CONTAINER_HOSTNAME}  -v ${MO_CONTAINER_DATA_HOST_PATH}:/mo-data:rw -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_CONTAINER_IMAGE} -launch ${MO_CONTAINER_CONF_CON_FILE}"
 
 
             add_log "I" "Initial start mo container: ${docker_init_cmd}"

@@ -31,17 +31,37 @@ MO_USER="root"
 MO_PW="111"
 # mo deploy mode: docker | host
 MO_DEPLOY_MODE="host"
+
+
+# for docker
 MO_REPO="matrixorigin/matrixone"
-MO_IMAGE_FULL=""
+# full image name of mo container, default: matrixorigin/matrixone:1.0.0
+MO_CONTAINER_IMAGE="matrixorigin/matrixone:1.0.0"
+# mo container name
 MO_CONTAINER_NAME="mo"
+# mo container sql port
 MO_CONTAINER_PORT="6001"
-MO_CONTAINER_DEBUG_PORT="12345"
+# mo container debug port
+MO_CONTAINER_DEBUG_PORT="9876"
+# mo container conf host path
 MO_CONTAINER_CONF_HOST_PATH=""
+# mo container conf file inside container
 MO_CONTAINER_CONF_CON_FILE="/etc/quickstart/launch.toml"
+# mo container data host path
 MO_CONTAINER_DATA_HOST_PATH="/data/mo/"
+# default value, will be overwritten by actual machine hostname in runtime
 MO_CONTAINER_HOSTNAME="705203be8a9e"
+# mo container limit for memory (unit: m) (e.g. 1000 | 1500 | 2000 | ...)
+MO_CONTAINER_LIMIT_MEMORY=""
+# use ratio to set mo container limit for memory based on the total memory of the machine (unit: %)
 MO_CONTAINER_MEMORY_RATIO=90
+# auto restart mo container in case it is down? (yes|no)
+MO_CONTAINER_AUTO_RESTART="yes"
+# mo container limit for cpu (e.g. 1 | 1.5 | 2 | ...)
+MO_CONTAINER_LIMIT_CPU=""
+# extra mount options
 MO_CONTAINER_EXTRA_MOUNT_OPTION=""
+
 
 ###########################################
 # no need to set below conf for most cases 
@@ -66,7 +86,7 @@ MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 #)
 
 # default version of which mo to be deployed
-MO_DEFAULT_VERSION="1.0.0-rc1"
+MO_DEFAULT_VERSION="v1.0.0"
 # which go proxy to be used when downloading go dependencies
 # you can set this go proxy when building mo-service
 GOPROXY="https://goproxy.cn,direct"
@@ -136,6 +156,9 @@ CSV_CONVERT_TN_TYPE=1
 # directory for temp files
 CSV_CONVERT_TMP_DIR="/tmp"
 
+# add " or not? (no|yes)
+CSV_CONVERT_INSERT_ADD_QUOTE="no"
+
 
 # for version
 MO_TOOL_NAME="mo_ctl"
@@ -153,8 +176,8 @@ BACKUP_DB_LIST="all_no_sysdb"
 BACKUP_TYPE="logical"
 # cron to control auto backup schedule time and frequency, in standard cron format (https://crontab.guru/)
 BACKUP_CRON_SCHEDULE="30 23 * * *"
-# backup data type(only valid when BACKUP_TYPE=logical) : insert(default) | csv
-BACKUP_DATA_TYPE="insert"
+# backup data type(only valid when BACKUP_TYPE=logical) : insert | csv(default)
+BACKUP_DATA_TYPE="csv"
 # backup directory
 BACKUP_PATH="/data/mo-backup"
 # clean old backup files before [x] (default: 31) days

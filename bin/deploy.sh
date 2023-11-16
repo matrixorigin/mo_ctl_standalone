@@ -146,26 +146,30 @@ function deploy_docker()
         fi
     fi
 
-    cid=`get_stable_cid ${mo_version}`
+    #cid=`get_stable_cid ${mo_version}`
 
-    if [[ "${mo_version}" == "main" ]]; then
-        MO_IMAGE_FULL="${MO_REPO}:latest"
+    #if [[ "${mo_version}" == "main" ]]; then
+    #    MO_CONTAINER_IMAGE="${MO_REPO}:latest"
     #elif [[ "${mo_version}" != "${cid}" ]]; then
-    #    MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
-    else
-        #MO_IMAGE_FULL="${MO_REPO}:${MO_IMAGE_PREFIX}-${mo_version}"
-        MO_IMAGE_FULL="${MO_REPO}:${mo_version}"
+    #    MO_CONTAINER_IMAGE="${MO_REPO}:${mo_version}"
+    #else
+        #MO_CONTAINER_IMAGE="${MO_REPO}:${MO_IMAGE_PREFIX}-${mo_version}"
+    #    MO_CONTAINER_IMAGE="${MO_REPO}:${mo_version}"
+    #fi
+
+    #set_conf MO_CONTAINER_IMAGE="${MO_CONTAINER_IMAGE}"
+
+    if [[ "${MO_CONTAINER_IMAGE}" == "" ]]; then
+        add_log "E" "conf MO_CONTAINER_IMAGE is empty, please set it first"
     fi
 
-    set_conf MO_IMAGE_FULL="${MO_IMAGE_FULL}"
-
-    add_log "I" "Pulling image ${MO_IMAGE_FULL}"
-    if ! docker pull ${MO_IMAGE_FULL}; then
-        add_log "E" "Failed to pull docker image, please check if ${MO_IMAGE_FULL} is a correct image or it might be a network issue"
+    add_log "I" "Pulling image ${MO_CONTAINER_IMAGE}"
+    if ! docker pull ${MO_CONTAINER_IMAGE}; then
+        add_log "E" "Failed to pull docker image, please check if ${MO_CONTAINER_IMAGE} is a correct image or it might be a network issue"
         return 1
     fi
 
-    add_log "I" "Successfully pulled image ${MO_IMAGE_FULL}"
+    add_log "I" "Successfully pulled image ${MO_CONTAINER_IMAGE}"
 }
 
 function deploy()

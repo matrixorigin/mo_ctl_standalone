@@ -242,6 +242,7 @@ function floor_quotient()
         echo "${quotient}"
     else
         add_log "E" "Either input number ${n1} or ${n2} is not a valid positive number"
+        return 1
     fi
 }
 

@@ -71,7 +71,7 @@ function backup()
                 add_log "D" "Backup command: cd ${BACKUP_PATH}/${backup_timestamp}/ && ${MO_PATH}/matrixone/mo-dump -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} > ${BACKUP_PATH}/${backup_timestamp}/${db}.sql && cd -"
                 if cd ${BACKUP_PATH}/${backup_timestamp}/ && ${MO_PATH}/matrixone/mo-dump -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} > ${BACKUP_PATH}/${backup_timestamp}/${db}.sql && cd - >/dev/null 2>&1; then
                     endTime=`get_nanosecond`
-                    outcome="outcome"
+                    outcome="succeeded"
                 else
                     endTime=`get_nanosecond`
                     outcome="failed"
