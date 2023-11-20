@@ -162,7 +162,9 @@ function install()
     add_log "I" "Setting up mo_ctl to ${mo_ctl_global_path}/mo_ctl: sudo touch ${mo_ctl_global_path}/mo_ctl && sudo chown ${os_user} ${mo_ctl_global_path}/mo_ctl && echo "bash +x ${mo_ctl_local_path}/mo_ctl.sh \"\$*\"" > ${mo_ctl_global_path}/mo_ctl && chmod +x ${mo_ctl_global_path}/mo_ctl" 
     add_log "I" "If you're running on MacOS, we need your confirmation with password to run sudo commands" 
 
-    if sudo touch ${mo_ctl_global_path}/mo_ctl && sudo chown ${os_user} ${mo_ctl_global_path}/mo_ctl && echo "bash +x ${mo_ctl_local_path}/mo_ctl.sh \"\$*\"" > ${mo_ctl_global_path}/mo_ctl && chmod +x ${mo_ctl_global_path}/mo_ctl; then
+    
+
+    if sudo mkdir -p ${mo_ctl_global_path}/ && sudo touch ${mo_ctl_global_path}/mo_ctl && sudo chown ${os_user} ${mo_ctl_global_path}/mo_ctl && echo "bash +x ${mo_ctl_local_path}/mo_ctl.sh \"\$*\"" > ${mo_ctl_global_path}/mo_ctl && chmod +x ${mo_ctl_global_path}/mo_ctl; then
         add_log "I" "Succeeded"
     else
         add_log "E" "Failed"

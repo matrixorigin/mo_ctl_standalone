@@ -48,7 +48,7 @@ env:
 # job def
 jobs:
   # Job 1
-  Test-1-Tool:
+  Test-01-Tool:
     runs-on: ubuntu-latest
     steps:
       - name: Test_1. 'install.sh'
@@ -91,7 +91,7 @@ jobs:
               echo "Path ~/mo_ctl/ has been removed"
           fi
   # Job 2
-  Test-2-Help:
+  Test-02-Help:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -124,7 +124,7 @@ jobs:
               exit 1
           fi
   # Job 3
-  Test-3-Get-And-Set-Conf:
+  Test-03-Get-And-Set-Conf:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -207,7 +207,7 @@ jobs:
           echo "test_cmd: echo \"yes\" | mo_ctl set_conf reset"
           echo "yes"| mo_ctl set_conf reset
   # Job 4
-  Test-4-Precheck:
+  Test-04-Precheck:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -230,7 +230,7 @@ jobs:
               echo "'mo_ctl precheck' fails as expected"
           fi
   # Job 5-1
-  Test-5-1-Deloy-Uninstall-Latest-Version:
+  Test-05-01-Deloy-Uninstall-Latest-Version:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -278,7 +278,7 @@ jobs:
               exit 1
           fi
   # Job 5-2
-  Test-5-2-Deloy-Uninstall-Stable:
+  Test-05-02-Deloy-Uninstall-Stable:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -323,7 +323,7 @@ jobs:
               exit 1
           fi
   # Job 5-3
-  Test-5-3-Deloy-Uninstall-Cid1:
+  Test-05-03-Deloy-Uninstall-Cid1:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -366,7 +366,7 @@ jobs:
               exit 1
           fi
   # Job 5-4
-  Test-5-4-Deloy-Uninstall-Latest-Force:
+  Test-05-04-Deloy-Uninstall-Latest-Force:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -415,7 +415,7 @@ jobs:
               exit 1
           fi
   # Job 5-5
-  Test-5-5-Deloy-Uninstall-Invalid:
+  Test-05-05-Deloy-Uninstall-Invalid:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -435,7 +435,7 @@ jobs:
               exit 1
           fi
   # Job 6
-  Test-6-Start-Status-Stop-Restart:
+  Test-06-Start-Status-Stop-Restart:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -488,7 +488,7 @@ jobs:
           echo ""
           mo_ctl restart force && mo_ctl status
   # Job 7
-  Test-7-Connect:
+  Test-07-Connect:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -526,7 +526,7 @@ jobs:
               exit 1
           fi
   # Job 8
-  Test-8-Sql:
+  Test-08-Sql:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -589,7 +589,7 @@ jobs:
               exit 1
           fi
   # Job 9
-  Test-9-Watchdog:
+  Test-09-Watchdog:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -723,7 +723,7 @@ jobs:
           fi
           cd ${{ env.MO_PPROF_PATH }}/ && rm -f ./*
   # Job 11-1
-  Test-11-1-Upgrade-Stable-To-Latest:
+  Test-11-01-Upgrade-Stable-To-Latest:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -765,7 +765,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another"
           fi
   # Job 11-2
-  Test-11-2-Downgrade-Latest-To-Stable:
+  Test-11-02-Downgrade-Latest-To-Stable:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -809,7 +809,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another. Ignoring... "
           fi
   # Job 11-3
-  Test-11-3-Upgrade-Stable-To-Cid1:
+  Test-11-03-Upgrade-Stable-To-Cid1:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -850,7 +850,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another"
           fi
   # Job 11-4
-  Test-11-4-Downgrade-Cid1-To-Stable:
+  Test-11-04-Downgrade-Cid1-To-Stable:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -894,7 +894,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another. Ignoring... "
           fi
   # Job 11-5
-  Test-11-5-Upgrade-Cid1-to-Cid2:
+  Test-11-05-Upgrade-Cid1-to-Cid2:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -936,7 +936,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another"
           fi
   # Job 11-6
-  Test-11-6-Downgrade-Cid2-to-Cid1:
+  Test-11-06-Downgrade-Cid2-to-Cid1:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -980,7 +980,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another. Ignoring... "
           fi
   # Job 11-7
-  Test-11-7-Upgrade-Cid1-to-Latest:
+  Test-11-07-Upgrade-Cid1-to-Latest:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1022,7 +1022,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another"
           fi  
   # Job 11-8
-  Test-11-8-Downgrade-Latest-to-Cid1:
+  Test-11-08-Downgrade-Latest-to-Cid1:
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
