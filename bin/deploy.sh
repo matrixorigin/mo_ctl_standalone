@@ -110,7 +110,7 @@ function build_all()
 
     if [[ "${force}" == "force" ]]; then
         build_mo_service
-        build_mo_dump
+        #build_mo_dump
     else
         if [[ -f "${MO_PATH}/matrixone/mo-service" ]]; then
             add_log "I" "mo-service is already built on ${MO_PATH}, no need to build"
@@ -118,11 +118,11 @@ function build_all()
             build_mo_service
         fi
 
-        if [[ -f "${MO_PATH}/matrixone/mo-dump" ]]; then
-            add_log "I" "mo-dump is already built on ${MO_PATH}, no need to build"
-        else
-            build_mo_dump
-        fi
+        #if [[ -f "${MO_PATH}/matrixone/mo-dump" ]]; then
+        #    add_log "I" "mo-dump is already built on ${MO_PATH}, no need to build"
+        #else
+        #    build_mo_dump
+        #fi
     fi
 }
 

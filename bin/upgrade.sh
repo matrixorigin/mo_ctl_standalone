@@ -71,7 +71,7 @@ function copy_mo_path()
 {
     add_log "I" "Copying upgrade path from ${MO_PATH}/matrixone/ to ${MO_UPGRADE_PATH}/"
     mkdir -p ${MO_UPGRADE_PATH}/
-    if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-service|mo-dump" | xargs -I{} cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ >/dev/null 2>&1; then
+    if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-data|mo-service|mo-dump" | xargs -I{} cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ >/dev/null 2>&1; then
         add_log "I" "Succeeded"
     else
         add_log "E" "Failed, exiting"
@@ -272,13 +272,17 @@ function upgrade_commit()
 {
     add_log "I" "Committing ${action_type} actions by moving below folders"
     action_type=`to_upper "${action_type}"`
-    add_log "I" "1. ${MO_PATH}/matrixone -> ${MO_PATH}/matrixone-${action_type}-BACKUP-${RUN_TAG}"
-    add_log "I" "2. ${MO_UPGRADE_PATH} -> ${MO_PATH}/matrixone"
+    add_log "I" "1. ${MO_PATH}/matrixone/mo-data -> ${MO_UPGRADE_PATH}/"
+    add_log "I" "2. ${MO_PATH}/matrixone -> ${MO_PATH}/matrixone-${action_type}-BACKUP-${RUN_TAG}"
+    add_log "I" "3. ${MO_UPGRADE_PATH} -> ${MO_PATH}/matrixone"
     # copy mo logs
     if [[ -d "${MO_LOG_PATH}" ]] ; then 
         mv ${MO_LOG_PATH} ${MO_UPGRADE_PATH}/logs
     fi
     
+    # move mo-data
+    mv ${MO_PATH}/matrixone/mo-data ${MO_UPGRADE_PATH}/
+
     # move original mo folder to backup
     mv ${MO_PATH}/matrixone ${MO_PATH}/matrixone-${action_type}-BACKUP-${RUN_TAG}
     
