@@ -252,9 +252,9 @@ function upgrade_build_all()
         rc=1
     fi
 
-    if ! upgrade_build_mo_dump; then
-        rc=1
-    fi
+    #if ! upgrade_build_mo_dump; then
+    #    rc=1
+    #fi
 
     return ${rc}
 
