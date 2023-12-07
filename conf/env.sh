@@ -193,3 +193,7 @@ CLEAN_LOGS_DAYS_BEFORE="31"
 CLEAN_LOGS_TABLE_LIST="statement_info,rawlog,metric"
 # cron to control auto clean of old backups
 CLEAN_LOGS_CRON_SCHEDULE="0 3 * * *"
+
+
+# for build image
+MO_BUILD_IMAGE_PATH="/tmp/"

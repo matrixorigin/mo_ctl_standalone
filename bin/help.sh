@@ -12,6 +12,7 @@ USAGE_OPTION_LIST="auto_backup | auto_clean_logs | backup | clean_backup | clean
 USAGE_AUTO_BACKUP="setup a crontab task to backup your databases automatically"
 USAGE_AUTO_CLEAN_LOGS="set up a crontab task to clean system log table data automatically"
 USAGE_BACKUP="create a backup of your databases manually"
+USAGE_BUILD_IMAGE="build an MO image from source code"
 USAGE_CLEAN_BACKUP="clean old backups older than conf ${BACKUP_CLEAN_DAYS_BEFORE} days manually"
 USAGE_CLEAN_LOGS="clean system log table data manually"
 USAGE_CONNECT="connect to mo via mysql client using connection info configured"
@@ -61,6 +62,8 @@ function help_deploy()
     echo "              : ${TOOL_NAME} ${option} force       # delete all under MO_PATH and deploy verson ${MO_DEFAULT_VERSION}"
     echo "              : ${TOOL_NAME} ${option} 0.8.0 force # delete all under MO_PATH and deploy stable verson 0.8.0 from beginning"
 }
+
+
 
 
 function help_status()
@@ -314,6 +317,17 @@ function help_auto_clean_logs()
     help_cl_notes
 }
 
+function help_build_image()
+{
+    option="build_image"
+    echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_BUILD_IMAGE}"
+    echo "  Note          : please set below configurations first before you run the [enable] option"
+    echo "      1. MO_PATH [OPTIONAL, default: /data/mo]: Path to MO source codes. e.g. mo_ctl set_conf MO_PATH=/data/mo"
+    echo "      2. GOPROXY [OPTIONAL, default: https://goproxy.cn,direct]: Path to save target MO image"
+    echo "      3. MO_BUILD_IMAGE_PATH [OPTIONAL, default: /tmp]: go proxy setting"
+}
+
+
 function help_1()
 {
     echo "Usage             : ${TOOL_NAME} [option_1] [option_2]"
@@ -321,7 +335,8 @@ function help_1()
     echo "  [option_1]      : available: ${USAGE_OPTION_LIST}"
     echo "  auto_backup     : ${USAGE_AUTO_BACKUP}"
     echo "  auto_clean_logs : ${USAGE_AUTO_CLEAN_LOGS}"
-    echo "  backup          : ${USAGE_CONNECT}"
+    echo "  backup          : ${USAGE_BACKUP}"
+    echo "  build_image     : ${USAGE_BUILD_IMAGE}"
     echo "  clean_backup    : ${USAGE_CLEAN_BACKUP}"
     echo "  clean_logs      : ${USAGE_CLEAN_LOGS}"
     echo "  connect         : ${USAGE_CONNECT}"
@@ -427,6 +442,9 @@ function help_2()
             ;;
         auto_clean_backup)
             help_auto_clean_logs
+            ;;
+        build_image)
+            help_build_image
             ;;
         *)
             add_log "E" "invalid [option_1]: ${option_1}"

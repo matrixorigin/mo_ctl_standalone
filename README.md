@@ -324,7 +324,17 @@ Usage           : mo_ctl watchdog [options]   # setup a watchdog crontab task fo
                 : mo_ctl watchdog             # same as mo_ctl watchdog status
 ```
 
+### build_image - build MO image
 
+Use `mo_ctl build_image` build an MO image and save it to local path.
+
+```bash
+Usage           : mo_ctl build_image             # build an MO image from source code
+  Note          : please set below configurations first before you run the [enable] option
+      1. MO_PATH [OPTIONAL, default: /data/mo]: Path to MO source codes. e.g. mo_ctl set_conf MO_PATH=/data/mo
+      2. GOPROXY [OPTIONAL, default: https://goproxy.cn,direct]: Path to save target MO image
+      3. MO_BUILD_IMAGE_PATH [OPTIONAL, default: /tmp]: go proxy setting
+```
 
 ## Installing pre-requisites
 

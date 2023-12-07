@@ -87,35 +87,34 @@ function set_conf()
     # for kv in $(echo $list | sed "s/,/ /g")
     # do
     kv="${list}"
-        # 1. check if format is key=value
-        if ! echo "${kv}" | grep "=" >/dev/null 2>&1; then
-            add_log "E" "Conf ${kv} is an invalid format, please set conf as key=value, skipping"
-            rc=1
-            continue
-        fi
+    # 1. check if format is key=value
+    if ! echo "${kv}" | grep "=" >/dev/null 2>&1; then
+        add_log "E" "Conf ${kv} is an invalid format, please set conf as key=value, skipping"
+        rc=1
+    fi
 
-        # 2. seperate key=value
-        key=`echo "${kv}" | awk -F"=" '{print $1}'`
-        value=`echo "${kv}" | awk -F"=" '{print $2}'`
+    # 2. seperate key=value
+    key=`echo "${kv}" | awk -F"=" '{print $1}'`
+    value=`echo "${kv}" | awk -F"=" '{print $2}'`
 
 
-        # 3. set key=value
-        add_log "I" "Try to set conf: ${key}=\"${value}\""
-        if ! set_kv "${key}" "${value}"; then
-            rc=1
-        else
-            if [[ "${key}" == "MO_GIT_URL" ]]; then
-                if [[ -d ${MO_PATH}/matrixone/.git/ ]]; then
-                    add_log "I" "Key is MO_GIT_URL, setting mo git remote url"
-                    if cd ${MO_PATH}/matrixone/ && git remote set-url origin ${value}; then
-                        add_log "I" "Succeeded"
-                    else
-                        add_log "E" "Failed"
-                        rc=1
-                    fi
+    # 3. set key=value
+    add_log "I" "Try to set conf: ${key}=\"${value}\""
+    if ! set_kv "${key}" "${value}"; then
+        rc=1
+    else
+        if [[ "${key}" == "MO_GIT_URL" ]]; then
+            if [[ -d ${MO_PATH}/matrixone/.git/ ]]; then
+                add_log "I" "Key is MO_GIT_URL, setting mo git remote url"
+                if cd ${MO_PATH}/matrixone/ && git remote set-url origin ${value}; then
+                    add_log "I" "Succeeded"
+                else
+                    add_log "E" "Failed"
+                    rc=1
                 fi
             fi
         fi
+    fi
     # done
 
     return ${rc}
