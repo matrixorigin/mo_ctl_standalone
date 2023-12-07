@@ -20,9 +20,9 @@ is_cid_notlatest_notstable_valid=""
 
 function init_global_vars()
 {
-    target_branch="main"
     current_cid=`get_cid less | sed -n '2p'`
     current_branch=`get_branch | grep "current branch" | head -n 1 | awk -F "current branch: " '{print $2}'`
+    target_branch="${current_branch}"
     RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
     MO_UPGRADE_PATH="${MO_PATH}/matrixone-bk-${RUN_TAG}"
     is_cid_notlatest_notstable_valid="1"
