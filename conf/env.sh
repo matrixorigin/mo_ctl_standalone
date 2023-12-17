@@ -35,8 +35,8 @@ MO_DEPLOY_MODE="host"
 
 # for docker
 MO_REPO="matrixorigin/matrixone"
-# full image name of mo container, default: matrixorigin/matrixone:1.0.0
-MO_CONTAINER_IMAGE="matrixorigin/matrixone:1.0.0"
+# full image name of mo container, default: matrixorigin/matrixone:1.0.1
+MO_CONTAINER_IMAGE="matrixorigin/matrixone:1.0.1"
 # mo container name
 MO_CONTAINER_NAME="mo"
 # mo container sql port (PS: constant value, DONT CHANGE)
@@ -86,7 +86,7 @@ MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 #)
 
 # default version of which mo to be deployed
-MO_DEFAULT_VERSION="v1.0.0"
+MO_DEFAULT_VERSION="v1.0.1"
 # which go proxy to be used when downloading go dependencies
 # you can set this go proxy when building mo-service
 GOPROXY="https://goproxy.cn,direct"
