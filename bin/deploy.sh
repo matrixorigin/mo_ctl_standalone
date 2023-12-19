@@ -202,8 +202,13 @@ function deploy()
         fi
 
         # 2. Build
-        if ! build_all ${force}; then
-            return 1
+        if [[ "${force}" == "nobuild" ]]; then
+            add_log "W" "Flag \"nobuild\" is set, will skip building mo-service"
+            :
+        else
+            if ! build_all ${force}; then
+                return 1
+            fi
         fi
 
         # 3. Create logs folder
