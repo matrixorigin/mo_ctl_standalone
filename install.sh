@@ -75,8 +75,7 @@ function download()
 {
     SITES=(\
             # in case you're in mainland of China, you can set one of the backup addresses below to replace the default value:
-             "https://ghproxy.com/https://github.com/matrixorigin" \
-           "https://ghproxy.com/https://github.com/matrixorigin" \
+             "https://mirror.ghproxy.com/https://github.com/matrixorigin" \
            "https://hub.njuu.cf/matrixorigin" \
            "https://hub.yzuu.cf/matrixorigin" \
            "https://kgithub.com/matrixorigin" \

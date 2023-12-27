@@ -25,12 +25,12 @@ In case you have network issues accessing above address, you can use the backup 
 # backup address
 
 # Option-A. install with the Internet
-wget https://ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh && bash +x install.sh
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh && bash +x install.sh
 
 # Option-B. install without the Internet
 # 1. download them to your pc first, then upload them to your machine
-wget https://ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh
-wget https://ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
 
 # 2. install from offline pacakge
 bash +x ./install.sh mo_ctl.zip
@@ -42,10 +42,10 @@ You can uninstall mo_ctl using below command.
 wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/uninstall.sh && bash +x ./uninstall.sh
 
 # backup address
-wget https://ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/uninstall.sh && bash +x uninstall.sh
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/uninstall.sh && bash +x uninstall.sh
 
 # on Ubuntu, MacOS or any other Linux with a non-root user with sudo privilges
-wget https://ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/uninstall.sh && sudo bash +x uninstall.sh
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/uninstall.sh && sudo bash +x uninstall.sh
 ```
 
 # How to use it
@@ -64,7 +64,7 @@ mo_ctl help
 ```bash
 mo_ctl get_conf MO_PATH # check default value of mo path to be installed
 mo_ctl set_conf MO_PATH="/data/mo/20230701/matrixone" # set your own mo path
-mo_ctl set_conf MO_GIT_URL="https://ghproxy.com/https://github.com/matrixorigin/matrixone.git" # in case have network issues, you can set this conf by overwritting default value MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
+mo_ctl set_conf MO_GIT_URL="https://mirror.ghproxy.com/https://github.com/matrixorigin/matrixone.git" # in case have network issues, you can set this conf by overwritting default value MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 ```
 
 3. Deploy a standalone mo instance of latest stable release version(current: 0.8.0)
