@@ -20,8 +20,14 @@ function get_cid()
         add_log "E" "Get commit id failed, exiting"
         return 1
     fi
-    cid_full="$(cd ${MO_PATH}/matrixone && git log | head -n 6)"
-    cid_less=`echo ${cid_full} | grep "^commit" | awk '{print $2}'`
+    
+    # better way to get commit id
+    cid_full=`cd ${MO_PATH}/matrixone && git log -n 1`
+    cid_less=`cd ${MO_PATH}/matrixone && git log -n 1 --format='%H'`
+
+    #deprecated: 
+    #cid_full="$(cd ${MO_PATH}/matrixone && git log | head -n 6)"
+    #cid_less=`echo ${cid_full} | grep "^commit" | awk '{print $2}'`
     if [[ "${cid_full}" != "" ]]; then
         if [[ "${option}" == "less" ]]; then
             echo "${cid_less}"
