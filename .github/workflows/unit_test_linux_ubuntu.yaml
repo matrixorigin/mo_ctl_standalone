@@ -767,7 +767,7 @@ jobs:
   # Job 11-2
   Test-11-02-Downgrade-Latest-To-Stable:
     # DO NOT RUN
-    if: "{{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -813,7 +813,7 @@ jobs:
   # Job 11-3
   Test-11-03-Upgrade-Stable-To-Cid1:
     # DO NOT RUN
-    if: "{{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -856,7 +856,7 @@ jobs:
   # Job 11-4
   Test-11-04-Downgrade-Cid1-To-Stable:
     # DO NOT RUN
-    if: "{{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -902,7 +902,7 @@ jobs:
   # Job 11-5
   Test-11-05-Upgrade-Cid1-to-Cid2:
     # DO NOT RUN
-    if: "{{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -946,7 +946,7 @@ jobs:
   # Job 11-6
   Test-11-06-Downgrade-Cid2-to-Cid1:
     # DO NOT RUN
-    if: "{{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -992,7 +992,7 @@ jobs:
   # Job 11-7
   Test-11-07-Upgrade-Cid1-to-Latest:
     # DO NOT RUN
-    if: "{{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1036,7 +1036,7 @@ jobs:
   # Job 11-8
   Test-11-08-Downgrade-Latest-to-Cid1:
     # DO NOT RUN
-    if: "{{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
