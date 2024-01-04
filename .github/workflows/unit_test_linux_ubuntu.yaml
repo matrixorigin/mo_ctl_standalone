@@ -48,7 +48,7 @@ env:
   BACKUP_PATH: "/home/runner/mo-backup"
   MO_TOOL_PATH: "/home/runner/tools"
   MO_TOOL_URL: "https://mo-tools-1308875761.cos.ap-chengdu.myqcloud.com/latest"
-  MO_CTL_TOOL_PATH: "/home/runner/logs/mo_ctl"
+  MO_CTL_TOOL_LOG_PATH: "/home/runner/logs/mo_ctl"
 
 # job def
 jobs:
@@ -1323,7 +1323,7 @@ jobs:
       - name: Test_3. Set confs
         run: |
           mo_ctl set_conf TOOL_LOG_LEVEL=D
-          mo_ctl set_conf TOOL_LOG_PATH="${{ env.MO_CTL_TOOL_PATH }}"
+          mo_ctl set_conf TOOL_LOG_PATH="${{ env.MO_CTL_TOOL_LOG_PATH }}"
           mo_ctl set_conf CLEAN_LOGS_DAYS_BEFORE="0"
           mo_ctl set_conf CLEAN_LOGS_TABLE_LIST="statement_info,rawlog,metric"
           mo_ctl set_conf CLEAN_LOGS_CRON_SCHEDULE="* * * * *"
@@ -1347,7 +1347,7 @@ jobs:
           mo_ctl auto_clean_logs enable
           sleep 5
           echo "check log path"
-          ls -lth ${{ env.MO_CTL_TOOL_PATH }}/auto_clean_logs/
+          ls -lth ${{ env.MO_CTL_TOOL_LOG_PATH }}/auto_clean_logs/
           echo "check cron.d path and file"
           ls -lth /etc/cron.d/
           echo "content of file /etc/cron.d/mo_clean_logs"
@@ -1429,11 +1429,9 @@ jobs:
           mo_ctl sql "${sql_2}"     
       - name: Test_4. Set confs (common)
         run: |
-          mo_ctl set_conf TOOL_LOG_PATH="${{ env.MO_CTL_TOOL_PATH }}"
+          mo_ctl set_conf TOOL_LOG_PATH="${{ env.MO_CTL_TOOL_LOG_PATH }}"
           mo_ctl set_conf BACKUP_DATA_PATH="${{ env.BACKUP_PATH }}"
-          mo_ctl set_conf BACKUP_CRON_SCHEDULE="* * * * *"
-          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
-          mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/5 * * * *"
+          mo_ctl auto_backup disable
           mkdir -p ${BACKUP_PATH}
           RUN_MONTH=`date '+%Y%m'`
           echo "RUN_MONTH=${RUN_MONTH}" >>$GITHUB_ENV
@@ -1478,41 +1476,7 @@ jobs:
               ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
-      - name: Test_8. Auto backup (physical)
-        run: |
-
-          echo ""
-          echo "----------------------------------"
-          echo "Setup auto backup"
-          if ! mo_ctl auto_backup; then
-              echo "auto_backup status failed as expected"
-          fi
-
-          if ! mo_ctl auto_backup status; then
-              echo "auto_backup status failed as expected"
-          fi
-
-          echo "Enabling auto_backup"
-          mo_ctl auto_backup enable
-          mo_ctl auto_backup
-
-
-          echo "Wait for 120s"
-          sleep 120
-
-
-          echo ""
-          echo "----------------------------------"
-          echo "Show backup path"
-          ls -lth ${{ env.BACKUP_PATH }}
-          for dir in `ls ${{ env.BACKUP_PATH }}`; do
-              echo "----------------------------------"
-              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
-          done
-
-
-      - name: Test_9. List backup
+      - name: Test_8. List backup files (manual)
         run: |
           echo "----------------------------------"
           echo "mo_ctl backup list (physical+logical)"
@@ -1522,7 +1486,80 @@ jobs:
           echo "mo_ctl backup list detail (physical only)"
           mo_ctl backup list detail
 
-      - name: Test_10. Auto clean old backup
+
+      - name: Test_9. CLean backup files (manual)
+        run: |
+          echo "----------------------------------"
+          echo "mo_ctl clean_backup"
+          mo_ctl clean_backup
+
+          sleep 5
+
+          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
+              echo "--------------------------------------------"
+              echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
+          done
+
+          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
+          
+          if [[ ${dir_count} -ne 0 ]]; then
+              echo "dir_count: ${dir_count} is not 0, seems like clean_backup has failed"
+              exit 1
+          fi 
+
+      - name: Test_10. Auto backup (physical)
+        run: |
+
+          echo ""
+          echo "----------------------------------"
+          echo "Set confs for auto backup"
+          mo_ctl set_conf BACKUP_CRON_SCHEDULE="* * * * *"
+          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
+          mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/8 * * * *"
+
+
+          echo ""
+          echo "----------------------------------"
+          echo "Disable auto backup"
+          mo_ctl auto_backup disable
+
+          echo ""
+          echo "----------------------------------"
+          echo "Check auto backup status"
+          if ! mo_ctl auto_backup; then
+              echo "auto_backup status failed as expected"
+          fi
+
+          if ! mo_ctl auto_backup status; then
+              echo "auto_backup status failed as expected"
+          fi
+
+          echo ""
+          echo "----------------------------------"
+          echo "Enable auto backup"
+          mo_ctl auto_backup enable
+
+          echo ""
+          echo "----------------------------------"
+          echo "Check auto backup status"
+          mo_ctl auto_backup
+
+          echo "Wait for 150s for next auto backup to perform"
+          sleep 150
+
+          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
+              echo "--------------------------------------------"
+              echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
+          done
+
+          if [[ ${dir_count} -eq 0 ]]; then
+              echo "dir_count: ${dir_count} is 0, seems like auto_backup has failed"
+              exit 1
+          fi 
+
+      - name: Test_11. Auto clean old backup
         run: |
 
           echo "----------------------------------"
@@ -1550,8 +1587,9 @@ jobs:
 
           echo "----------------------------------"
           echo "Clean backup automatically"
-          echo "Sleep 320s"
-          sleep 320
+          echo "Sleep 300s"
+          sleep 300
+
           echo "Show backup path"
           ls -lth ${{ env.BACKUP_PATH }}/
           for dir in `ls ${{ env.BACKUP_PATH }}`; do
@@ -1560,14 +1598,24 @@ jobs:
               ls -lth ${{ env.BACKUP_PATH }}/${dir}/
           done
 
-          echo "check log path ~/mo_ctl/log/auto_backup/"
-          ls -lth ~/mo_ctl/log/auto_backup/
-          echo "check log path ~/mo_ctl/log/auto_clean_old_backup/"
-          ls -lth ~/mo_ctl/log/auto_clean_old_backup/
+          if [[ ${dir_count} -ne 0 ]]; then
+              echo "dir_count: ${dir_count} is 0, seems like auto_clean_old_backup has failed"
+              exit 1
+          fi 
+
+
+          echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_backup/"
+          ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_backup/auto_backup/
+
+          echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/"
+          ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/
+          
           echo "check cron.d path and file"
           ls -lth /etc/cron.d/
+          
           echo "content of file /etc/cron.d/mo_backup"
           cat /etc/cron.d/mo_backup
+          
           echo "content of file /etc/cron.d/mo_clean_old_backup"
           cat /etc/cron.d/mo_clean_old_backup
             
