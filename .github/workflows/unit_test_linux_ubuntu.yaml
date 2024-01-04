@@ -1553,7 +1553,7 @@ jobs:
               ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
-          if [[ -d ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ ]]; then
+          if [[ ! -d ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ ]]; then
               echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ does not exist, seems like auto_backup has failed"
               exit 1
           else
