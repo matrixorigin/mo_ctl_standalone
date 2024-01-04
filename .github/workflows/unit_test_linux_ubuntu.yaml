@@ -1469,7 +1469,7 @@ jobs:
         run: |
           echo "--------------------------------------------"
           mo_ctl set_conf BACKUP_TYPE="physical"
-          mo_ctl set_conf BACKUP_MOBR_PATH="${{ env.MO_TOOL_PATH }}/mo-bacup/mo_br"
+          mo_ctl set_conf BACKUP_MOBR_PATH="${{ env.MO_TOOL_PATH }}/mo-backup/mo_br"
           mo_ctl set_conf BACKUP_PHYSICAL_TYPE="filesystem"
           mo_ctl backup
           for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
@@ -1512,7 +1512,7 @@ jobs:
           done
 
 
-      - name: Test_8. List backup
+      - name: Test_9. List backup
         run: |
           echo "----------------------------------"
           echo "mo_ctl backup list (physical+logical)"
