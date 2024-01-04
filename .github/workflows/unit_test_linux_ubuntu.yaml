@@ -1371,7 +1371,7 @@ jobs:
           mkdir -p ${{ env.MO_PATH }}
       - name: Download tools
         run: |
-          tools=("mo_dump" "mo-tpch")
+          tools=("mo_dump" "mo-tpch" "mo-backup")
           echo "Download and extract tools"
           mkdir -p ${{ env.MO_TOOL_PATH }}
           for tool in ${tools[*]}; do
@@ -1429,12 +1429,14 @@ jobs:
           mo_ctl sql "${sql_2}"     
       - name: Test_4. Set confs (common)
         run: |
+          mo_ctl set_conf TOOL_LOG_PATH="${{ env.MO_CTL_TOOL_PATH }}"
           mo_ctl set_conf BACKUP_DATA_PATH="${{ env.BACKUP_PATH }}"
           mo_ctl set_conf BACKUP_CRON_SCHEDULE="* * * * *"
           mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
           mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/5 * * * *"
           mkdir -p ${BACKUP_PATH}
-
+          RUN_MONTH=`date '+%Y%m'`
+          echo "RUN_MONTH=${RUN_MONTH}" >>$GITHUB_ENV
       - name: Test_5. Manual backup (logical, insert)
         run: |
           echo "--------------------------------------------"
@@ -1443,10 +1445,10 @@ jobs:
           mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="insert"
           mo_ctl set_conf BACKUP_LOGICAL_DB_LIST="all_no_sysdb"
           mo_ctl backup
-          for dir in `ls ${{ env.BACKUP_PATH }}/`; do
+          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
               echo "--------------------------------------------"
-              echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
+              echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
       - name: Test_6. Manual backup (logical, csv)
@@ -1457,10 +1459,10 @@ jobs:
           mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="csv"
           mo_ctl set_conf BACKUP_LOGICAL_DB_LIST="all_no_sysdb"
           mo_ctl backup
-          for dir in `ls ${{ env.BACKUP_PATH }}`; do
-              echo "----------------------------------"
-              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
+          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
+              echo "--------------------------------------------"
+              echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
       - name: Test_7. Manual backup (physical)
@@ -1470,10 +1472,10 @@ jobs:
           mo_ctl set_conf BACKUP_MOBR_PATH="${{ env.MO_TOOL_PATH }}/mo-bacup/mo_br"
           mo_ctl set_conf BACKUP_PHYSICAL_TYPE="filesystem"
           mo_ctl backup
-          for dir in `ls ${{ env.BACKUP_PATH }}`; do
-              echo "----------------------------------"
-              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
+          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
+              echo "--------------------------------------------"
+              echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
       - name: Test_8. Auto backup (physical)
@@ -1510,7 +1512,17 @@ jobs:
           done
 
 
-      - name: Test_8. Auto clean old backup
+      - name: Test_8. List backup
+        run: |
+          echo "----------------------------------"
+          echo "mo_ctl backup list (physical+logical)"
+          mo_ctl backup list
+
+          echo "----------------------------------"
+          echo "mo_ctl backup list detail (physical only)"
+          mo_ctl backup list detail
+
+      - name: Test_10. Auto clean old backup
         run: |
 
           echo "----------------------------------"
