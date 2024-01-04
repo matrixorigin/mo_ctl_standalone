@@ -471,7 +471,7 @@ jobs:
           fi
 
   Job_11:
-    name: Job_11 - Deploy and uninstall mo (branch=main, commit=invalid):
+    name: Job_11 - Deploy and uninstall mo (branch=main, commit=invalid)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
