@@ -1453,7 +1453,7 @@ jobs:
         run: |
           echo "--------------------------------------------"
           mo_ctl set_conf BACKUP_TYPE="logical"
-          mo_ctl set_conf BACKUP_MODUMP_PATH="${{ env.MO_TOOL_PATH }}/mo_dump/mo-dump"
+          mo_ctl set_conf BACKUP_MOBR_PATH="${{ env.MO_TOOL_PATH }}/mo-backup/mo_br"
           mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="csv"
           mo_ctl set_conf BACKUP_LOGICAL_DB_LIST="all_no_sysdb"
           mo_ctl backup
