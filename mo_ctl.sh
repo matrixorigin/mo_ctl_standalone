@@ -5,18 +5,20 @@
 ################################################################
 
 if ! pwd >/dev/null 2>&1; then
-    nowtime="`date '+%Y-%m-%d_%H:%M:%S.%N'`"
-    nowtime="`echo "${nowtime}" | cut -b 1-23`"
+    nowtime="$(date '+%Y-%m-%d_%H:%M:%S.%N')"
+    nowtime="$(echo "${nowtime}" | cut -b 1-23)"
     echo "${nowtime}    [ERROR]    You're currently on a path that no loner exists, please change to a valid directory and re-execute mo_ctl command"
     exit 1
 fi
 
 # Work dir
-WORK_DIR=`cd "$(dirname "$0")" || exit; pwd`
-# confs
+WORK_DIR=$(cd "$(dirname "$0")" || exit; pwd)
+# conf
 CONF_FILE="${WORK_DIR}/conf/env.sh"
 CONF_FILE_DEFAULT="${WORK_DIR}/conf/env.sh.default"
+# bin
 BIN_DIR="${WORK_DIR}/bin"
+# log
 LOG_DIR="${WORK_DIR}/log"
 # scripts
 SCRIPT_LIST=("basic" "help" "precheck" "deploy" \
@@ -25,7 +27,7 @@ SCRIPT_LIST=("basic" "help" "precheck" "deploy" \
     "mysql_to_mo" "ddl_convert" "watchdog" "upgrade" \
     "get_branch" "uninstall" "sql" "csv_convert" \
     "version" "auto_backup" "auto_clean_logs" \
-    "build_image" \
+    "build_image" "monitor" \
 )
 PIDS=""
 
@@ -70,7 +72,7 @@ function main()
             precheck
             ;;
         "deploy")
-            deploy ${option_2} ${option_3}
+            deploy "${option_2}" "${option_3}"
             ;;
         "status")
             status
@@ -79,19 +81,19 @@ function main()
             start
             ;;
         "stop")
-            stop ${option_2}
+            stop "${option_2}"
             ;;
         "restart")
-            restart ${option_2}
+            restart "${option_2}"
             ;;
         "connect")
             connect
             ;;
         "get_cid")
-            get_cid ${option_2}
+            get_cid "${option_2}"
             ;;
         "pprof")
-            pprof ${option_2} ${option_3} 
+            pprof "${option_2}" "${option_3}"
             ;;
         "set_conf")
             shift_vars=`echo "${all_vars#* }"`
@@ -103,19 +105,19 @@ function main()
             set_conf "${shift_vars}"
             ;;
         "get_conf")
-            get_conf ${option_2}
+            get_conf "${option_2}"
             ;;
         "ddl_convert")
-            ddl_convert ${option_2} ${option_3} ${option_4}
+            ddl_convert "${option_2}" "${option_3}" "${option_4}"
             ;;
         "watchdog")
-            watchdog ${option_2}
+            watchdog "${option_2}"
             ;;
         "upgrade")
-            upgrade ${option_2}
+            upgrade "${option_2}"
             ;;
         "get_branch")
-            get_branch ${option_2}
+            get_branch "${option_2}"
             ;;
         "uninstall")
             uninstall
@@ -126,7 +128,8 @@ function main()
                 help_sql
                 return 1
             fi
-            shift_vars=`echo "${all_vars#* }"`
+            #shift_vars=`echo "${all_vars#* }"`
+            shift_vars="${all_vars#* }"
             sql "${shift_vars}"
             ;;
         "csv_convert")
@@ -136,10 +139,14 @@ function main()
             version
             ;;
         "auto_backup")
-            auto_backup ${option_2}
+            auto_backup "${option_2}" "${option_3}"
             ;;
         "backup")
-            backup
+            if [[ "${option_2}" == "list" ]]; then
+                backup_list "${option_3}"
+            else
+                backup
+            fi
             ;;
         "clean_backup")
             clean_backup
@@ -148,22 +155,25 @@ function main()
             clean_logs
             ;;
         "auto_clean_logs")
-            auto_clean_logs ${option_2}
+            auto_clean_logs "${option_2}"
             ;;
         "build_image")
             build_image
             ;;
+        "monitor")
+            monitor "${option_2}" "${option_3}"
+            ;;
         *)
             add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"
             help_1
-            cd ${current_path}
+            cd "${current_path}" || exit
             return 1
             ;;
     esac
     
     rc=$?
 
-    cd ${current_path}
+    cd "${current_path}" || exit
     return ${rc}
 }
 

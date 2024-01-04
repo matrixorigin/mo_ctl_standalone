@@ -69,8 +69,8 @@ function auto_clean_logs_enable()
    if ! auto_clean_logs_status; then
         add_log "I" "Enabling ${acl_name}"
         
-        add_log "D" "Creating log folder: mkdir -p ${LOG_DIR}/${acl_name}/"
-        mkdir -p ${LOG_DIR}/${acl_name}/
+        add_log "D" "Creating log folder: mkdir -p ${TOOL_LOG_PATH}/${acl_name}/"
+        mkdir -p ${TOOL_LOG_PATH}/${acl_name}/
 
         if [[ "${OS}" == "Mac" ]]; then
             # 1. Mac
@@ -130,8 +130,9 @@ function auto_clean_logs()
     CLEAN_LOGS_CRON_USER=`whoami`
     
     # backup cron file and its content 
-    date_expr="\$(date '+\\%Y\\%m\\%d_\\%H\\%M\\%S')"
-    CLEAN_LOGS_CRON_CONTENT="${CLEAN_LOGS_CRON_SCHEDULE} ${CLEAN_LOGS_CRON_USER} ${CLEAN_LOGS_CRON_SCRIPT} > ${LOG_DIR}/${acl_name}/log.${date_expr}.log 2>&1"
+    #yearmonth_expr="\$(date '+\\%Y\\%m\\%d_\\%H\\%M\\%S')"
+    datetime_expr="\$(date '+\\%Y\\%m\\%d_\\%H\\%M\\%S')"
+    CLEAN_LOGS_CRON_CONTENT="${CLEAN_LOGS_CRON_SCHEDULE} ${CLEAN_LOGS_CRON_USER} ${CLEAN_LOGS_CRON_SCRIPT} > ${TOOL_LOG_PATH}/${acl_name}/${datetime_expr}.log 2>&1"
 
 
     case "${option}" in

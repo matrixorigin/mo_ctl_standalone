@@ -7,7 +7,7 @@
 
 #confs
 TOOL_NAME="mo_ctl"
-USAGE_OPTION_LIST="auto_backup | auto_clean_logs | backup | clean_backup | clean_logs | connect | csv_convert | ddl_convert | deploy | get_branch | get_cid | get_conf | help | pprof | precheck | restart | set_conf | sql | start | status | stop | uninstall | upgrade | version | watchdog"
+USAGE_OPTION_LIST="auto_backup | auto_clean_logs | backup | clean_backup | clean_logs | connect | csv_convert | ddl_convert | deploy | get_branch | get_cid | get_conf | help | monitor | pprof | precheck | restart | set_conf | sql | start | status | stop | uninstall | upgrade | version | watchdog"
 
 USAGE_AUTO_BACKUP="setup a crontab task to backup your databases automatically"
 USAGE_AUTO_CLEAN_LOGS="set up a crontab task to clean system log table data automatically"
@@ -23,6 +23,7 @@ USAGE_GET_BRANCH="print which git branch mo is currently on"
 USAGE_GET_CID="print mo git commit id from the path configured"
 USAGE_GET_CONF="get configurations"
 USAGE_HELP="print help information"
+USAGE_MONITOR="monitor system related operations"
 USAGE_PATH="print mo path configured"
 USAGE_PRECHECK="check pre-requisites for ${TOOL_NAME}"
 USAGE_PPROF="collect pprof information"
@@ -254,17 +255,43 @@ function help_bk_notes()
 {
     echo "  Note          : currently only supported on linux systems"
     echo "                : please set below configurations first before you run the [enable] option"
-    echo "      1. BACKUP_DB_LIST [OPTIONAL, default: all_no_sysdb]: backup databases, seperated by ',' for each database. Note: 'all' and 'all_no_sysdb' are special settings. e.g. mo_ctl set_conf BACKUP_DB_LIST=\"db1,db2,db3\""
-    echo "          all: all databases, including all system and user databases"
-    echo "          all_no_sysdb: all databases, including all user databases, but no system databases"
-    echo "          other settings by user: e.g. db1,db2,db3"
-    echo "      2. BACKUP_TYPE [OPTIONAL, default: logical]: backup type choose from \"logical | physical\". e.g. mo_ctl set_conf BACKUP_TYPE=\"logical\""
-    echo "  Note          : currently only \"logical\" is supported, and \"physical\" will be supported in the future"
-    echo "      3. BACKUP_CRON_SCHEDULE [OPTIONAL, default: 30 23 * * *]: cron expression to control backup schedule time and frequency, in standard cron format (https://crontab.guru/). e.g. mo_ctl set_conf BACKUP_TYPE=\"30 23 * * *\""
-    echo "      4. BACKUP_DATA_TYPE [OPTIONAL, default: csv]: (only valid when BACKUP_TYPE=logical)backup data type, choose from: insert | csv . e.g. mo_ctl set_conf BACKUP_DATA_TYPE=\"csv\""
-    echo "      5. BACKUP_PATH [OPTIONAL, default: /data/mo-backup]: backup directory. e.g. mo_ctl set_conf BACKUP_PATH=/data/mo-backup"
-    echo "      6. BACKUP_CLEAN_DAYS_BEFORE [OPTIONAL, default: 31]: clean old backup files before [x] days. e.g. mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=31"
-    echo "      7. BACKUP_CLEAN_CRON_SCHEDULE [OPTIONAL, default: 0 6 * * *]: cron to control auto clean of old backups. e.g. mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE=\"0 6 * * *\""
+
+    echo "  ------------------------- "
+    echo "   1. Common settings       "
+    echo "  ------------------------- "
+    echo "    1) BACKUP_DATA_PATH [default: /data/mo-backup]: backup data path in filesystem or s3. e.g. mo_ctl set_conf BACKUP_DATA_PATH=/data/mo-backup"
+    echo "    2) BACKUP_TYPE [default: physical]: backup type choose from \"physical\" | \"logical\". e.g. mo_ctl set_conf BACKUP_TYPE=\"logical\""
+    echo "    3) BACKUP_CRON_SCHEDULE [default: 30 23 * * *]: cron expression to control backup schedule time and frequency, in standard cron format (https://crontab.guru/). e.g. mo_ctl set_conf BACKUP_TYPE=\"30 23 * * *\""
+    echo "    4) BACKUP_CLEAN_DAYS_BEFORE [default: 31]: clean old backup files before [x] days. e.g. mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=31"
+    echo "    5) BACKUP_CLEAN_CRON_SCHEDULE [default: 0 6 * * *]: cron to control auto clean of old backups. e.g. mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE=\"0 6 * * *\""
+
+    echo ""
+    echo "  ------------------------- "
+    echo "   2. For physical backups  "
+    echo "  ------------------------- "
+    echo "    1) BACKUP_MOBR_PATH [default: /data/tools/mo-backup/mo_br]: Path to mo_br backup tool"
+    echo "    2) BACKUP_PHYSICAL_TYPE [default: filesystem]: target backup storage type, choose from \"filesystem\" | \"s3\""
+    echo "      if BACKUP_PHYSICAL_TYPE=s3"
+    echo "        a) BACKUP_S3_ENDPOINT [default: '']: s3 endpoint, e.g. https://cos.ap-nanjing.myqcloud.com"
+    echo "        b) BACKUP_S3_ID [default: '']: s3 id, e.g. B4v6Khv484X81dk81jQFzc9YxKl98JOyxkX1k"
+    echo "        c) BACKUP_S3_KEY [default: '']: s3 key, e.g. QFzc9YxKl98JOyxkX1kB4v6Khv484X81dk81j"
+    echo "        d) BACKUP_S3_BUCKET [default: '']: s3 bucket, e.g. mybucket"
+    echo "        e) BACKUP_S3_REGION [default: '']: s3 region, e.g. ap-nanjing"
+    echo "        f) BACKUP_S3_COMPRESSION [default: '']: s3 compression"
+    echo "        g) BACKUP_S3_ROLE_ARN [default: '']: s3 role arn"
+    echo "        h) BACKUP_S3_IS_MINIO [default: 'no']: is minio type or not, choose from \"no\" | \"yes\""
+
+    echo ""
+    echo "  ------------------------- "
+    echo "   3. For logical backups  "
+    echo "  ------------------------- "
+    echo "    1) BACKUP_MODUMP_PATH [default: /data/tools/mo_dump/mo-dump]: Path to mo-dump backup tool"
+    echo "    2) BACKUP_LOGICAL_DB_LIST [OPTIONAL, default: all_no_sysdb]: (only valid when BACKUP_TYPE=logical) backup databases, seperated by ',' for each database."
+    echo "       Note: 'all' and 'all_no_sysdb' are special settings. e.g. mo_ctl set_conf BACKUP_DB_LIST=\"db1,db2,db3\""
+    echo "         a) all: all databases, including all system and user databases"
+    echo "         b) all_no_sysdb: all databases, including all user databases, but no system databases"
+    echo "         c) other settings by user: e.g. db1,db2,db3"
+    echo "    3) BACKUP_LOGICAL_DATA_TYPE [OPTIONAL, default: csv]: (only valid when BACKUP_TYPE=logical) backup data type, choose from: insert | csv . e.g. mo_ctl set_conf BACKUP_DATA_TYPE=\"csv\""
 
 }
 
@@ -273,10 +300,11 @@ function help_auto_backup()
     option="auto_backup"
     echo "Usage           : ${TOOL_NAME} ${option} [options]   # ${USAGE_AUTO_BACKUP}"
     echo " [options]      : available: enable | disable | status"
+    echo "                : ${TOOL_NAME} ${option}             # same as ${TOOL_NAME} ${option} status"
+    echo "                : ${TOOL_NAME} ${option} status      # check if auto backup is enabled or disabled"
     echo "  e.g.          : ${TOOL_NAME} ${option} enable      # enable auto backup for your databases"
     echo "                : ${TOOL_NAME} ${option} disable     # disable auto backup for your databases"
-    echo "                : ${TOOL_NAME} ${option} status      # check if auto backup is enabled or disabled"
-    echo "                : ${TOOL_NAME} ${option}             # same as ${TOOL_NAME} ${option} status"
+
     help_bk_notes
 }
 
@@ -284,6 +312,8 @@ function help_backup()
 {
     option="backup"
     echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_BACKUP}"
+    echo "Usage           : ${TOOL_NAME} ${option} list        # list backup report in summary"
+    echo "Usage           : ${TOOL_NAME} ${option} list detail # list backup report in detail(physical only)"
     help_bk_notes
 }
 
@@ -327,6 +357,20 @@ function help_build_image()
     echo "      3. MO_BUILD_IMAGE_PATH [OPTIONAL, default: /tmp]: go proxy setting"
 }
 
+function help_monitor()
+{
+    option="monitor"
+    echo "Usage           : ${TOOL_NAME} ${option} [option_1] [option_2]        # ${USAGE_MONITOR}"
+    echo "  [option_1]    : deploy | uninstall | status | start | stop"
+    echo "  e.g.          : ${TOOL_NAME} ${option} deploy          # deploy monitor system (online or offline)"
+    echo "  [option_2] for deploy : online (default) | offline"
+    echo "                : ${TOOL_NAME} ${option} uninstall       # uninstall monitor system"
+    echo "                : ${TOOL_NAME} ${option} status          # check if monitor system is running"
+    echo "                : ${TOOL_NAME} ${option} start           # start monitor system if not running"
+    echo "                : ${TOOL_NAME} ${option} stop            # stop monitor system if running"
+}
+
+
 
 function help_1()
 {
@@ -347,6 +391,7 @@ function help_1()
     echo "  get_cid         : ${USAGE_GET_CID}"
     echo "  get_conf        : ${USAGE_GET_CONF}"
     echo "  help            : ${USAGE_HELP}"
+    echo "  monitor         : ${USAGE_MONITOR}"
     echo "  pprof           : ${USAGE_PPROF}"
     echo "  precheck        : ${USAGE_PRECHECK}"
     echo "  restart         : ${USAGE_RESTART}"
@@ -445,6 +490,9 @@ function help_2()
             ;;
         build_image)
             help_build_image
+            ;;
+        monitor)
+            help_monitor
             ;;
         *)
             add_log "E" "invalid [option_1]: ${option_1}"
