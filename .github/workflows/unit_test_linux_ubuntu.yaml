@@ -1593,8 +1593,8 @@ jobs:
 
           echo "----------------------------------"
           echo "Clean backup automatically"
-          echo "Sleep 300s"
-          sleep 300
+          echo "Sleep 6000s"
+          sleep 6000
 
           echo "Show backup path"
           ls -lth ${{ env.BACKUP_PATH }}/
@@ -1604,6 +1604,7 @@ jobs:
               ls -lth ${{ env.BACKUP_PATH }}/${dir}/
           done
 
+          dir_count=`ls ${{ env.BACKUP_PATH }} | wc -l`
           if [[ ${dir_count} -ne 0 ]]; then
               echo "dir_count: ${dir_count} is 0, seems like auto_clean_old_backup has failed"
               exit 1
@@ -1611,7 +1612,7 @@ jobs:
 
 
           echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_backup/"
-          ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_backup/auto_backup/
+          ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_backup/
 
           echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/"
           ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/
