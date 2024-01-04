@@ -1464,7 +1464,7 @@ jobs:
           done
 
       - name: Test_7. Manual backup (physical)
-
+        run: |
           echo "--------------------------------------------"
           mo_ctl set_conf BACKUP_TYPE="physical"
           mo_ctl set_conf BACKUP_PHYSICAL_TYPE="filesystem"
@@ -1522,7 +1522,7 @@ jobs:
               echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
               ls -lth ${{ env.BACKUP_PATH }}/${dir}/
           done
-          
+
           echo "----------------------------------"
           echo "Test backup manually"
           echo ""
