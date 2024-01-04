@@ -1405,10 +1405,10 @@ jobs:
           cd ${{ env.MO_TOOL_PATH }}/mo-tpch
           ./run.sh -s 1 -g
           sleep 2
-          ./run.s -s 1 -c
-          ./run.s -s 1 -l
+          ./run.sh -s 1 -c
+          ./run.sh -s 1 -l
 
-          db_name="ssb_${{ env.SSB_DATA_SIZE}}g"
+          db_name="tpch_1g"
 
           echo "------------------------"
           echo "Show databases"
@@ -1427,48 +1427,60 @@ jobs:
           start_pos=6
           sql_2=${sql:${start_pos}:${len}}
           mo_ctl sql "${sql_2}"     
-      - name: Test_4. Set confs
+      - name: Test_4. Set confs (common)
         run: |
           mo_ctl set_conf BACKUP_DATA_PATH="${{ env.BACKUP_PATH }}"
-          mo_ctl set_conf BACKUP_MODUMP_PATH="${{ env.MO_TOOL_PATH }}/mo_dump/mo-dump"
-          mo_ctl set_conf BACKUP_TYPE="logical"
-          #mo_ctl set_conf BACKUP_LOGICAL_DB_LIST="all_no_sysdb"
-          #mo_ctl set_conf BACKUP_CRON_SCHEDULE="* * * * *"
-          #mo_ctl set_conf BACKUP_DATA_TYPE="insert"
-          #mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
-          #mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/5 * * * *"
-      - name: Test_5. Manual/auto backup and clean (logical with insert type)
-        run: |
-          echo "--------------------------------------------"
-          mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="insert"
-          mo_ctl backup
-          ls -lth ${{ env.BACKUP_PATH }}/*/
-
-
-          echo "--------------------------------------------"
-          mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="csv"
-          mo_ctl backup
-          ls -lth ${{ env.BACKUP_PATH }}/*/
-      - name: Test_7. backup manually, backup automatically, clean backup manually, clean backup automatically
-        run: |
-          echo "Create backup path"
+          mo_ctl set_conf BACKUP_CRON_SCHEDULE="* * * * *"
+          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
+          mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/5 * * * *"
           mkdir -p ${BACKUP_PATH}
 
-          echo "----------------------------------"
-          echo "Test backup manually"
+      - name: Test_5. Manual backup (logical, insert)
+        run: |
+          echo "--------------------------------------------"
+          mo_ctl set_conf BACKUP_TYPE="logical"
+          mo_ctl set_conf BACKUP_MODUMP_PATH="${{ env.MO_TOOL_PATH }}/mo_dump/mo-dump"
+          mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="insert"
+          mo_ctl set_conf BACKUP_LOGICAL_DB_LIST="all_no_sysdb"
           mo_ctl backup
-          sleep 5
-          echo "Show backup path"
-          ls -lth ${{ env.BACKUP_PATH }}
+          for dir in `ls ${{ env.BACKUP_PATH }}/`; do
+              echo "--------------------------------------------"
+              echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
+          done
+
+      - name: Test_6. Manual backup (logical, csv)
+
+          echo "--------------------------------------------"
+          mo_ctl set_conf BACKUP_TYPE="logical"
+          mo_ctl set_conf BACKUP_MODUMP_PATH="${{ env.MO_TOOL_PATH }}/mo_dump/mo-dump"
+          mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="csv"
+          mo_ctl set_conf BACKUP_LOGICAL_DB_LIST="all_no_sysdb"
+          mo_ctl backup
           for dir in `ls ${{ env.BACKUP_PATH }}`; do
               echo "----------------------------------"
               echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
               ls -lth ${{ env.BACKUP_PATH }}/${dir}/
           done
 
-          echo "----------------------------------"
-          echo "Test backup automatically"
+      - name: Test_7. Manual backup (physical)
+
+          echo "--------------------------------------------"
+          mo_ctl set_conf BACKUP_TYPE="physical"
+          mo_ctl set_conf BACKUP_PHYSICAL_TYPE="filesystem"
+          mo_ctl backup
+          for dir in `ls ${{ env.BACKUP_PATH }}`; do
+              echo "----------------------------------"
+              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
+          done
+
+      - name: Test_8. Auto backup (physical)
+        run: |
+
           echo ""
+          echo "----------------------------------"
+          echo "Setup auto backup"
           if ! mo_ctl auto_backup; then
               echo "auto_backup status failed as expected"
           fi
@@ -1484,6 +1496,10 @@ jobs:
 
           echo "Wait for 120s"
           sleep 120
+
+
+          echo ""
+          echo "----------------------------------"
           echo "Show backup path"
           ls -lth ${{ env.BACKUP_PATH }}
           for dir in `ls ${{ env.BACKUP_PATH }}`; do
@@ -1491,6 +1507,11 @@ jobs:
               echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
               ls -lth ${{ env.BACKUP_PATH }}/${dir}/
           done
+
+
+      - name: Test_8. Auto clean old backup
+        run: |
+
           echo "----------------------------------"
           echo "Clean backup manually"
           mo_ctl clean_backup
@@ -1501,6 +1522,7 @@ jobs:
               echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
               ls -lth ${{ env.BACKUP_PATH }}/${dir}/
           done
+          
           echo "----------------------------------"
           echo "Test backup manually"
           echo ""
