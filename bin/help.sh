@@ -485,7 +485,7 @@ function help_2()
         clean_logs)
             help_clean_logs
             ;;
-        auto_clean_backup)
+        auto_clean_logs)
             help_auto_clean_logs
             ;;
         build_image)

@@ -52,7 +52,7 @@ env:
 # job def
 jobs:
   Job_01:
-    name: Job_01 - install/uninstall mo_ctl tool
+    name: Job_01 - install|uninstall mo_ctl tool
     runs-on: ubuntu-latest
     steps:
       - name: Test_1. 'install.sh'
@@ -96,7 +96,7 @@ jobs:
           fi
 
   Job_02:
-    name: Job_02 - mo_ctl help
+    name: Job_02 - help
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -130,7 +130,7 @@ jobs:
               exit 1
           fi
   Job_03:
-    name: Job_03 - mo_ctl set_conf | get_conf
+    name: Job_03 - set_conf|get_conf
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -214,7 +214,7 @@ jobs:
           echo "yes"| mo_ctl set_conf reset
 
   Job_04:
-    name: Job_04 - mo_ctl precheck
+    name: Job_04 - precheck
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -237,7 +237,7 @@ jobs:
               echo "'mo_ctl precheck' fails as expected"
           fi
   Job_05:
-    name: Job_05 - mo_ctl get_branch | get_cid | version
+    name: Job_05 - get_branch | get_cid | version
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -288,7 +288,7 @@ jobs:
           fi
 
   Job_06:
-    name: Job_06 - mo_ctl deploy | uninstall (stable)
+    name: Job_06 - deploy | uninstall (stable)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -334,7 +334,7 @@ jobs:
           fi
 
   Job_07:
-    name: Job_07 - mo_ctl deploy | uninstall (main - latest)
+    name: Job_07 - deploy | uninstall (main-latest)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -356,9 +356,9 @@ jobs:
           mo_ctl get_branch
           branch=`mo_ctl get_branch | tail -n 1 | awk -F'current branch: ' '{print $2}'`
           echo "branch is: ${branch}"
-          if [[ "${branch}" != "${{ env.MO_STABLE_BRANCH }}" ]]; then
-              echo "Failed to get_branch or branch is not that as expected: ${{ env.MO_STABLE_BRANCH }}"
-              echo "expected branch: ${{ env.MO_STABLE_BRANCH }}, actual branch: ${branch}"
+          if [[ "${branch}" != "${{ env.MO_MAIN_BRANCH }}" ]]; then
+              echo "Failed to get_branch or branch is not that as expected: ${{ env.MO_MAIN_BRANCH }}"
+              echo "expected branch: ${{ env.MO_MAIN_BRANCH }}, actual branch: ${branch}"
               exit 1
           fi
       - name: Test_3. 'mo_ctl get_cid' (get commit id)
@@ -380,7 +380,7 @@ jobs:
           fi
 
   Job_08:
-    name: Job_08 - mo_ctl deploy | uninstall (main - commitid)
+    name: Job_08 - deploy | uninstall (main - commitid)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -426,7 +426,7 @@ jobs:
           fi
 
   Job_09:
-    name: Job_09 - mo_ctl deploy | uninstall (1.1-dev - latest)
+    name: Job_09 - deploy | uninstall (1.1-dev - latest)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -472,7 +472,7 @@ jobs:
           fi
 
   Job_10:
-    name: Job_10 - mo_ctl build_image
+    name: Job_10 - build_image
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -507,7 +507,7 @@ jobs:
           ls -lth /tmp/
 
   Job_11:
-    name: Job_11 - mo_ctl deploy | uninstall (main - invalid commitid)
+    name: Job_11 - deploy | uninstall (main - invalid commitid)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -528,7 +528,7 @@ jobs:
           fi
 
   Job_12:
-    name: Job_12 - mo_ctl status | start | stop | restart
+    name: Job_12 - status | start | stop | restart
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -582,7 +582,7 @@ jobs:
           mo_ctl restart force && mo_ctl status
 
   Job_13: 
-    name: Job_13 - mo_ctl connect
+    name: Job_13 - connect
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -621,7 +621,7 @@ jobs:
           fi
 
   Job_14: 
-    name: Job_14 - mo_ctl sql
+    name: Job_14 - sql
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -685,7 +685,7 @@ jobs:
           fi
 
   Job_15: 
-    name: Job_15 - mo_ctl watchdog
+    name: Job_15 - watchdog
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -746,7 +746,7 @@ jobs:
           fi
 
   Job_16: 
-    name: Job_16 - mo_ctl pprof
+    name: Job_16 - pprof
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -821,7 +821,7 @@ jobs:
           cd ${{ env.MO_PPROF_PATH }}/ && rm -f ./*
 
   Job_17:
-    name: Job_17 - mo_ctl upgrade (cid_1->cid_2)
+    name: Job_17 - upgrade (cid_1->cid_2)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -866,7 +866,7 @@ jobs:
           fi
 
   Job_18:
-    name: Job_18 - mo_ctl upgrade (cid_2->cid_1)
+    name: Job_18 - upgrade (cid_2->cid_1)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -913,7 +913,7 @@ jobs:
           fi
 
   Job_19:
-    name: Job_19 - mo_ctl upgrade (stable->main)
+    name: Job_19 - upgrade (stable->main)
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
@@ -957,7 +957,7 @@ jobs:
           fi
 
   Job_20:
-    name: Job_20 - mo_ctl upgrade (main->stable)
+    name: Job_20 - upgrade (main->stable)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -1004,7 +1004,7 @@ jobs:
           fi
 
   Job_21:
-    name: Job_21 - mo_ctl upgrade (stable->cid_1)
+    name: Job_21 - upgrade (stable->cid_1)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -1048,7 +1048,7 @@ jobs:
           fi
 
   Job_22:
-    name: Job_22 - mo_ctl upgrade (cid_1->stable)
+    name: Job_22 - upgrade (cid_1->stable)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -1096,7 +1096,7 @@ jobs:
 
 
   Job_23:
-    name: Job_23Upgrade - mo_ctl upgrade (cid_1->latest)
+    name: Job_23 - upgrade (cid_1->latest)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -1140,7 +1140,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another"
           fi  
   Job_24:
-    name: Job_24 - Upgrade - mo_ctl upgrade (latest->cid_1)
+    name: Job_24 - upgrade (latest->cid_1)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -1187,7 +1187,7 @@ jobs:
           fi
 
   Job_25:
-    name: Job_25 - mo_ctl deploy | uninstall (docker)
+    name: Job_25 - deploy | uninstall (docker)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1290,7 +1290,7 @@ jobs:
           mo_ctl get_conf
 
   Job_26:
-    name: Job_26 - mo_ctl auto_clean_logs
+    name: Job_26 - auto_clean_logs
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1360,7 +1360,7 @@ jobs:
 
 
   Job_27:
-    name: Job_27 - mo_ctl backup | auto_backup (logical)
+    name: Job_27 - backup | auto_backup (logical)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
