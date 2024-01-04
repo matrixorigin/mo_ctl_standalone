@@ -1487,7 +1487,7 @@ jobs:
           mo_ctl backup list detail
 
 
-      - name: Test_9. CLean backup files (manual)
+      - name: Test_9. Clean backup files (manual)
         run: |
           echo "----------------------------------"
           echo "mo_ctl clean_backup"
@@ -1495,13 +1495,7 @@ jobs:
 
           sleep 5
 
-          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
-              echo "--------------------------------------------"
-              echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
-          done
-
-          if [[ -d ls ${{ env.BACKUP_PATH }}/${RUN_MONTH} ]]; then
+          if [[ -d ${{ env.BACKUP_PATH }}/${RUN_MONTH} ]]; then
               echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH} still exist, seems like clean_backup has failed"
               for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
                   echo "--------------------------------------------"
@@ -1509,7 +1503,9 @@ jobs:
                   ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
               done
               exit 1
-          fi 
+          else
+              echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH} does not exist, seems like clean_backup has succeeded"
+          fi
 
       - name: Test_10. Auto backup (physical)
         run: |
