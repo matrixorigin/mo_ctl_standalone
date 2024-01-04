@@ -5,7 +5,8 @@ run-name: Unit Test (Linux-Ubuntu)
 on: 
   push:
     branches:
-      - main
+    #  - main
+      - dev
 #  schedule:
     # run every night at 00:00
 #    - cron: '0 0 * * *'
@@ -52,7 +53,7 @@ env:
 # job def
 jobs:
   Job_01:
-    name: Job_01 - install|uninstall mo_ctl tool
+    name: Job_01 - install | uninstall mo_ctl
     runs-on: ubuntu-latest
     steps:
       - name: Test_1. 'install.sh'
@@ -130,7 +131,7 @@ jobs:
               exit 1
           fi
   Job_03:
-    name: Job_03 - set_conf|get_conf
+    name: Job_03 - set_conf | get_conf
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1376,7 +1377,7 @@ jobs:
           for tool in ${tools[*]}; do
               echo "Tool name: ${tool}"
               wget ${{ env.MO_TOOL_URL }}/${tool}.tar.gz -O ${{ env.MO_TOOL_PATH }}/${tool}.tar.gz
-              tar xvf ${{ env.MO_TOOL_PATH }}/${tool}.tar.gz
+              tar xvf ${{ env.MO_TOOL_PATH }}/${tool}.tar.gz -C ${{ env.MO_TOOL_PATH }}/
           done
           
       - name: Test_1. 'mo_ctl deploy main' (deploy latest)
