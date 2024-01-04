@@ -1450,7 +1450,7 @@ jobs:
           done
 
       - name: Test_6. Manual backup (logical, csv)
-
+        run: |
           echo "--------------------------------------------"
           mo_ctl set_conf BACKUP_TYPE="logical"
           mo_ctl set_conf BACKUP_MODUMP_PATH="${{ env.MO_TOOL_PATH }}/mo_dump/mo-dump"
