@@ -1501,10 +1501,13 @@ jobs:
               ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
-          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
-          
-          if [[ ${dir_count} -ne 0 ]]; then
-              echo "dir_count: ${dir_count} is not 0, seems like clean_backup has failed"
+          if [[ -d ls ${{ env.BACKUP_PATH }}/${RUN_MONTH} ]]; then
+              echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH} still exist, seems like clean_backup has failed"
+              for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
+                  echo "--------------------------------------------"
+                  echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
+                  ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
+              done
               exit 1
           fi 
 
@@ -1554,10 +1557,17 @@ jobs:
               ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
-          if [[ ${dir_count} -eq 0 ]]; then
-              echo "dir_count: ${dir_count} is 0, seems like auto_backup has failed"
+          if [[ -d ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ ]]; then
+              echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ does not exist, seems like auto_backup has failed"
               exit 1
-          fi 
+          else
+              dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
+              if [[ ${dir_count} -eq 0 ]]; then
+                  echo "dir_count: ${dir_count} is 0, seems like auto_backup has failed"
+                  exit 1
+              fi 
+
+          fi
 
       - name: Test_11. Auto clean old backup
         run: |
