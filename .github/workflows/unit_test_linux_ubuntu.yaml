@@ -25,7 +25,7 @@ env:
   MO_PORT: "6001"
   MO_USER: "dump"
   MO_PW: "111"
-  OPTION_LIST: "auto_backup,auto_log_clean,backup,clean_backup,connect,ddl_convert,deploy,get_branch,get_cid,get_conf,pprof,precheck,restart,set_conf,start,status,stop,uninstall,upgrade,watchdog"
+  OPTION_LIST: "auto_backup,auto_clean_logs,backup,clean_backup,clean_logs,connect,ddl_convert,deploy,get_branch,get_cid,get_conf,pprof,precheck,restart,set_conf,start,status,stop,uninstall,upgrade,watchdog"
   MO_PATH: "/home/runner/mo"
   MO_STABLE_VERSION: "v1.1.0"
   MO_STABLE_BRANCH: "(HEAD detached at v1.1.0)"
@@ -45,13 +45,14 @@ env:
   MO_GIT_URL_1: https://mirror.ghproxy.com/github.com/matrixorigin/matrixone.git
   MO_GIT_URL_2: https://mirror.ghproxy.com/github.com/matrixorigin/matrixone.git
   BACKUP_PATH: "/home/runner/mo-backup"
-  MO_TOOL_PATH: "/data/tools"
+  MO_TOOL_PATH: "/home/runner/tools"
   MO_TOOL_URL: "https://mo-tools-1308875761.cos.ap-chengdu.myqcloud.com/latest"
+  MO_CTL_TOOL_PATH: "/home/runner/logs/mo_ctl"
 
 # job def
 jobs:
   Job_01:
-    name: Job_01 - Install and uninstall mo_ctl tool
+    name: Job_01 - install/uninstall mo_ctl tool
     runs-on: ubuntu-latest
     steps:
       - name: Test_1. 'install.sh'
@@ -68,7 +69,7 @@ jobs:
           echo ""
           echo "Step_3. install mo_ctl without Internet"
           wget ${{ env.MO_CTL_GIT_URL }}/install.sh
-          wget https://mirror.github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
+          wget https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
           bash +x ./install.sh mo_ctl.zip
           mo_ctl help
       - name: Test_2. 'uninstall.sh'
@@ -95,7 +96,7 @@ jobs:
           fi
 
   Job_02:
-    name: Job_02 - Print help info
+    name: Job_02 - mo_ctl help
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -129,7 +130,7 @@ jobs:
               exit 1
           fi
   Job_03:
-    name: Job_03 - Set and get confs
+    name: Job_03 - mo_ctl set_conf | get_conf
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -213,7 +214,7 @@ jobs:
           echo "yes"| mo_ctl set_conf reset
 
   Job_04:
-    name: Job_04 - Precheck environment
+    name: Job_04 - mo_ctl precheck
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -236,7 +237,7 @@ jobs:
               echo "'mo_ctl precheck' fails as expected"
           fi
   Job_05:
-    name: Job_5 - Get branch, commit id and version
+    name: Job_05 - mo_ctl get_branch | get_cid | version
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -287,7 +288,7 @@ jobs:
           fi
 
   Job_06:
-    name: Job_06 - Deploy and uninstall mo (latest release version)
+    name: Job_06 - mo_ctl deploy | uninstall (stable)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -333,7 +334,7 @@ jobs:
           fi
 
   Job_07:
-    name: Job_07 - Deploy and uninstall mo (branch=main, commit=latest)
+    name: Job_07 - mo_ctl deploy | uninstall (main - latest)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -357,7 +358,7 @@ jobs:
           echo "branch is: ${branch}"
           if [[ "${branch}" != "${{ env.MO_STABLE_BRANCH }}" ]]; then
               echo "Failed to get_branch or branch is not that as expected: ${{ env.MO_STABLE_BRANCH }}"
-              echo "expected branch: ${{ env.MO_STABLE_BRANCH }}, actual branch: ${${branch}}"
+              echo "expected branch: ${{ env.MO_STABLE_BRANCH }}, actual branch: ${branch}"
               exit 1
           fi
       - name: Test_3. 'mo_ctl get_cid' (get commit id)
@@ -379,7 +380,7 @@ jobs:
           fi
 
   Job_08:
-    name: Job_08 - Deploy and uninstall(force) mo (branch=main, commit=cid_1)
+    name: Job_08 - mo_ctl deploy | uninstall (main - commitid)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -425,7 +426,7 @@ jobs:
           fi
 
   Job_09:
-    name: Job_09 - Deploy and uninstall mo (branch=1.1-dev, commit=latest)
+    name: Job_09 - mo_ctl deploy | uninstall (1.1-dev - latest)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -470,8 +471,43 @@ jobs:
               exit 1
           fi
 
+  Job_10:
+    name: Job_10 - mo_ctl build_image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initialize environment
+        run: |
+          echo "install mo_ctl with Internet(no proxy)"
+          wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
+          mkdir -p ${{ env.MO_PATH }}
+
+      - name: Install docker
+        uses: docker-practice/actions-setup-docker@master
+        timeout-minutes: 12
+      - name: Test_1. 'mo_ctl deploy main' (deploy latest)
+        run: |
+          echo ""
+          RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
+          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
+          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
+          mo_ctl set_conf MO_BUILD_IMAGE_PATH=/tmp
+
+          echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
+          mo_ctl deploy main
+          mo_ctl get_cid
+          mo_ctl set_conf TOOL_LOG_LEVEL="D"
+      - name: Test_2. build image
+        run: |
+          echo ""
+          mo_ctl build_image
+      - name: Test_3. check image
+        run: |
+          echo ""
+          docker images
+          ls -lth /tmp/
+
   Job_11:
-    name: Job_11 - Deploy and uninstall mo (branch=main, commit=invalid)
+    name: Job_11 - mo_ctl deploy | uninstall (main - invalid commitid)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -492,7 +528,7 @@ jobs:
           fi
 
   Job_12:
-    name: Job_12 - Status, start, stop and restart
+    name: Job_12 - mo_ctl status | start | stop | restart
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -546,7 +582,7 @@ jobs:
           mo_ctl restart force && mo_ctl status
 
   Job_13: 
-    name: Job_13 - Connect to mo
+    name: Job_13 - mo_ctl connect
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -585,7 +621,7 @@ jobs:
           fi
 
   Job_14: 
-    name: Job_14 - Run SQL query in MO
+    name: Job_14 - mo_ctl sql
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -649,7 +685,7 @@ jobs:
           fi
 
   Job_15: 
-    name: Job_15 - MO Watchdog
+    name: Job_15 - mo_ctl watchdog
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -710,7 +746,7 @@ jobs:
           fi
 
   Job_16: 
-    name: Job_16 - Collect MO profiles
+    name: Job_16 - mo_ctl pprof
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -785,9 +821,9 @@ jobs:
           cd ${{ env.MO_PPROF_PATH }}/ && rm -f ./*
 
   Job_17:
-    name: Job_17 - Upgrade - main cid_1 to main cid_2
+    name: Job_17 - mo_ctl upgrade (cid_1->cid_2)
     # DO NOT RUN
-    #if: "${{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -830,9 +866,9 @@ jobs:
           fi
 
   Job_18:
-    name: Job_18 - Upgrade - main cid_2 to main cid_1
+    name: Job_18 - mo_ctl upgrade (cid_2->cid_1)
     # DO NOT RUN
-    #if: "${{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -866,7 +902,7 @@ jobs:
           fi
           echo "Sleep 5 seconds before upgrading"
           sleep 5
-          mo_ctl upgrade ${{ env.MO_STABLE_VERSION }}
+          mo_ctl upgrade ${{ env.MO_TEST_CID_1 }}
           if ! mo_ctl start; then
               echo "Start mo-service failed. This may be due to incompatible data format when upgrading from one cid to another. Ignoring... "
           fi
@@ -877,7 +913,7 @@ jobs:
           fi
 
   Job_19:
-    name: Job_19 - Upgrade - stable to Latest
+    name: Job_19 - mo_ctl upgrade (stable->main)
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
@@ -921,7 +957,7 @@ jobs:
           fi
 
   Job_20:
-    name: Job_20 - Upgrade - latest to stable
+    name: Job_20 - mo_ctl upgrade (main->stable)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -968,7 +1004,7 @@ jobs:
           fi
 
   Job_21:
-    name: Job_21 - Upgrade - stable to cid_1
+    name: Job_21 - mo_ctl upgrade (stable->cid_1)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -1012,7 +1048,7 @@ jobs:
           fi
 
   Job_22:
-    name: Job_22 - Upgrade - cid_1 to stable
+    name: Job_22 - mo_ctl upgrade (cid_1->stable)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -1059,11 +1095,10 @@ jobs:
           fi
 
 
-  # Job 11-7
   Job_23:
-    name: Upgrade - main cid_1 to main Latest
+    name: Job_23Upgrade - mo_ctl upgrade (cid_1->latest)
     # DO NOT RUN
-    #if: "${{ inputs.NOT_EXIST_VAR }}"
+    if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1105,7 +1140,7 @@ jobs:
               echo "Run query failed. This may be due to incompatible data format when upgrading from one cid to another"
           fi  
   Job_24:
-    name: Upgrade - main latest to main cid_1
+    name: Job_24 - Upgrade - mo_ctl upgrade (latest->cid_1)
     # DO NOT RUN
     if: "${{ inputs.NOT_EXIST_VAR }}"
     runs-on: ubuntu-latest
@@ -1152,7 +1187,7 @@ jobs:
           fi
 
   Job_25:
-    name: Deploy mo as docker mode
+    name: Job_25 - mo_ctl deploy | uninstall (docker)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1255,7 +1290,7 @@ jobs:
           mo_ctl get_conf
 
   Job_26:
-    name: Job_26 - Auto clean logs
+    name: Job_26 - mo_ctl auto_clean_logs
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1287,6 +1322,7 @@ jobs:
       - name: Test_3. Set confs
         run: |
           mo_ctl set_conf TOOL_LOG_LEVEL=D
+          mo_ctl set_conf TOOL_LOG_PATH="${{ env.MO_CTL_TOOL_PATH }}"
           mo_ctl set_conf CLEAN_LOGS_DAYS_BEFORE="0"
           mo_ctl set_conf CLEAN_LOGS_TABLE_LIST="statement_info,rawlog,metric"
           mo_ctl set_conf CLEAN_LOGS_CRON_SCHEDULE="* * * * *"
@@ -1310,7 +1346,7 @@ jobs:
           mo_ctl auto_clean_logs enable
           sleep 5
           echo "check log path"
-          ls -lth ~/mo_ctl/log/auto_clean_logs/
+          ls -lth ${{ env.MO_CTL_TOOL_PATH }}/auto_clean_logs/
           echo "check cron.d path and file"
           ls -lth /etc/cron.d/
           echo "content of file /etc/cron.d/mo_clean_logs"
@@ -1324,7 +1360,7 @@ jobs:
 
 
   Job_27:
-    name: Job_27 - Logicial Backup
+    name: Job_27 - mo_ctl backup | auto_backup (logical)
     runs-on: ubuntu-latest
     steps:
       - name: Initialize environment
@@ -1400,56 +1436,19 @@ jobs:
           #mo_ctl set_conf BACKUP_DATA_TYPE="insert"
           #mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
           #mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/5 * * * *"
-      - name: Test_5. Backup data(logical with insert type)
+      - name: Test_5. Manual/auto backup and clean (logical with insert type)
         run: |
+          echo "--------------------------------------------"
           mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="insert"
           mo_ctl backup
           ls -lth ${{ env.BACKUP_PATH }}/*/
-      - name: Test_6. Backup data(logical with csv type)
-        run: |
+
+
+          echo "--------------------------------------------"
           mo_ctl set_conf BACKUP_LOGICAL_DATA_TYPE="csv"
           mo_ctl backup
           ls -lth ${{ env.BACKUP_PATH }}/*/
-  Job_28:
-    name: Job_28 - Auto backup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Initialize environment
-        run: |
-          echo "install mo_ctl with Internet(no proxy)"
-          wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
-          mkdir -p ${{ env.MO_PATH }}
-      - name: Test_1. 'mo_ctl deploy main' (deploy latest)
-        run: |
-          echo ""
-          RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
-          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
-          
-          echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
-          mo_ctl deploy main
-          mo_ctl get_cid
-          mo_ctl set_conf TOOL_LOG_LEVEL="D"
-      - name: Test_2. 'mo_ctl start' (start mo-service) and prepare some data
-        run: |
-          mo_ctl start
-          echo "Sleeping 30 seconds for mo to be ready"
-          sleep 30
-          echo "Prepare some data"
-          mo_ctl sql "create database test; use test; create table tb1(id int, name varchar(50)); insert into test.tb1 values (1, 'Andy'),(2,'Becky'),(3,'Cindy'),(4,'David'),(5,'Emma'),(6,'Francis')"
-          mo_ctl sql "create database test2; use test2; create table tb2(id int, name varchar(50)); insert into test.tb1 values (1, 'Andy'),(2,'Becky'),(3,'Cindy'),(4,'David'),(5,'Emma'),(6,'Francis')"
-
-          mo_ctl sql "select count(*) from test.tb1; select * from test.tb1"
-      - name: Test_3. Set confs
-        run: |
-          mo_ctl set_conf BACKUP_DB_LIST="all_no_sysdb"
-          mo_ctl set_conf BACKUP_TYPE="logical"
-          mo_ctl set_conf BACKUP_CRON_SCHEDULE="* * * * *"
-          mo_ctl set_conf BACKUP_DATA_TYPE="insert"
-          mo_ctl set_conf BACKUP_PATH="${{ env.BACKUP_PATH }}"
-          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
-          mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/5 * * * *"
-      - name: Test_4. backup manually, backup automatically, clean backup manually, clean backup automatically
+      - name: Test_7. backup manually, backup automatically, clean backup manually, clean backup automatically
         run: |
           echo "Create backup path"
           mkdir -p ${BACKUP_PATH}
@@ -1542,37 +1541,3 @@ jobs:
               echo "auto_backup status failed as expected"
           fi
 
-  Job_29:
-    name: Job_29 - Build mo docker image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Initialize environment
-        run: |
-          echo "install mo_ctl with Internet(no proxy)"
-          wget ${{ env.MO_CTL_GIT_URL }}/install.sh && bash +x ./install.sh
-          mkdir -p ${{ env.MO_PATH }}
-
-      - name: Install docker
-        uses: docker-practice/actions-setup-docker@master
-        timeout-minutes: 12
-      - name: Test_1. 'mo_ctl deploy main' (deploy latest)
-        run: |
-          echo ""
-          RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-          mo_ctl set_conf MO_PATH="${{ env.MO_PATH }}/${RUN_TAG}"
-          mo_ctl set_conf GOPROXY="${{ env.GO_PROXY }}"
-          mo_ctl set_conf MO_BUILD_IMAGE_PATH=/tmp
-
-          echo "MO_PATH: ${{ env.MO_PATH }}/${RUN_TAG}, test_cmd: mo_ctl deploy main"
-          mo_ctl deploy main
-          mo_ctl get_cid
-          mo_ctl set_conf TOOL_LOG_LEVEL="D"
-      - name: Test_2. build image
-        run: |
-          echo ""
-          mo_ctl build_image
-      - name: Test_3. check image
-        run: |
-          echo ""
-          docker images
-          ls -lth /tmp/
