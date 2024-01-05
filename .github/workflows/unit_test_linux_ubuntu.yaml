@@ -1593,8 +1593,8 @@ jobs:
 
           echo "----------------------------------"
           echo "Clean backup automatically"
-          echo "Sleep 6000s"
-          sleep 6000
+          echo "Sleep 600s"
+          sleep 600
 
           echo "Show backup path"
           ls -lth ${{ env.BACKUP_PATH }}/

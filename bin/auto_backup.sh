@@ -259,7 +259,7 @@ function clean_backup()
                 add_log "I" "Backup directory : ${BACKUP_DATA_PATH}/${month}/${backup_dir}/${backup_dir}, action: skip"
             fi
         done
-done
+    done
 }
 
 function auto_backup_status()
