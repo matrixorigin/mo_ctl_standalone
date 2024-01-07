@@ -19,6 +19,8 @@ TOOL_LOG_PATH="/data/logs/mo_ctl"
 MO_PATH="/data/mo/"
 # log path used to store mo-service logs
 MO_LOG_PATH="${MO_PATH}/matrixone/logs"
+# conf file source folder
+MO_CONF_SRC_PATH=""
 
 # For connect
 # target mo instance type: local | remote
@@ -237,7 +239,3 @@ MONITOR_URL_PREFIX_2="https://dl.grafana.com"
 MONITOR_NODE_EXPORTER_VERSION="1.7.0"
 MONITOR_PROMETHEUS_VERSION="2.48.1"
 MONITOR_GRAFANA_VERSION="10.2.3"
-
-
-
-

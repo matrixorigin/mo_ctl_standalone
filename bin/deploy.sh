@@ -126,6 +126,30 @@ function build_all()
     fi
 }
 
+function replace_mo_confs()
+{
+    add_log "I" "Setting mo conf file"
+    CONF_FILE_NAME_LIST=("cn.toml" "tn.toml" "log.toml")
+
+    rc=0
+    for conf_file_name in ${CONF_FILE_NAME_LIST[*]}; do
+        add_log "I" "Conf source path MO_CONF_SRC_PATH: ${MO_CONF_SRC_PATH}, file name: ${conf_file_name}"
+        if [[ ! -f "${MO_CONF_SRC_PATH}/${conf_file_name}" ]]; then
+            add_log "E" "File does not exist or is not set"
+            rc=1
+        else
+            add_log "D" "Copy conf file: cp -f ${MO_CONF_SRC_PATH}/${conf_file_name} ${MO_PATH}/matrixone/etc/launch/${conf_file_name}"
+            if ! cp ${MO_CONF_SRC_PATH}/${conf_file_name} ${MO_PATH}/matrixone/etc/launch/${conf_file_name}; then
+                add_log "E" "Failed to copy conf file"
+                rc=1
+            fi
+        fi
+    done
+
+    return ${rc}
+
+}
+
 function deploy_docker()
 {
     mo_version=$1
@@ -215,6 +239,10 @@ function deploy()
         add_log "I" "Creating mo logs ${MO_LOG_PATH} path in case it does not exist"
         mkdir -p ${MO_LOG_PATH}
         add_log "I" "Deoloy succeeded"
+
+        # 4. Copy conf file
+        replace_mo_confs
+
     fi
 
 }

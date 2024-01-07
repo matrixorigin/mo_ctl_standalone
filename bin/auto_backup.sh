@@ -242,20 +242,23 @@ function clean_backup()
     add_log "I" "Cleaning backups before ${BACKUP_CLEAN_DAYS_BEFORE} days"
     clean_date=`date -d "${BACKUP_CLEAN_DAYS_BEFORE} day ago" +%Y%m%d`
     add_log "I" "Clean date: ${clean_date}"
-    for backup_dir in `ls ${BACKUP_DATA_PATH}`; do
-        backup_date=`echo "${backup_dir}" | awk -F"_" '{print $1}'`
-        backup_date_int=`date -d "${backup_date}" +%s`
-        clean_date_int=`date -d "${clean_date}" +%s`
-        if [[ ${backup_date_int} -le ${clean_date_int} ]]; then
-            add_log "I" "Backup directory : ${backup_dir}, action: delete"
-            if cd ${BACKUP_DATA_PATH} && rm -rf ./${backup_dir}; then
-                add_log "I" "Succeeded"
+
+    for month in `ls ${BACKUP_DATA_PATH}`; do
+        for backup_dir in `ls ${BACKUP_DATA_PATH}/${month}`; do
+            backup_date=`echo "${backup_dir}" | awk -F"_" '{print $1}'`
+            backup_date_int=`date -d "${backup_date}" +%s`
+            clean_date_int=`date -d "${clean_date}" +%s`
+            if [[ ${backup_date_int} -le ${clean_date_int} ]]; then
+                add_log "I" "Backup directory : ${BACKUP_DATA_PATH}/${month}/${backup_dir}, action: delete"
+                if cd ${BACKUP_DATA_PATH}/${month} && rm -rf ./${backup_dir}; then
+                    add_log "I" "Succeeded"
+                else
+                    add_log "E" "Failed"
+                fi
             else
-                add_log "E" "Failed"
+                add_log "I" "Backup directory : ${BACKUP_DATA_PATH}/${month}/${backup_dir}/${backup_dir}, action: skip"
             fi
-        else
-            add_log "I" "Backup directory : ${backup_dir}, action: skip"
-        fi
+        done
     done
 }
 

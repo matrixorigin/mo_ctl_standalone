@@ -143,7 +143,7 @@ function help_set_conf()
     echo "              : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629"
     echo "              : ${TOOL_NAME} ${option} BACKUP_CRON_SCHEDULE=\"30 23 * * *\"             # in case your conf value contains a special character like '*', use double \" to quote it"
     echo "              : ${TOOL_NAME} ${option} MO_LOG_PATH=\"\\\${MO_PATH}/matrixone/logs\"      # in case your conf value contains a special character like '$', use double \" and \\ to quote it"
-    echo "              : ${TOOL_NAME} ${option} reset                                            # reset all confs to default, note this could be dangerous as all of your current settings will be lost. Use it very carefully!!!"
+    echo "              : ${TOOL_NAME} ${option} reset                                            # reset all confs to default, note this could be DANGEROUS as all of your current settings will be lost and reset to default values. Use it very carefully!!!"
 }
 
 function help_get_conf()
