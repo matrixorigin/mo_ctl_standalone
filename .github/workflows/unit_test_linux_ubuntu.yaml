@@ -1500,16 +1500,16 @@ jobs:
 
           sleep 5
 
-          if [[ -d ${{ env.BACKUP_PATH }}/${RUN_MONTH} ]]; then
-              echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH} still exist, seems like clean_backup has failed"
+          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH} | wc -l`
+
+          if [[ ${dir_count} -ne 0 ]]; then
+              echo "dir_count: ${dir_count} is not 0, seems like clean_backup has failed"
               for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
                   echo "--------------------------------------------"
                   echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
                   ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
               done
               exit 1
-          else
-              echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH} does not exist, seems like clean_backup has succeeded"
           fi
 
       - name: Test_10. Auto backup (physical)
