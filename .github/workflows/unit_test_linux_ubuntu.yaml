@@ -1581,7 +1581,7 @@ jobs:
 
           echo "----------------------------------"
           echo "Set confs for auto backup"
-          mo_ctl set_conf BACKUP_CRON_SCHEDULE="* * * * *"
+          mo_ctl set_conf BACKUP_CRON_SCHEDULE="*/2 * * * *"
           mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
           mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/8 * * * *"
 
@@ -1595,8 +1595,8 @@ jobs:
           mo_ctl auto_backup status         
 
           echo "----------------------------------"
-          echo "wait 70s for next auto backup to be performed"
-          sleep 70
+          echo "wait 130s for next auto backup to be performed"
+          sleep 130
 
           echo "----------------------------------"
           echo "Show backup path"
@@ -1610,11 +1610,23 @@ jobs:
           echo "----------------------------------"
           echo "Clean backup automatically"
           mo_ctl auto_backup
-          echo "Sleep 600s"
-          sleep 600
+          echo "Sleep 490s"
+          sleep 490
 
           echo "Show backup path: ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/"
           ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/
+
+          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
+              echo "----------------------------------"
+              echo "Listing files in ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
+              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
+          done
+
+          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
+          if [[ ${dir_count} -ne 0 ]]; then
+              echo "dir_count: ${dir_count} is not 0, seems like auto_clean_old_backup has failed"
+              exit 1
+          fi 
 
 
           echo "----------------------------------"
@@ -1654,15 +1666,3 @@ jobs:
               echo "auto_backup status failed as expected"
           fi
 
-
-          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
-              echo "----------------------------------"
-              echo "Listing files in ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
-          done
-
-          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
-          if [[ ${dir_count} -ne 0 ]]; then
-              echo "dir_count: ${dir_count} is not 0, seems like auto_clean_old_backup has failed"
-              exit 1
-          fi 
