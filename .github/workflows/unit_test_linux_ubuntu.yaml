@@ -1489,6 +1489,11 @@ jobs:
 
       - name: Test_9. Clean backup files (manual)
         run: |
+          echo ""
+          echo "----------------------------------"
+          echo "Set confs for auto backup"
+          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=0
+
           echo "----------------------------------"
           echo "mo_ctl clean_backup"
           mo_ctl clean_backup
@@ -1537,6 +1542,8 @@ jobs:
           echo ""
           echo "----------------------------------"
           echo "Enable auto backup"
+          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=0
+
           mo_ctl auto_backup enable
 
           echo ""
@@ -1568,29 +1575,8 @@ jobs:
           # disable auto backup since it may affect below tests
           mo_ctl auto_backup disable
 
-      - name: Test_11. Clean old backup (Manual)
-        run: |
 
-          echo "----------------------------------"
-          echo "Clean backup manually"
-          mo_ctl clean_backup
-
-          echo "Show backup path"
-          ls -lth ${{ env.BACKUP_PATH }}
-          for dir in `ls ${{ env.BACKUP_PATH }}`; do
-              echo "----------------------------------"
-              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
-          done
-
-
-          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
-          if [[ ${dir_count} -ne 0 ]]; then
-              echo "dir_count: ${dir_count} is not 0, seems like clean backup has failed"
-              exit 1
-          fi 
-
-      - name: Test_12. Clean old backup (Auto)
+      - name: Test_11. Clean backup files (Auto)
         run: |
 
           echo "----------------------------------"
@@ -1625,7 +1611,7 @@ jobs:
               echo "dir_count: ${dir_count} is not 0, seems like auto_clean_old_backup has failed"
               exit 1
           fi 
-          
+
           echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_backup/"
           ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_backup/
 
