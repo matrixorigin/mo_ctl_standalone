@@ -135,8 +135,7 @@ function replace_mo_confs()
     for conf_file_name in ${CONF_FILE_NAME_LIST[*]}; do
         add_log "I" "Conf source path MO_CONF_SRC_PATH: ${MO_CONF_SRC_PATH}, file name: ${conf_file_name}"
         if [[ ! -f "${MO_CONF_SRC_PATH}/${conf_file_name}" ]]; then
-            add_log "E" "File does not exist or is not set"
-            rc=1
+            add_log "E" "File does not exist or is not set, skipping"
         else
             add_log "D" "Copy conf file: cp -f ${MO_CONF_SRC_PATH}/${conf_file_name} ${MO_PATH}/matrixone/etc/launch/${conf_file_name}"
             if ! cp ${MO_CONF_SRC_PATH}/${conf_file_name} ${MO_PATH}/matrixone/etc/launch/${conf_file_name}; then
