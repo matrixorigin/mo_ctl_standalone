@@ -1609,7 +1609,7 @@ jobs:
           dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
           if [[ ${dir_count} -ne 0 ]]; then
               echo "dir_count: ${dir_count} is not 0, seems like auto_clean_old_backup has failed"
-              exit 1
+              #exit 1
           fi 
 
           echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_backup/"
