@@ -1565,12 +1565,16 @@ jobs:
 
           fi
 
-      - name: Test_11. Auto clean old backup
+          # disable auto backup since it may affect below tests
+          mo_ctl auto_backup disable
+
+      - name: Test_11. Clean old backup (Manual)
         run: |
 
           echo "----------------------------------"
           echo "Clean backup manually"
           mo_ctl clean_backup
+
           echo "Show backup path"
           ls -lth ${{ env.BACKUP_PATH }}
           for dir in `ls ${{ env.BACKUP_PATH }}`; do
@@ -1578,6 +1582,16 @@ jobs:
               echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
               ls -lth ${{ env.BACKUP_PATH }}/${dir}/
           done
+
+
+          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
+          if [[ ${dir_count} -ne 0 ]]; then
+              echo "dir_count: ${dir_count} is not 0, seems like clean backup has failed"
+              exit 1
+          fi 
+
+      - name: Test_12. Clean old backup (Auto)
+        run: |
 
           echo "----------------------------------"
           echo "Test backup manually"
@@ -1596,21 +1610,22 @@ jobs:
           echo "Sleep 600s"
           sleep 600
 
-          echo "Show backup path"
-          ls -lth ${{ env.BACKUP_PATH }}/
-          for dir in `ls ${{ env.BACKUP_PATH }}`; do
+          echo "Show backup path: ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/"
+          ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/
+
+
+          for dir in `ls ${{ env.BACKUP_PATH }}${RUN_MONTH}/`; do
               echo "----------------------------------"
               echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
+              ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
-          dir_count=`ls ${{ env.BACKUP_PATH }} | wc -l`
+          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
           if [[ ${dir_count} -ne 0 ]]; then
-              echo "dir_count: ${dir_count} is 0, seems like auto_clean_old_backup has failed"
+              echo "dir_count: ${dir_count} is not 0, seems like auto_clean_old_backup has failed"
               exit 1
           fi 
-
-
+          
           echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_backup/"
           ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_backup/
 
