@@ -1489,22 +1489,27 @@ jobs:
 
       - name: Test_9. Clean backup files (manual)
         run: |
+          echo ""
+          echo "----------------------------------"
+          echo "Set confs for auto backup"
+          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=0
+
           echo "----------------------------------"
           echo "mo_ctl clean_backup"
           mo_ctl clean_backup
 
           sleep 5
 
-          if [[ -d ${{ env.BACKUP_PATH }}/${RUN_MONTH} ]]; then
-              echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH} still exist, seems like clean_backup has failed"
+          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH} | wc -l`
+
+          if [[ ${dir_count} -ne 0 ]]; then
+              echo "dir_count: ${dir_count} is not 0, seems like clean_backup has failed"
               for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
                   echo "--------------------------------------------"
                   echo "Listing backup dir: ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
                   ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
               done
               exit 1
-          else
-              echo "Directory ${{ env.BACKUP_PATH }}/${RUN_MONTH} does not exist, seems like clean_backup has succeeded"
           fi
 
       - name: Test_10. Auto backup (physical)
@@ -1537,6 +1542,8 @@ jobs:
           echo ""
           echo "----------------------------------"
           echo "Enable auto backup"
+          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=0
+
           mo_ctl auto_backup enable
 
           echo ""
@@ -1568,35 +1575,36 @@ jobs:
           # disable auto backup since it may affect below tests
           mo_ctl auto_backup disable
 
-      - name: Test_11. Clean old backup (Manual)
-        run: |
-
-          echo "----------------------------------"
-          echo "Clean backup manually"
-          mo_ctl clean_backup
-
-          echo "Show backup path"
-          ls -lth ${{ env.BACKUP_PATH }}
-          for dir in `ls ${{ env.BACKUP_PATH }}`; do
-              echo "----------------------------------"
-              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
-              ls -lth ${{ env.BACKUP_PATH }}/${dir}/
-          done
-
-
-          dir_count=`ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/ | wc -l`
-          if [[ ${dir_count} -ne 0 ]]; then
-              echo "dir_count: ${dir_count} is not 0, seems like clean backup has failed"
+          if mo_ctl auto_backup || mo_ctl auto_backup status; then
+              echo "Auto backup is not disabled as expected, exiting"
               exit 1
-          fi 
+          fi
 
-      - name: Test_12. Clean old backup (Auto)
+      - name: Test_11. Clean backup files (Auto)
         run: |
 
           echo "----------------------------------"
-          echo "Test backup manually"
-          echo ""
+          echo "Set confs for auto backup"
+          # set auto backup to a specific timing
+          mo_ctl set_conf BACKUP_CRON_SCHEDULE="30 6 * * *"
+          mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE="0"
+          # set auto clean backup to once every 2 minute
+          mo_ctl set_conf BACKUP_CLEAN_CRON_SCHEDULE="*/2 * * * *"
+
+         
+          echo "----------------------------------"
+          echo "Enable auto backup and auto clean backup"
+          mo_ctl auto_backup enable
+
+          echo "----------------------------------"
+          echo "Check auto backup and auto clean backup status"
+          mo_ctl auto_backup status         
+
+          echo "----------------------------------"
+          echo "Backup manuallyu"
           mo_ctl backup
+
+          echo "----------------------------------"
           echo "Show backup path"
           ls -lth ${{ env.BACKUP_PATH }}
           for dir in `ls ${{ env.BACKUP_PATH }}`; do
@@ -1607,16 +1615,16 @@ jobs:
 
           echo "----------------------------------"
           echo "Clean backup automatically"
-          echo "Sleep 600s"
-          sleep 600
+          mo_ctl auto_backup
+          echo "Sleep 130s"
+          sleep 130
 
           echo "Show backup path: ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/"
           ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/
 
-
-          for dir in `ls ${{ env.BACKUP_PATH }}${RUN_MONTH}/`; do
+          for dir in `ls ${{ env.BACKUP_PATH }}/${RUN_MONTH}/`; do
               echo "----------------------------------"
-              echo "Listing files in ${{ env.BACKUP_PATH }}/${dir}/"
+              echo "Listing files in ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/"
               ls -lth ${{ env.BACKUP_PATH }}/${RUN_MONTH}/${dir}/
           done
 
@@ -1625,25 +1633,39 @@ jobs:
               echo "dir_count: ${dir_count} is not 0, seems like auto_clean_old_backup has failed"
               exit 1
           fi 
-          
-          echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_backup/"
-          ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_backup/
 
-          echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/"
-          ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/
+          # for debuging
+          #echo "----------------------------------"
+          #echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_backup/"
+          #ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_backup/
+
+          #echo "----------------------------------"
+          #echo "check auto_backup logs: cat ${MO_CTL_TOOL_LOG_PATH}/auto_backup/*"
+          #cat ${MO_CTL_TOOL_LOG_PATH}/auto_backup/*
+
+          #echo "----------------------------------"
+          #echo "check log path ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/"
+          #ls -lth ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/
+
+          #echo "----------------------------------"
+          #echo "show auto_clean_old_backup logs: cat ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/*"
+          #cat ${MO_CTL_TOOL_LOG_PATH}/auto_clean_old_backup/*
           
-          echo "check cron.d path and file"
-          ls -lth /etc/cron.d/
+          #echo "----------------------------------"
+          #echo "check cron.d path and file"
+          #ls -lth /etc/cron.d/
           
-          echo "content of file /etc/cron.d/mo_backup"
-          cat /etc/cron.d/mo_backup
+          #echo "----------------------------------"
+          #echo "content of file /etc/cron.d/mo_backup"
+          #cat /etc/cron.d/mo_backup
           
-          echo "content of file /etc/cron.d/mo_clean_old_backup"
-          cat /etc/cron.d/mo_clean_old_backup
+          #echo "----------------------------------"
+          #echo "content of file /etc/cron.d/mo_clean_old_backup"
+          #cat /etc/cron.d/mo_clean_old_backup
             
-          echo "Disabling auto_backup"
-          mo_ctl auto_backup disable
-          if ! mo_ctl auto_backup; then
-              echo "auto_backup status failed as expected"
-          fi
-
+          #echo "----------------------------------"
+          #echo "Disabling auto_backup"
+          #mo_ctl auto_backup disable
+          #if ! mo_ctl auto_backup; then
+          #    echo "auto_backup status failed as expected"
+          #fi
