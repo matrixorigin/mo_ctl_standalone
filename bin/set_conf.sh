@@ -25,7 +25,7 @@ function set_kv()
     # 2. check if value is not empty, that is, a valid value
     if [[ "${value}" == "" ]]; then
         case "${key}" in
-            "MO_CONTAINER_DATA_HOST_PATH" | "MO_CONTAINER_CONF_HOST_PATH" | "CSV_CONVERT_META_COLUMN_LIST" | "MO_CONTAINER_LIMIT_CPU" | "MO_CONTAINER_LIMIT_MEMORY" | "MO_CONTAINER_EXTRA_MOUNT_OPTION")
+            "MO_CONTAINER_DATA_HOST_PATH" | "MO_CONTAINER_CONF_HOST_PATH" | "CSV_CONVERT_META_COLUMN_LIST" | "MO_CONTAINER_LIMIT_CPU" | "MO_CONTAINER_LIMIT_MEMORY" | "MO_CONTAINER_EXTRA_MOUNT_OPTION" | "MO_CONF_SRC_PATH")
                 :
                 ;;
             *)
