@@ -19,6 +19,7 @@ function start()
     docker_mem_limit="${MO_CONTAINER_LIMIT_MEMORY}"
     go_mem_limit=""
     
+    get_conf MO_DEPLOY_MODE
 
     if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
 

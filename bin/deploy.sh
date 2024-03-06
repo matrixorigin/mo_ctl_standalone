@@ -208,12 +208,14 @@ function deploy()
         force="force"
     fi
 
+    get_conf MO_DEPLOY_MODE
+
     case "${MO_DEPLOY_MODE}" in
         "docker")
             deploy_docker ${mo_version}
             ;;
         "binary")
-            add_log "I" "MO_DEPLOY_MODE is set to 'binary', thus skipping deployment. Please download and decompress mo binary file into a folder and set conf MO_PATH"
+            add_log "I" "MO_DEPLOY_MODE is set to 'binary', thus skipping deployment. Please download and decompress mo binary file into a folder and set conf MO_PATH and MO_CONF_FILE"
             ;;
 
         "git")
