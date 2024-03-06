@@ -19,6 +19,7 @@ function start()
     docker_mem_limit="${MO_CONTAINER_LIMIT_MEMORY}"
     go_mem_limit=""
     
+    get_conf MO_DEPLOY_MODE
 
     if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
 
@@ -130,14 +131,23 @@ function start()
             add_log "I" "GO memory limit(Mi): ${go_mem_limit}"
         fi
 
+        if [[ "${MO_DEPLOY_MODE}" == "git" ]]; then
+            mo_actual_path="${MO_PATH}/matrixone"
+        elif [[ "${MO_DEPLOY_MODE}" == "binary" ]]; then
+            mo_actual_path="${MO_PATH}"
+        else
+            add_log "E" "Invalid MO_DEPLOY_MODE, choose from: git | binary | docker"
+            exit 1
+        fi
+
         if [[ "${go_mem_limit}" == "" ]]; then
             add_log "W" "GO memory limit seems to be empty, thus will not set this limit"
-            add_log "I" "Starting mo-service: cd ${MO_PATH}/matrixone/ && ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
-            cd ${MO_PATH}/matrixone/ && ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+            add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
+            cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
         else
             add_log "D" "Start command will add GOMEMLIMIT=${go_mem_limit}MiB"
-            add_log "I" "Starting mo-service: cd ${MO_PATH}/matrixone/ && GOMEMLIMIT=${go_mem_limit}MiB ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
-            cd ${MO_PATH}/matrixone/ && GOMEMLIMIT=${go_mem_limit}MiB ${MO_PATH}/matrixone/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+            add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
+            cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
         fi
         
         add_log "I" "Wait for ${START_INTERVAL} seconds"

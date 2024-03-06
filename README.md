@@ -156,6 +156,7 @@ mo_ctl deploy help
 Usage         : mo_ctl deploy [mo_version] [force] # deploy mo onto the path configured
   [mo_version]: optional, specify an mo version to deploy
   [force]     : optional, if specified will delete all content under MO_PATH and deploy from beginning
+  Note        : 'deploy' is valid only when MO_DEPLOY_MODE is set to 'git' or 'docker'
   e.g.        : mo_ctl deploy             # default, same as mo_ctl deploy 0.8.0
               : mo_ctl deploy main        # deploy development latest version
               : mo_ctl deploy d29764a     # deploy development version d29764a
@@ -272,6 +273,9 @@ Use `mo_ctl start` to startup mo-service, which is built under conf `MO_PATH`.
 
 ```bash
 mo_ctl start help
+  Note        : when MO_DEPLOY_MODE is set to 'git', mo_ctl finds mo-service under path MO_PATH/matrixone/ (currently set as /data/mo/matrixone/)
+              : when MO_DEPLOY_MODE is set to 'binary', mo_ctl finds mo-service under path MO_PATH/ (currently set as /data/mo/)
+              : when MO_DEPLOY_MODE is set to 'docker', mo_ctl creates a container from image MO_CONTAINER_IMAGE (currently set as matrixorigin/matrixone:1.1.1)
 Usage         : mo_ctl start # start mo-service from the path configured
 ```
 

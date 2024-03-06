@@ -34,8 +34,8 @@ MO_PORT="6001"
 MO_USER="root"
 # password of the user to connect to mo, please use your own password 
 MO_PW="111"
-# mo deploy mode: docker | host
-MO_DEPLOY_MODE="host"
+# mo deploy mode: docker | git | binary, default: git
+MO_DEPLOY_MODE="git"
 
 
 # for docker
