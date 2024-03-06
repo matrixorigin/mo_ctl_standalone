@@ -208,40 +208,51 @@ function deploy()
         force="force"
     fi
 
-    if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
-        deploy_docker ${mo_version}
-    else
-        # 0. Precheck
-        if ! precheck; then
-            add_log "I" "Precheck failed, exiting"
-            return 1
-        else
-            add_log "I" "Precheck passed, deploying mo now"
-        fi
+    case "${MO_DEPLOY_MODE}" in
+        "docker")
+            deploy_docker ${mo_version}
+            ;;
+        "binary")
+            add_log "I" "MO_DEPLOY_MODE is set to 'binary', thus skipping deployment. Please download and decompress mo binary file into a folder and set conf MO_PATH"
+            ;;
 
-        # 1. Install
-        if ! git_clone ${mo_version} ${force}; then
-            return 1
-        fi
+        "git")
+            # 0. Precheck
+            if ! precheck; then
+                add_log "I" "Precheck failed, exiting"
+                return 1
+            else
+                add_log "I" "Precheck passed, deploying mo now"
+            fi
 
-        # 2. Build
-        if [[ "${force}" == "nobuild" ]]; then
-            add_log "W" "Flag \"nobuild\" is set, will skip building mo-service"
-            :
-        else
-            if ! build_all ${force}; then
+            # 1. Install
+            if ! git_clone ${mo_version} ${force}; then
                 return 1
             fi
-        fi
 
-        # 3. Create logs folder
-        add_log "I" "Creating mo logs ${MO_LOG_PATH} path in case it does not exist"
-        mkdir -p ${MO_LOG_PATH}
-        add_log "I" "Deoloy succeeded"
+            # 2. Build
+            if [[ "${force}" == "nobuild" ]]; then
+                add_log "W" "Flag \"nobuild\" is set, will skip building mo-service"
+                :
+            else
+                if ! build_all ${force}; then
+                    return 1
+                fi
+            fi
 
-        # 4. Copy conf file
-        replace_mo_confs
+            # 3. Create logs folder
+            add_log "I" "Creating mo logs ${MO_LOG_PATH} path in case it does not exist"
+            mkdir -p ${MO_LOG_PATH}
+            add_log "I" "Deoloy succeeded"
 
-    fi
+            # 4. Copy conf file
+            replace_mo_confs
+
+            ;;
+        *)
+            add_log "E" "Invalid MO_DEPLOY_MODE, choose from: git | binary | docker"
+            exit 1
+            ;;
+    esac
 
 }

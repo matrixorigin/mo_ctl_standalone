@@ -56,6 +56,7 @@ function help_deploy()
     echo "Usage         : ${TOOL_NAME} ${option} [mo_version] [force] # ${USAGE_DEPLOY}"
     echo "  [mo_version]: optional: specify an mo version to deploy"
     echo "  [force]     : optional: if specified will delete all content under MO_PATH and deploy from beginning"
+    echo "  Note        : 'deploy' is valid only when MO_DEPLOY_MODE is set to 'git' or 'docker'"
     echo "  e.g.        : ${TOOL_NAME} ${option}             # default, same as ${TOOL_NAME} ${option} ${MO_DEFAULT_VERSION}"
     echo "              : ${TOOL_NAME} ${option} main        # deploy development latest version"
     echo "              : ${TOOL_NAME} ${option} d29764a     # deploy development version d29764a"
@@ -78,6 +79,10 @@ function help_start()
 {
     option="start"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_START}"
+    echo "  Note        : when MO_DEPLOY_MODE is set to 'git', mo_ctl finds mo-service under path MO_PATH/matrixone/ (currently set as ${MO_PATH}/matrixone/)"
+    echo "              : when MO_DEPLOY_MODE is set to 'binary', mo_ctl finds mo-service under path MO_PATH/ (currently set as ${MO_PATH}/)"
+    echo "              : when MO_DEPLOY_MODE is set to 'docker', mo_ctl creates a container from image MO_CONTAINER_IMAGE (currently set as ${MO_CONTAINER_IMAGE})"
+
 }
 
 function help_stop()
