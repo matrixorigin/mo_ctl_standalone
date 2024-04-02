@@ -32,8 +32,8 @@ function pprof()
 
     add_log "I" "pprof option is ${option}" 
 
-    case ${option} in
-        profile)
+    case "${option}" in
+        "profile" | "trace" )
             if [[ "${duration}" == "" ]]; then
                 add_log "I" "duration is not set, using conf value: ${PPROF_PROFILE_DURATION}"
                 duration="${PPROF_PROFILE_DURATION}"
@@ -51,11 +51,8 @@ function pprof()
             URL="${URL}?seconds=${duration}";
             add_log "I" "collect duration is ${duration} seconds" 
             ;;
-        allocs)
-            a=1
-            ;;
-        heap)
-            a=1
+        "allocs" | "heap" | "goroutine")
+            :
             ;;
         *)
             add_log "E" "Invalid option ${option} for pprof. Available: profile | pprof | heap"

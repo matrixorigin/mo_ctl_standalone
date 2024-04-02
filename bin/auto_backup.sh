@@ -143,7 +143,8 @@ function backup()
                     backup_db_list=${BACKUP_LOGICAL_DB_LIST}
                     ;;
             esac
-
+            
+            add_log "D" "backup_db_list: ${backup_db_list}"
             if [[ "${backup_db_list}" == "" ]]; then
                 add_log "E" "Final backup database list seems to be empty, please check conf BACKUP_LOGICAL_DB_LIST"
                 return 1
@@ -151,27 +152,112 @@ function backup()
 
 
             csv_option=""
+            no_data_option=""
             if [[ "${BACKUP_LOGICAL_DATA_TYPE}" == "csv" ]]; then
                 csv_option="-csv"
+            elif [[ "${BACKUP_LOGICAL_DATA_TYPE}" == "ddl" ]]; then
+                no_data_option="-no-data"
             fi
-            
-            for db in $(echo "${backup_db_list}" | sed "s/,/ /g"); do
-                add_log "I" "Begin to back up database: ${db}"
 
-                startTime=`get_nanosecond`
-                add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}.sql && cd -"
-                if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}.sql && cd - >/dev/null 2>&1; then
-                    endTime=`get_nanosecond`
-                    outcome="succeeded"
+            # 1. in case we have multiple databases
+            if echo "${backup_db_list}" | grep "," >/dev/null 2>&1 ; then
+                add_log "W" "backup_db_list=${backup_db_list} seems to be a list containing multiple dbs, thus will ignore conf BACKUP_LOGICAL_TBL_LIST=${BACKUP_LOGICAL_TBL_LIST} and backup databases in db list only"
+
+                # 1.1. backup databases one by one
+                if [[ "${BACKUP_LOGICAL_ONEBYONE}" == "1" ]]; then
+                    add_log "D" "BACKUP_LOGICAL_ONEBYONE is set to 1, will backup tables one by one"
+                
+                    for db in $(echo "${backup_db_list}" | sed "s/,/ /g"); do
+                        add_log "I" "Begin to back up database: ${db}"
+
+                        add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}.sql && cd - >/dev/null 2>&1"
+                        startTime=`get_nanosecond`
+                        if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}.sql && cd - >/dev/null 2>&1; then
+                            endTime=`get_nanosecond`
+                            outcome="succeeded"
+                        else
+                            endTime=`get_nanosecond`
+                            outcome="failed"
+
+                        fi
+                        
+                        cost=`time_cost_ms ${startTime} ${endTime}`
+
+                        add_log "I" "End with outcome: ${outcome}, cost: ${cost} ms"
+                    done
+                
+                # 1.2. backup databases all at once
                 else
-                    endTime=`get_nanosecond`
-                    outcome="failed"
+                    add_log "D" "BACKUP_LOGICAL_ONEBYONE is not set to 1, will backup databases all at once"
+                    add_log "I" "Begin to back up databases in list: ${backup_db_list}"
+                    add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/mo.sql && cd - >/dev/null 2>&1"
+                
+                    startTime=`get_nanosecond`
+                    if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/mo.sql && cd - >/dev/null 2>&1; then
+                        endTime=`get_nanosecond`
+                        outcome="succeeded"
+                    else
+                        endTime=`get_nanosecond`
+                        outcome="failed"
+
+                    fi
+                    cost=`time_cost_ms ${startTime} ${endTime}`
+
+                    add_log "I" "End with outcome: ${outcome}, cost: ${cost} ms"
 
                 fi
-                cost=`time_cost_ms ${startTime} ${endTime}`
 
-                add_log "I" "End with outcome: ${outcome}, cost: ${cost} ms"
-            done
+            # 2. in case we have only one database
+            else
+                add_log "D" "backup_db_list=${backup_db_list} seems to be one exact database, thus will take conf BACKUP_LOGICAL_TBL_LIST=${BACKUP_LOGICAL_TBL_LIST} into consideration"
+                
+                if [[ "${BACKUP_LOGICAL_ONEBYONE}" == "1" ]]; then
+                    add_log "D" "BACKUP_LOGICAL_ONEBYONE is set to 1, will backup tables one by one"
+
+                    for tbl in $(echo "${BACKUP_LOGICAL_TBL_LIST}" | sed "s/,/ /g"); do
+                        add_log "I" "Begin to back up table: ${tbl}"
+
+                        add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}_${tbl}.sql && cd - >/dev/null 2>&1"
+                        startTime=`get_nanosecond`
+                        if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}_${tbl}.sql && cd - >/dev/null 2>&1; then
+                            endTime=`get_nanosecond`
+                            outcome="succeeded"
+                        else
+                            endTime=`get_nanosecond`
+                            outcome="failed"
+
+                        fi
+                        cost=`time_cost_ms ${startTime} ${endTime}`
+
+                        add_log "I" "End with outcome: ${outcome}, cost: ${cost} ms"
+                    done
+
+
+                # backup tables all at once
+                else
+                    add_log "D" "BACKUP_LOGICAL_ONEBYONE is not set to 1, will backup tables all at once"
+                    add_log "I" "Begin to back up tables in list: ${BACKUP_LOGICAL_TBL_LIST} in database ${backup_db_list}"
+                    add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${BACKUP_LOGICAL_TBL_LIST} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${backup_db_list}.sql && cd - >/dev/null 2>&1"
+                
+                    startTime=`get_nanosecond`
+                    if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${BACKUP_LOGICAL_TBL_LIST} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${backup_db_list}.sql && cd - >/dev/null 2>&1; then
+                        endTime=`get_nanosecond`
+                        outcome="succeeded"
+                    else
+                        endTime=`get_nanosecond`
+                        outcome="failed"
+
+                    fi
+                    cost=`time_cost_ms ${startTime} ${endTime}`
+
+                    add_log "I" "End with outcome: ${outcome}, cost: ${cost} ms"
+
+                fi
+
+
+            fi
+
+            
             ;;
 
         # 2) physical backups : mo_br

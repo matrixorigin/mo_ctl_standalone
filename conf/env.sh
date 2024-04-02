@@ -39,9 +39,9 @@ MO_DEPLOY_MODE="git"
 
 
 # for docker
-MO_REPO="matrixorigin/matrixone"
+# deprecated: MO_REPO="matrixorigin/matrixone"
 # full image name of mo container, default: matrixorigin/matrixone:1.0.1
-MO_CONTAINER_IMAGE="matrixorigin/matrixone:1.1.0"
+MO_CONTAINER_IMAGE="matrixorigin/matrixone:1.1.1"
 # mo container name
 MO_CONTAINER_NAME="mo"
 # mo container sql port (PS: constant value, DONT CHANGE)
@@ -59,7 +59,7 @@ MO_CONTAINER_HOSTNAME="705203be8a9e"
 # mo container limit for memory (unit: m) (e.g. 1000 | 1500 | 2000 | ...)
 MO_CONTAINER_LIMIT_MEMORY=""
 # use ratio to set mo container limit for memory based on the total memory of the machine (unit: %)
-MO_CONTAINER_MEMORY_RATIO=90
+MO_CONTAINER_MEMORY_RATIO=70
 # auto restart mo container in case it is down? (yes|no)
 MO_CONTAINER_AUTO_RESTART="yes"
 # mo container limit for cpu (e.g. 1 | 1.5 | 2 | ...)
@@ -91,7 +91,7 @@ MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 #)
 
 # default version of which mo to be deployed
-MO_DEFAULT_VERSION="v1.1.0"
+MO_DEFAULT_VERSION="v1.1.1"
 # which go proxy to be used when downloading go dependencies
 # you can set this go proxy when building mo-service
 GOPROXY="https://goproxy.cn,direct"
@@ -216,8 +216,19 @@ BACKUP_MODUMP_PATH="/data/tools/mo_dump/mo-dump"
 # all_no_sysdb: (default) all databases, including all user databases, but no system databases
 # other settings by user, e.g. db1,db2,db3
 BACKUP_LOGICAL_DB_LIST="all_no_sysdb"
-# backup data type(only valid when BACKUP_TYPE=logical) : insert | csv(default)
+
+# backup tables, seperated by ','
+# Note: BACKUP_LOGICAL_TBL_LIST is only vailid when BACKUP_LOGICAL_DB_LIST has exactly one database, otherwise it will be ignored
+BACKUP_LOGICAL_TBL_LIST=""
+
+# backup data type(only valid when BACKUP_TYPE=logical) : insert | csv(default) | ddl
 BACKUP_LOGICAL_DATA_TYPE="csv"
+
+# backup data per database one by one (only valid when BACKUP_TYPE=logical): 0 (default, all at once) | 1 (one by one)
+BACKUP_LOGICAL_ONEBYONE="0"
+
+# backup net buffer length(integer): 1048576(default, 1M), Max is 16777216 (16M)
+BACKUP_LOGICAL_NETBUFLEN="1048576"
 
 
 # for auto clean sysdb logs
