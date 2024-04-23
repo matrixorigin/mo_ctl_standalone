@@ -7,8 +7,9 @@
 
 function git_clone()
 {
+    rc=1
     # 1. git clone
-    rc=0
+
     mo_version=$1
     force=$2
 
@@ -17,8 +18,8 @@ function git_clone()
 
     if [[ -d "${MO_PATH}/matrixone/" ]] && [[ "`ls ${MO_PATH}/matrixone/ | wc -l |sed 's/[[:space:]]//g'`" != "0" ]]; then
         if [[ "${force}" != "force" ]]; then
-            add_log "I" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, will skip git clone and check out"
-            return 0
+            add_log "E" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, please add flag \"force\" and try again, or remove it manually, exiting"
+            return 1
         else
             add_log "W" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, please confirm if you really want to overwrite it(Yes/No): "
             user_confirm=""
@@ -34,36 +35,86 @@ function git_clone()
         cd ${MO_PATH} >/dev/null 2>&1 && rm -rf ./matrixone/ >/dev/null 2>&1
     fi
 
+
+
     mkdir -p ${MO_PATH}
     add_log "I" "Deploying mo on path ${MO_PATH}"
     for ((i=1;i<=${try_times};i++));do
         add_log "I" "Try number: $i"
-        add_log "I" "cd ${MO_PATH} && git clone ${MO_GIT_URL}"
         if [[ "${MO_GIT_URL}" == "" ]]; then
             add_log "E" "MO_GIT_URL is not set, please set it first, exiting"
             return 1
         fi
-        if cd ${MO_PATH} && git clone ${MO_GIT_URL};then
-            add_log "I" "Git clone succeeded."
-            add_log "I" "checking out to version ${mo_version}"
-            if cd ${MO_PATH}/matrixone/ && git checkout ${mo_version}; then
-                add_log "I" "Check out succeeded."
+        add_log "I" "cd ${MO_PATH} && git clone ${MO_GIT_URL}"
+        if cd ${MO_PATH} && git clone ${MO_GIT_URL}; then
+            add_log "I" "Git clone source codes succeeded, judging if checkout is needed"
+            add_log "D" "cmd: cd ${MO_PATH}/matrixone/"
+            cd ${MO_PATH}/matrixone/
+            if [[ "${mo_version}" == "main" ]]; then
+                add_log "I" "mo_version is set to main, skip checkout"
+                rc=0
             else
-                add_log "E" "Check out failed, please check mo version, exiting"
-                rc="1"                     
+                remote_tags=`git tag`
+                remote_branches=`git branch -r | awk -F'origin/' '{print $2}' | grep -v HEAD`
+                add_log "I" "Trying to checkout to ${mo_version}"
+                add_log "D" "List of remote tags:"
+                add_log "D" "${remote_tags}" "l"
+                add_log "D" "List of remote branches:"
+                add_log "D" "${remote_branches}" "l"
+                # set default version, use latest tag
+                if [[ ${mo_version} == "" ]]; then
+                    add_log "I" "mo_version is empty, trying to find the tag for latest release"
+                    mo_version=`for tags in ${remote_tags} ; do echo $tags; done |sort -r | head -1`
+                    mo_v_type="tag"
+                else
+                    mo_v_type="unknown"
+                    # 1. is it a tag?
+                    for tag in ${remote_tags}; do
+                        if [[ "${tag}" == "${mo_version}" ]]; then
+                            mo_v_type="tag"
+                            add_log "D" "Tag ${tag} mathces mo_version ${mo_version}"
+                            break
+                        fi
+                    done
+
+                    # 2. is it a branch?
+                    if [[ "${mo_v_type}" == "unknown" ]]; then
+                        add_log "D" "No tag mathces mo_version ${mo_version}, trying to match a branch"
+                        for branch in ${remote_branches}; do
+                            if [[ "${branch}" == "${mo_version}" ]]; then
+                                mo_v_type="branch"
+                                add_log "D" "Branch ${branch} mathces mo_version ${mo_version}"
+                                break
+                            fi
+                        done
+                    fi
+
+                    # 3. is it a commit id?
+                    if [[ "${mo_v_type}" == "unknown" ]]; then
+                        mo_v_type="commit"
+                        add_log "D" "No branch mathces mo_version ${mo_version}, will take it as a commit id"
+
+                    fi
+
+                fi
+
+                add_log "I" "mo_version: ${mo_version}, type: ${mo_v_type}"
+                if ! git checkout ${mo_version}; then
+                    add_log "E" "Check out to ${mo_version} failed, please make sure it's a valid ${mo_v_type}, exiting"
+                    rc=1
+                    break;
+                fi
+
+                # git clone and checkout all ok, breaking the loop
+                rc=0
+                break;
             fi
-            # git clone ok, breaking the loop
-            break;
         fi
 
-        if [[ "${rc}" == "1" ]] ;then
-            # checkout failed, breaking the loop
-            break;
-        fi
     done
 
     if [[ "${rc}" == "1" ]] ;then
-        add_log "E" "All tries on git clone have failed. Exiting"
+        add_log "E" "All tries on git clone or a checkout have failed. Exiting"
     fi
 
     return ${rc}
@@ -196,18 +247,88 @@ function deploy_docker()
     #add_log "I" "Successfully pulled image ${MO_CONTAINER_IMAGE}"
 }
 
+# possible options
+# 1. mo_ctl deploy: deploy default version, i.e. mo_ctl deploy ${latest_stable_version}, where ${latest_stable_version} is decided from git tag result
+# 2. mo_ctl deploy force
+# 3. mo_ctl deploy nobuild
+# 4. mo_ctl deploy force nobuild
+
+
+# 5. mo_ctl deploy v1.1.3: deploy a stable version(tag)
+# 6. mo_ctl deploy v1.1.3 force
+# 7. mo_ctl deploy v1.1.3 nobuild
+# 8. mo_ctl deploy v1.1.3 force nobuild
+
+
+# 9. mo_ctl deploy main: deploy main branch latest version
+# 10. mo_ctl deploy main force
+# 11. mo_ctl deploy main nobuild
+# 12. mo_ctl deploy main force nobuild
+
+# 13. mo_ctl deploy xxxxxx: deploy xxxx commit id
+# 14. mo_ctl deploy xxxxxx force
+# 13. mo_ctl deploy xxxxxx nobuild
+# 14. mo_ctl deploy xxxxxx force nobuild
+
 function deploy()
 {
-    mo_version=$1
-    force=$2
 
-    # set default version
-    if [[ ${mo_version} == "" ]]; then 
-        mo_version=${MO_DEFAULT_VERSION}
-    elif [[ ${mo_version} == "force" ]]; then
-        mo_version=${MO_DEFAULT_VERSION}
-        force="force"
-    fi
+    var_1="$1"
+    var_2="$2"
+    var_3="$3"
+
+    mo_version=""
+    force=""
+    nobuild=""
+
+    case "${var_1}" in
+        "")
+            # 1. mo_ctl deploy
+            mo_version=""
+            force=""
+            nobuild=""
+            ;;
+        "nobuild")
+            # 3. mo_ctl deploy nobuild
+            mo_version=""
+            force=""
+            nobuild="nobuild"
+            ;;
+        "force")
+            # 2. mo_ctl deploy force
+            # 4. mo_ctl deploy force nobuild
+            mo_version=""
+            force="force"
+            nobuild="${var_3}"
+            ;;
+        *)
+            # 5. mo_ctl deploy v1.1.3: deploy a stable version(tag)
+            # 6. mo_ctl deploy v1.1.3 force
+            # 7. mo_ctl deploy v1.1.3 nobuild
+            # 8. mo_ctl deploy v1.1.3 force nobuild
+
+
+            # 9. mo_ctl deploy main: deploy main branch latest version
+            # 10. mo_ctl deploy main force
+            # 11. mo_ctl deploy main nobuild
+            # 12. mo_ctl deploy main force nobuild
+
+            # 13. mo_ctl deploy xxxxxx: deploy xxxx commit id
+            # 14. mo_ctl deploy xxxxxx force
+            # 13. mo_ctl deploy xxxxxx nobuild
+            # 14. mo_ctl deploy xxxxxx force nobuild
+            mo_version="${var_1}"
+            force="${var_2}"
+            if [[ "${force}" == "nobuild" ]]; then
+                force=""
+                nobuild="nobuild"
+            else
+                nobuild="${var_3}"
+            fi
+            ;;
+    esac
+
+    add_log "D" "mo_version: ${mo_version}, force: ${force}, nobuild: ${nobuild}" 
 
     get_conf MO_DEPLOY_MODE
 
@@ -216,7 +337,8 @@ function deploy()
             deploy_docker ${mo_version}
             ;;
         "binary")
-            add_log "I" "MO_DEPLOY_MODE is set to 'binary', thus skipping deployment. Please download and decompress mo binary file into a folder and set conf MO_PATH and MO_CONF_FILE"
+            add_log "I" "MO_DEPLOY_MODE is set to 'binary', thus skipping deployment. Please download and decompress mo binary file into a folder and set conf MO_PATH and MO_CONF_FILE, exiting"
+            return 0
             ;;
 
         "git")
@@ -228,13 +350,13 @@ function deploy()
                 add_log "I" "Precheck passed, deploying mo now"
             fi
 
-            # 1. Install
-            if ! git_clone ${mo_version} ${force}; then
+            # 1. Git clone source codes and checkout to branch/tag/commit
+            if ! git_clone "${mo_version}" "${force}"; then
                 return 1
             fi
 
             # 2. Build
-            if [[ "${force}" == "nobuild" ]]; then
+            if [[ "${nobuild}" == "nobuild" ]]; then
                 add_log "W" "Flag \"nobuild\" is set, will skip building mo-service"
                 :
             else

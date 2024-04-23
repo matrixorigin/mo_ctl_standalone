@@ -37,11 +37,13 @@ USAGE_UNINSTALL="uninstall mo from path MO_PATH=${MO_PATH}/matrixone"
 USAGE_UPGRADE="upgrade or downgrade mo from current version to a target commit id or stable version"
 USAGE_VERSION="show ${TOOL_NAME} and matrixone version"
 USAGE_WATCHDOG="setup a watchdog crontab task for mo-service to keep it alive"
+USAGE_RESTORE="restore mo from a data backup"
 
 function help_precheck()
 {
     option="precheck"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_PRECHECK}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo -n "   Check list : "
     for item in ${CHECK_LIST[@]}; do
         echo -n "${item} "
@@ -54,6 +56,7 @@ function help_deploy()
 {
     option="deploy"
     echo "Usage         : ${TOOL_NAME} ${option} [mo_version] [force] # ${USAGE_DEPLOY}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo "  [mo_version]: optional: specify an mo version to deploy"
     echo "  [force]     : optional: if specified will delete all content under MO_PATH and deploy from beginning"
     echo "  Note        : 'deploy' is valid only when MO_DEPLOY_MODE is set to 'git' or 'docker'"
@@ -72,6 +75,7 @@ function help_status()
 {
     option="status"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_STATUS}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
 }
 
 
@@ -79,6 +83,7 @@ function help_start()
 {
     option="start"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_START}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo "  Note        : when MO_DEPLOY_MODE is set to 'git', mo_ctl finds mo-service under path MO_PATH/matrixone/ (currently set as ${MO_PATH}/matrixone/)"
     echo "              : when MO_DEPLOY_MODE is set to 'binary', mo_ctl finds mo-service under path MO_PATH/ (currently set as ${MO_PATH}/)"
     echo "              : when MO_DEPLOY_MODE is set to 'docker', mo_ctl creates a container from image MO_CONTAINER_IMAGE (currently set as ${MO_CONTAINER_IMAGE})"
@@ -99,6 +104,7 @@ function help_restart()
 {
     option="restart"
     echo "Usage         : ${TOOL_NAME} ${option} [force] # ${USAGE_RESTART}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo " [force]      : optional: if specified, will try to kill mo-services with -9 option, so be very carefully"
     echo "  e.g.        : ${TOOL_NAME} ${option}         # default, stop all mo-service processes found on this machine and start mo-serivce under path of conf MO_PATH"
     echo "              : ${TOOL_NAME} ${option} force   # stop all mo-services with kill -9 command and start mo-serivce under path of conf MO_PATH"
@@ -108,12 +114,14 @@ function help_connect()
 {
     option="connect"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_CONNECT}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
 }
 
 function help_get_cid()
 {
     option="get_cid"
     echo "Usage         : ${TOOL_NAME} ${option} [less] # ${USAGE_GET_CID}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo "  [less]      : optional, if specified, print less info with cid only, otherwise print more info"
 
 }
@@ -122,6 +130,7 @@ function help_path()
 {
     option="path"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_PATH}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
 }
 
 
@@ -129,6 +138,7 @@ function help_pprof()
 {
     option="pprof"
     echo "Usage         : ${TOOL_NAME} ${option} [item] [duration] # ${USAGE_PPROF}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo "  [item]      : optional: specify what pprof to collect, available: profile | heap | allocs"
     echo "  1) profile  : default, collect profile pprof for 30 seconds"
     echo "  2) heap     : collect heap pprof at current moment"
@@ -144,6 +154,7 @@ function help_set_conf()
 {
     option="set_conf"
     echo "Usage         : ${TOOL_NAME} ${option} [conf_list] # ${USAGE_SET_CONF}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo " [conf_list]  : configuration list in key=value format, note that setting multiple confs at the same time is not supported"
     echo "              : ${TOOL_NAME} ${option} MO_PATH=/data/mo/20230629"
     echo "              : ${TOOL_NAME} ${option} BACKUP_CRON_SCHEDULE=\"30 23 * * *\"             # in case your conf value contains a special character like '*', use double \" to quote it"
@@ -155,6 +166,7 @@ function help_get_conf()
 {
     option="getconf"
     echo "Usage         : ${TOOL_NAME} ${option} [conf_list] # ${USAGE_GET_CONF}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo " [conf_list]  : optional: configuration list in key, seperated by comma."
     echo "              : use 'all' or leave it as blank to print all configurations"
     echo "  e.g.        : ${TOOL_NAME} ${option} MO_PATH,MO_PW,MO_PORT  # get multiple configurations"
@@ -167,6 +179,7 @@ function help_ddl_convert()
 {
     option="ddl_convert"
     echo "Usage           : ${TOOL_NAME} ${option} [options] [src_file] [tgt_file] # ${USAGE_DDL_CONVERT}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo " [options]      : available: mysql_to_mo"
     echo " [src_file]     : source file to be converted, will use env DDL_SRC_FILE from conf file by default"
     echo " [tgt_file]     : target file of converted output, will use env DDL_TGT_FILE from conf file by default"
@@ -189,6 +202,7 @@ function help_upgrade()
 {
     option="upgrade"
     echo "Usage           : ${TOOL_NAME} ${option} [version_or_commitid]   # ${USAGE_UPGRADE}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo " [commitid]     : a commit id such as '38888f7', or a stable version such as '0.8.0'"
     echo "                : use 'latest' to upgrade to latest commit on main branch if you don't know the id"
     echo "  e.g.          : ${TOOL_NAME} ${option} 38888f7              # upgrade/downgrade to commit id 38888f7 on main branch"
@@ -203,12 +217,14 @@ function help_get_branch()
 {
     option="get_branch"
     echo "Usage           : ${TOOL_NAME} ${option}        # ${USAGE_GET_BRANCH}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
 }
 
 function help_uninstall()
 {
     option="uninstall"
     echo "Usage           : ${TOOL_NAME} ${option}        # ${USAGE_UNINSTALL}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo "                                          # note: you will need to input 'Yes/No' to confirm before uninstalling"
 
 }
@@ -217,6 +233,7 @@ function help_sql()
 {
     option="sql"
     echo "Usage           : ${TOOL_NAME} ${option} [sql]                 # ${USAGE_SQL}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo "  [sql]         : a string quote by \"\", or a file, or a path"
     echo "  e.g.          : ${TOOL_NAME} ${option} \"use test;select 1;\"  # execute sql \"use test;select 1\""
     echo "                : ${TOOL_NAME} ${option} /data/q1.sql            # execute sql in file /data/q1.sql"
@@ -227,6 +244,7 @@ function help_csv_convert()
 {
     option="csv_convert"
     echo "Usage           : ${TOOL_NAME} ${option}                        # ${USAGE_CSV_CONVERT}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo "Note: please set below configurations first before you run this option"
     echo "      1. CSV_CONVERT_SRC_FILE: source csv file to convert, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_SRC_FILE=\"/data/test.csv\""
     echo "      2. CSV_CONVERT_BATCH_SIZE: batch size of target file, note max batch size is limited to ${CSV_CONVERT_MAX_BATCH_SIZE}, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_BATCH_SIZE=8192"
@@ -297,6 +315,7 @@ function help_bk_notes()
     echo "         b) all_no_sysdb: all databases, including all user databases, but no system databases"
     echo "         c) other settings by user: e.g. db1,db2,db3"
     echo "    3) BACKUP_LOGICAL_DATA_TYPE [OPTIONAL, default: csv]: (only valid when BACKUP_TYPE=logical) backup data type, choose from: insert | csv . e.g. mo_ctl set_conf BACKUP_DATA_TYPE=\"csv\""
+    echo "    4) BACKUP_LOGICAL_ONEBYONE [OPTIONAL, default: 0]: (only valid when BACKUP_TYPE=logical) backup databases/tables one by one? choose from: 0 | 1"
 
 }
 
@@ -304,6 +323,7 @@ function help_auto_backup()
 {
     option="auto_backup"
     echo "Usage           : ${TOOL_NAME} ${option} [options]   # ${USAGE_AUTO_BACKUP}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
     echo " [options]      : available: enable | disable | status"
     echo "                : ${TOOL_NAME} ${option}             # same as ${TOOL_NAME} ${option} status"
     echo "                : ${TOOL_NAME} ${option} status      # check if auto backup is enabled or disabled"
@@ -316,9 +336,10 @@ function help_auto_backup()
 function help_backup()
 {
     option="backup"
-    echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_BACKUP}"
-    echo "Usage           : ${TOOL_NAME} ${option} list        # list backup report in summary"
-    echo "Usage           : ${TOOL_NAME} ${option} list detail # list backup report in detail(physical only)"
+    echo "Usage         : ${TOOL_NAME} ${option}             # ${USAGE_BACKUP}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
+    echo "              : ${TOOL_NAME} ${option} list        # list backup report in summary"
+    echo "              : ${TOOL_NAME} ${option} list detail # list backup report in detail(physical only)"
     help_bk_notes
 }
 
@@ -328,6 +349,57 @@ function help_clean_backup()
     echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_CLEAN_BACKUP}"
     help_bk_notes
 }
+
+function help_restore_notes()
+{
+    echo "  Note          : currently only supported on linux systems"
+    echo "                : please set below configurations first before you run the [enable] option"
+
+    echo "  ------------------------- "
+    echo "   1. Common settings       "
+    echo "  ------------------------- "
+    echo "    1) RESTORE_TYPE [default: physical]: backup type to restore, choose from \"physical\" | \"logical\". e.g. mo_ctl set_conf RESTORE_TYPE=\"logical\""
+    echo "    2) RESTORE_PATH: path to restore, which must be an empty folder, e.g. mo_ctl set_conf RESTORE_PATH=\"/data/mo/restore\""
+
+    
+
+
+    echo ""
+    echo "  ------------------------- "
+    echo "   2. For physical backups  "
+    echo "  ------------------------- "
+    echo "    1) BACKUP_MOBR_PATH [default: /data/tools/mo-backup/mo_br]: Path to mo_br backup tool"
+    echo "    2) RESTORE_BKID: backup id to restore, which can be found using cmd \"mo_ctl backup list detail\", e.g. mo_ctl set_conf RESTORE_BKID=\"6363b248-fc9f-11ee-845e-b07b25235fd0\""
+    echo "    3) RESTORE_PHYSICAL_TYPE [default: filesystem]: target restore storage type, choose from \"filesystem\" | \"s3\""
+    echo "      if RESTORE_PHYSICAL_TYPE=s3"
+    echo "        a) RESTORE_S3_ENDPOINT [default: '']: s3 endpoint, e.g. https://cos.ap-nanjing.myqcloud.com"
+    echo "        b) RESTORE_S3_ID [default: '']: s3 id, e.g. B4v6Khv484X81dk81jQFzc9YxKl98JOyxkX1k"
+    echo "        c) RESTORE_S3_KEY [default: '']: s3 key, e.g. QFzc9YxKl98JOyxkX1kB4v6Khv484X81dk81j"
+    echo "        d) RESTORE_S3_BUCKET [default: '']: s3 bucket, e.g. mybucket"
+    echo "        e) RESTORE_S3_REGION [default: '']: s3 region, e.g. ap-nanjing"
+    echo "        f) RESTORE_S3_COMPRESSION [default: '']: s3 compression"
+    echo "        g) RESTORE_S3_ROLE_ARN [default: '']: s3 role arn"
+    echo "        h) RESTORE_S3_IS_MINIO [default: 'no']: is minio type or not, choose from \"no\" | \"yes\""
+
+    echo ""
+    echo "  ------------------------- "
+    echo "   3. For logical restore  "
+    echo "  ------------------------- "
+    echo "    1) BACKUP_MODUMP_PATH [default: /data/tools/mo_dump/mo-dump]: Path to mo-dump backup tool"
+    echo "    2) RESTORE_LOGICAL_DB: optional, if set, will add database name to mysql command when restoring logical backup data. i.e. MYSQL_PWD=xx mysql -hxxx -Pxxx db_name < backup_data.sql"
+
+
+
+}
+
+function help_restore()
+{
+    option="restore"
+    echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_RESTORE}"
+    echo "                : ${TOOL_NAME} ${option} help        # print help info"
+    help_restore_notes
+}
+
 
 function help_cl_notes()
 {
@@ -499,8 +571,11 @@ function help_2()
         monitor)
             help_monitor
             ;;
+        restore)
+            help_restore
+            ;;
         *)
-            add_log "E" "invalid [option_1]: ${option_1}"
+            add_log "E" "invalid option_1: ${option_1}"
             help_1
             exit 1
             ;;

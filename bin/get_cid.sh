@@ -9,8 +9,8 @@ function get_cid()
 {
     option=$1
 
-    if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
-        add_log "E" "Currently mo_ctl does not support get_cid when mo deploy mode is docker"
+    if [[ "${MO_DEPLOY_MODE}" != "git" ]]; then
+        add_log "E" "Currently mo_ctl does not support get_branch when mo deploy mode is not git"
         return 1
     fi
 

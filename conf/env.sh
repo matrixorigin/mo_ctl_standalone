@@ -24,7 +24,7 @@ MO_CONF_SRC_PATH=""
 
 # For connect
 # target mo instance type: local | remote
-MO_SERVER_TYPE="local"
+# deprecated: MO_SERVER_TYPE="local"
 # host ip to connect where mo is deployed, by default: 127.0.0.1
 MO_HOST="127.0.0.1"
 # host port to connect where mo is deployed, by default: 6001
@@ -59,7 +59,7 @@ MO_CONTAINER_HOSTNAME="705203be8a9e"
 # mo container limit for memory (unit: m) (e.g. 1000 | 1500 | 2000 | ...)
 MO_CONTAINER_LIMIT_MEMORY=""
 # use ratio to set mo container limit for memory based on the total memory of the machine (unit: %)
-MO_CONTAINER_MEMORY_RATIO=70
+MO_CONTAINER_MEMORY_RATIO=90
 # auto restart mo container in case it is down? (yes|no)
 MO_CONTAINER_AUTO_RESTART="yes"
 # mo container limit for cpu (e.g. 1 | 1.5 | 2 | ...)
@@ -229,6 +229,38 @@ BACKUP_LOGICAL_ONEBYONE="0"
 
 # backup net buffer length(integer): 1048576(default, 1M), Max is 16777216 (16M)
 BACKUP_LOGICAL_NETBUFLEN="1048576"
+
+# for restore
+
+# restore type: physical | logical
+RESTORE_TYPE="physical" # 
+RESTORE_PATH="/data/mo/restore"
+
+# 1. physical restore
+# restore target type: filesystem(default)|s3
+RESTORE_PHYSICAL_TYPE="filesystem"
+# the backup id to be restored
+RESTORE_BKID=""
+# 1) when BACKUP_PHYSICAL_TYPE="filesystem"
+# restore directory
+# same as RESTORE_PATH
+
+# 2) when BACKUP_PHYSICAL_TARGET_TYPE="s3"
+RESTORE_S3_ENDPOINT=""
+RESTORE_S3_ID=""
+RESTORE_S3_KEY=""
+RESTORE_S3_BUCKET=""
+RESTORE_S3_REGION=""
+RESTORE_S3_COMPRESSION=""
+RESTORE_S3_ROLE_ARN=""
+RESTORE_S3_IS_MINIO="no"
+
+
+# 2. logical restore
+# restore target type: filesystem(default)|s3
+RESTORE_LOGICAL_DB=""
+# restore target type: filesystem(default)|s3
+RESTORE_LOGICAL_DB=""
 
 
 # for auto clean sysdb logs
