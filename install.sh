@@ -150,8 +150,9 @@ function install()
         #fi
     fi
 
-    add_log "I" "Try to install mo_ctl from file ${pkg}" 
-    if unzip -o mo_ctl.zip &&  mv ./mo_ctl_standalone-main/ ${mo_ctl_local_path} &&     chmod +x ${mo_ctl_local_path}/mo_ctl.sh; then
+    add_log "I" "Try to install mo_ctl from file ${pkg}"
+    pkg_prefix=`echo "mo_ctl_standalone_dev.zip"  | awk -F '.' '{print $1}'`
+    if unzip -o ${pkg} &&  mv ./${pkg_prefix} ${mo_ctl_local_path} &&     chmod +x ${mo_ctl_local_path}/mo_ctl.sh; then
         add_log "I" "Successfully extracted mo_ctl file to ${mo_ctl_local_path}"
     else
         add_log "E"  "Failed to extract file, please check if 'unzip' is installed or file is complete"

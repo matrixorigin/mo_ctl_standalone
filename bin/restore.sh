@@ -225,8 +225,9 @@ function restore_logical()
     BACKUP_MODUMP_DIRNAME=`dirname "${BACKUP_MOBR_PATH}"`
 
     add_log "I" "Restore begins, please wait"
-    if MYSQL_PWD="${M_PW}" mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" "${dbname_option}" < ${}
-    cmd="mysql -u$}" 
+    #todo
+    #if MYSQL_PWD="${M_PW}" mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" "${dbname_option}" < ${}
+    #cmd="mysql -u$}" 
     
 
     add_log "D" "cmd: cd ${BACKUP_MOBR_DIRNAME} && ${cmd}"
