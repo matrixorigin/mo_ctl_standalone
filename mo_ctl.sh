@@ -30,6 +30,7 @@ LOG_DIR="${WORK_DIR}/log"
 #    "build_image" "monitor" "restore" \
 #)
 PIDS=""
+MO_V_TYPE="unknown"
 
 function main()
 {

@@ -14,7 +14,10 @@ function get_cid()
         return 1
     fi
 
-    add_log "I" "Try get mo commit id"
+    if [[ "${option}" != "less" ]]; then
+        add_log "I" "Try get mo commit id"
+    fi
+
     if [[ ! -d ${MO_PATH}/matrixone ]]; then
         add_log "E" "Path ${MO_PATH}/matrixone does not exist, please make sure mo is deployed properly"
         add_log "E" "Get commit id failed, exiting"
@@ -24,6 +27,7 @@ function get_cid()
     # better way to get commit id
     cid_full=`cd ${MO_PATH}/matrixone && git log -n 1`
     cid_less=`cd ${MO_PATH}/matrixone && git log -n 1 --format='%H'`
+    cid_less=`echo "${cid_less:0:8}"`
 
     #deprecated: 
     #cid_full="$(cd ${MO_PATH}/matrixone && git log | head -n 6)"
@@ -34,7 +38,10 @@ function get_cid()
         else
             echo "${cid_full}"
         fi
-        add_log "I" "Get commit id succeeded"
+
+        if [[ "${option}" != "less" ]]; then
+            add_log "I" "Get commit id succeeded"
+        fi
     else
         add_log "E" "Get commit id failed"
         return 1

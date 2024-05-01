@@ -104,11 +104,10 @@ function git_clone()
                     rc=1
                     break;
                 fi
-
-                # git clone and checkout all ok, breaking the loop
-                rc=0
-                break;
             fi
+            # git clone and checkout all ok, breaking the loop
+            rc=0
+            break;
         fi
 
     done
