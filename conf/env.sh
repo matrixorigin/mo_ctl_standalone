@@ -185,7 +185,7 @@ BACKUP_CLEAN_DAYS_BEFORE="31"
 # cron to control auto clean of old backups
 BACKUP_CLEAN_CRON_SCHEDULE="0 6 * * *"
 # backup history
-BACKUP_REPORT="${TOOL_LOG_PATH}/backup/report.txt"
+BACKUP_REPORT="${TOOL_LOG_PATH}/backup-report.txt"
 
 # 1. physical backups
 # backup tools
@@ -230,11 +230,16 @@ BACKUP_LOGICAL_ONEBYONE="0"
 # backup net buffer length(integer): 1048576(default, 1M), Max is 16777216 (16M)
 BACKUP_LOGICAL_NETBUFLEN="1048576"
 
+# backup logical dataset name: (optional) the dataset name of the backup database
+BACKUP_LOGICAL_DS=""
+
+
 # for restore
 
 # restore type: physical | logical
 RESTORE_TYPE="physical" # 
 RESTORE_PATH="/data/mo/restore"
+RESTORE_REPORT="${TOOL_LOG_PATH}/restore-report.txt"
 
 # 1. physical restore
 # restore target type: filesystem(default)|s3
@@ -257,10 +262,14 @@ RESTORE_S3_IS_MINIO="no"
 
 
 # 2. logical restore
-# restore target type: filesystem(default)|s3
+# restore target db, e.g. db1. only one db is supported
 RESTORE_LOGICAL_DB=""
-# restore target type: filesystem(default)|s3
-RESTORE_LOGICAL_DB=""
+# restore data path (directory or file)
+RESTORE_LOGICAL_SRC=""
+# restore data type: csv | insert | ddl
+RESTORE_LOGICAL_TYPE=""
+
+
 
 
 # for auto clean sysdb logs

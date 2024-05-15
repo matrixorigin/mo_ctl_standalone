@@ -1,0 +1,23 @@
+# service node type, [DN|CN|LOG]
+service-type = "LOG"
+data-dir = "./mo-data"
+
+[log]
+level = "info"
+# 关掉 log_info 的采集（rawlog表由三部分组成：log_info、span_info、error_info，一般 log_info 部分是最大的）
+disable-store = true 
+
+[observability]
+# 对日志写入系统表的总开关，false为默认表示写入，由于statement_info需要，所以一般不设置为true
+disableTrace = false 
+# 关闭对表 span_info 的采集。另外，目前对表 error_info 的采集没有单独的开关，所以error_info 和 statement_info都会写入
+disableSpan = true 
+# 关闭表 statement_info 的聚合行为，默认是false即聚合
+# disableStmtAggregation = true
+
+
+#[logservice]
+# 指定额外的主机名，如果此处指定了额外的配置，则mo-data/logservice-data/7c4dccb4-4d3c-41f8-b482-5251dc7a41bf/${hostname} 这个目录名是根据配置自定义生成的；否则按默认值处理，默认是采取宿主机的主机名（hostname命令的返回）。
+# 一般迁移的场景下用，如果不指定，mo-data迁移到不同主机名的机器后，需要手动更改这个目录的名称
+#explicit-hostname = "host123"
+

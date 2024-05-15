@@ -1,0 +1,37 @@
+service-type = "TN"
+data-dir = "./mo-data"
+
+[log]
+level = "info"
+# 关掉 log_info 的采集（rawlog表由三部分组成：log_info、span_info、error_info，一般 log_info 部分是最大的）
+disable-store = true 
+
+[observability]
+# 对日志写入系统表的总开关，false为默认表示写入，由于statement_info需要，所以一般不设置为true
+disableTrace = false 
+# 关闭对表 span_info 的采集。另外，目前对表 error_info 的采集没有单独的开关，所以error_info 和 statement_info都会写入
+disableSpan = true 
+# 关闭表 statement_info 的聚合行为，默认是false即聚合
+# disableStmtAggregation = true
+
+[tn]
+uuid = "dd4dccb4-4d3c-41f8-b482-5251dc7a41bf"
+port-base = 19000
+
+#[tn.GCCfg]
+配置mo的自动gc扫描和清理的时间间隔，作用是将已经逻辑上删除掉的数据，在物理上从磁盘/对象存储中删除其对应的物理文件
+# 'true' means disabling gc and retaining all data. The default is false.
+#disable-gc = false
+#清理间隔
+#gc-ttl = "10m"
+#扫描间隔
+#scan-gc-interval = "5m"
+
+[[fileservice]]
+# backend 的枚举值有：S3和DISK
+backend = "DISK"
+# name 的枚举值有：LOCAL、S3、ETL，对应分别是临时文件存储（一般配DISK的backend）、mo的数据存储（一般单机的backend是DISK，分布式的backend是S3）、可观测性系统相关的数据存储（一般与mo的数据存储保持一致）
+name = "S3"
+
+[fileservice.cache]
+memory-capacity = "2GiB"

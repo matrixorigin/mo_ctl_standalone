@@ -70,16 +70,16 @@ function backup_list()
         fi
 
 
-        add_log "I" "Listing backup report (detail, physical only)"
-        add_log "I" "------------------------------------"
+        #add_log "I" "Listing backup report (detail, physical only)"
+        #add_log "I" "------------------------------------"
         cd ${BACKUP_MOBR_DIRNAME} && ./mo_br list
     else
         if [[ ! -f ${BACKUP_REPORT} ]]; then
             add_log "E" "No backup action can be found, exiting"
             return 1 
         fi
-        add_log "I" "Listing backup report (summary) from ${BACKUP_REPORT}"
-        add_log "I" "------------------------------------"
+        #add_log "I" "Listing backup report (summary) from ${BACKUP_REPORT}"
+        #add_log "I" "------------------------------------"
         cat ${BACKUP_REPORT}
     fi
 }
@@ -99,16 +99,20 @@ function backup()
 
     backup_yearmonth=`date '+%Y%m'`
     backup_timestamp=`date '+%Y%m%d_%H%M%S'`
-    
-    add_log "D" "Creating backup data direcory: mkdir -p ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/"
-    mkdir -p ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/
+    backup_outpath="${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}"
+    #if [[ "${BACKUP_TYPE}" == "logical" ]] && [[ "${BACKUP_LOGICAL_DS}" != "" ]] ; then
+    #    backup_outpath="${backup_outpath}_${BACKUP_LOGICAL_DS}"
+    #fi
+
+    add_log "D" "Creating backup data direcory: mkdir -p ${backup_outpath}/"
+    mkdir -p ${backup_outpath}/
 
     backup_report_path=`dirname "${BACKUP_REPORT}"`
     add_log "D" "Creating backup report direcory: mkdir -p ${backup_report_path}"
     mkdir -p ${backup_report_path}
-    if [[ ! -f "${BACKUP_REPORT}" ]]; then
+    if [[ ! -f ${BACKUP_REPORT} ]]; then
         add_log "D" "Creating backup report file ${BACKUP_REPORT}"
-        echo "backup_date|backup_target|db_list|backup_type|backup_path|logical_data_type|duration_ms|outcome" > "${BACKUP_REPORT}"
+        echo "backup_date|backup_target|ds_name|db_list|backup_type|backup_path|logical_data_type|duration_ms|outcome|size_in_bytes" > "${BACKUP_REPORT}"
     fi
  
     backup_db_list=""
@@ -173,9 +177,9 @@ function backup()
                     for db in $(echo "${backup_db_list}" | sed "s/,/ /g"); do
                         add_log "I" "Begin to back up database: ${db}"
 
-                        add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}.sql && cd - >/dev/null 2>&1"
+                        add_log "D" "Backup command: cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}.sql && cd - >/dev/null 2>&1"
                         startTime=`get_nanosecond`
-                        if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}.sql && cd - >/dev/null 2>&1; then
+                        if cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}.sql && cd - >/dev/null 2>&1; then
                             endTime=`get_nanosecond`
                             outcome="succeeded"
                         else
@@ -192,12 +196,16 @@ function backup()
                 
                 # 1.2. backup databases all at once
                 else
+                    outfile_name="mo.sql"
+                    if [[ "${BACKUP_LOGICAL_DS}" != "" ]]; then
+                        outfile_name="${BACKUP_LOGICAL_DS}.sql"
+                    fi
                     add_log "D" "BACKUP_LOGICAL_ONEBYONE is not set to 1, will backup databases all at once"
                     add_log "I" "Begin to back up databases in list: ${backup_db_list}"
-                    add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/mo.sql && cd - >/dev/null 2>&1"
+                    add_log "D" "Backup command: cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${backup_outpath}/${outfile_name} && cd - >/dev/null 2>&1"
                 
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/mo.sql && cd - >/dev/null 2>&1; then
+                    if cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${backup_outpath}/${outfile_name} && cd - >/dev/null 2>&1; then
                         endTime=`get_nanosecond`
                         outcome="succeeded"
                     else
@@ -227,10 +235,10 @@ function backup()
                         tbl_option="-tbl ${BACKUP_LOGICAL_TBL_LIST}"
                     fi
                     
-                    add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${tbl_option} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${backup_db_list}.sql && cd - >/dev/null 2>&1"
+                    add_log "D" "Backup command: cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${tbl_option} ${csv_option} ${no_data_option} > ${backup_outpath}/${backup_db_list}.sql && cd - >/dev/null 2>&1"
                 
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${tbl_option} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${backup_db_list}.sql && cd - >/dev/null 2>&1; then
+                    if cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${tbl_option} ${csv_option} ${no_data_option} > ${backup_outpath}/${backup_db_list}.sql && cd - >/dev/null 2>&1; then
                         endTime=`get_nanosecond`
                         outcome="succeeded"
                     else
@@ -249,9 +257,9 @@ function backup()
                     for tbl in $(echo "${BACKUP_LOGICAL_TBL_LIST}" | sed "s/,/ /g"); do
                         add_log "I" "Begin to back up table: ${tbl}"
 
-                        add_log "D" "Backup command: cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}_${tbl}.sql && cd - >/dev/null 2>&1"
+                        add_log "D" "Backup command: cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}_${tbl}.sql && cd - >/dev/null 2>&1"
                         startTime=`get_nanosecond`
-                        if cd ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/${db}_${tbl}.sql && cd - >/dev/null 2>&1; then
+                        if cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}_${tbl}.sql && cd - >/dev/null 2>&1; then
                             endTime=`get_nanosecond`
                             outcome="succeeded"
                         else
@@ -285,10 +293,10 @@ function backup()
             BACKUP_MOBR_DIRNAME=`dirname "${BACKUP_MOBR_PATH}"`
             case "${BACKUP_PHYSICAL_TYPE}" in
                 "filesystem")
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"filesystem\" --path \"${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/\""
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"filesystem\" --path \"${backup_outpath}/\""
                     
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "filesystem" --path "${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/" ; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "filesystem" --path "${backup_outpath}/" ; then
                         outcome="succeeded"
                     else
                         outcome="failed"
@@ -329,10 +337,13 @@ function backup()
             add_log "I" "End with outcome: ${outcome}, cost: ${cost} ms"
 
     esac
-
+    bk_size="n.a."
+    if [[ ${outcome} == "succeeded" ]]; then
+        bk_size=`du -s ${backup_outpath}`
+    fi
     # output report record
-    bakcup_target="${MO_HOST},${MO_PORT},${MO_USER},${MO_PW}"
-    echo "${backup_timestamp}|${bakcup_target}|${backup_conf_db_list}|${BACKUP_TYPE}|${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}/|${logical_data_type}|${cost}|${outcome}" >> "${BACKUP_REPORT}"
+    bakcup_target="${MO_HOST},${MO_PORT},${MO_USER}"
+    echo "${backup_timestamp}|${bakcup_target}|${BACKUP_LOGICAL_DS}|${backup_conf_db_list}|${BACKUP_TYPE}|${backup_outpath}/${backup_yearmonth}/${backup_timestamp}/|${logical_data_type}|${cost}|${outcome}|${bk_size}" >> "${BACKUP_REPORT}"
 
     if [[ ${rc} -ne 0 ]]; then
         add_log "E" "Backup ends with non-zero rc"

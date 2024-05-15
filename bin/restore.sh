@@ -66,10 +66,21 @@ function restore_precheck()
 
 }
 
+function restore_prep_report()
+{
+    restore_report_path=`dirname "${RESTORE_REPORT}"`
+    add_log "D" "Creating restore report direcory: mkdir -p ${restore_report_path}"
+    mkdir -p ${restore_report_path}
+    if [[ ! -f "${RESTORE_REPORT}" ]]; then
+        add_log "D" "Creating restore report file ${RESTORE_REPORT}"
+        echo "restore_date|restore_target|restore_type|physical_bk_id|logical_restore_src|logical_type|duration_ms|outcome" > "${RESTORE_REPORT}"
+    fi
+}
+
 function restore_physical()
 {
     add_log "I" "MO_HOST: ${MO_HOST}"
-    if [[ "MO_HOST" != "127.0.0.1" ]]; then
+    if [[ "${MO_HOST}" != "127.0.0.1" ]]; then
         add_log "E" "Currently mo_ctl only support restoring physical backup data on a local mo server, thus please set MO_HOST to 127.0.0.1 if that's the case."
         return 1
     fi
@@ -87,8 +98,6 @@ function restore_physical()
 
     add_log "I" "Restore begins"
 
-    backup_yearmonth=`date '+%Y%m'`
-    backup_timestamp=`date '+%Y%m%d_%H%M%S'`
 
     BACKUP_MOBR_DIRNAME=`dirname "${BACKUP_MOBR_PATH}"`
 
@@ -128,6 +137,7 @@ function restore_physical()
     add_log "D" "cmd: cd ${BACKUP_MOBR_DIRNAME} && ${cmd}"
 
 
+    restore_timestamp=`date '+%Y%m%d_%H%M%S'`
     startTime=`get_nanosecond`
     if cd ${BACKUP_MOBR_DIRNAME} && ${cmd}; then
         outcome="succeeded"
@@ -140,11 +150,17 @@ function restore_physical()
     
     add_log "I" "Outcome: ${outcome}, cost: ${cost} ms"
 
+    restore_prep_report
+    echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|physical|${RESTORE_BKID}|||${cost}|${outcome}" >> ${RESTORE_REPORT}
+
+
     if [[ ${rc} -ne 0 ]]; then
         add_log "E" "Restore ends with non-zero rc"
     else
         add_log "I" "Restore ends with 0 rc"
     fi
+
+    return ${rc}
 }
 
 function restore_mo_data()
@@ -219,41 +235,75 @@ function restore_logical()
     fi
 
 
-    backup_yearmonth=`date '+%Y%m'`
-    backup_timestamp=`date '+%Y%m%d_%H%M%S'`
 
-    BACKUP_MODUMP_DIRNAME=`dirname "${BACKUP_MOBR_PATH}"`
+    
+    if [[ -d "${RESTORE_LOGICAL_SRC}" ]]; then
+        isFile="false"
+        srcPath="${RESTORE_LOGICAL_SRC}"
+        add_log "I" "RESTORE_LOGICAL_SRC=${RESTORE_LOGICAL_SRC} is a path, listing files in it"
+        ls -lth "${RESTORE_LOGICAL_SRC}"
+    elif [[ -f "${RESTORE_LOGICAL_SRC}" ]]; then
+        isFile="true"
+        srcPath=`dirname "${RESTORE_LOGICAL_SRC}"`
+        add_log "I" "RESTORE_LOGICAL_SRC=${RESTORE_LOGICAL_SRC} is a file"
+    else
+        add_log "E" "RESTORE_LOGICAL_SRC=${RESTORE_LOGICAL_SRC} is a not a path nor file. Please check again. Exiting"
+        return 1
+    fi
+
+    restore_prep_report
 
     add_log "I" "Restore begins, please wait"
-    #todo
-    #if MYSQL_PWD="${M_PW}" mysql -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" "${dbname_option}" < ${}
-    #cmd="mysql -u$}" 
-    
+    i=1
+    rc=0
+    for fileName in `ls ${srcPath}/ | grep ".sql"`; do
+        if [[ "${isFile}" == "true" ]]; then
+            file="${RESTORE_LOGICAL_SRC}"
+        else
+            file="${srcPath}/${fileName}"
+        fi
+        add_log "D" "cmd: MYSQL_PWD="${MO_PW}" mysql -h${MO_HOST} -P${MO_PORT} -u${MO_USER} ${dbname_option} < ${file}"
+        restore_timestamp=`date '+%Y%m%d_%H%M%S'`
+        startTime=`get_nanosecond`
+        if MYSQL_PWD="${MO_PW}" mysql -h${MO_HOST} -P${MO_PORT} -u${MO_USER} ${dbname_option} < ${file}; then
+            outcome="succeeded"
+        else
+            outcome="failed"
+            let rc=rc+1
+        fi
+        endTime=`get_nanosecond`
+        cost=`time_cost_ms ${startTime} ${endTime}`
+        
 
-    add_log "D" "cmd: cd ${BACKUP_MOBR_DIRNAME} && ${cmd}"
+        add_log "I" "Number: $i, file: ${file}, outcome: ${outcome}, cost: ${cost} ms"
+        echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|logical||${file}|${RESTORE_LOGICAL_TYPE}|${cost}|${outcome}" >> ${RESTORE_REPORT}
 
+        if [[ "${isFile}" == "true" ]]; then
+            break
+        fi
+        let i=i+1
+        
+    done
 
-    startTime=`get_nanosecond`
-    if cd ${BACKUP_MOBR_DIRNAME} && ${cmd}; then
-        outcome="succeeded"
-    else
-        outcome="failed"
-        rc=1
-    fi
-    endTime=`get_nanosecond`
-    cost=`time_cost_ms ${startTime} ${endTime}`
-    
-    add_log "I" "Outcome: ${outcome}, cost: ${cost} ms"
+    let i=i-1
+
+    add_log "I" "-------------------------"
+    add_log "I" "         Summary         "
+    add_log "I" "Total: ${i}, failed: ${rc}"
+    add_log "I" "-------------------------"
+
 
     if [[ ${rc} -ne 0 ]]; then
         add_log "E" "Restore ends with non-zero rc"
     else
         add_log "I" "Restore ends with 0 rc"
     fi
+    return ${rc}
 }
 
 function restore()
 {
+    add_log "I" "RESTORE_TYPE: ${RESTORE_TYPE}"
 
     case "${RESTORE_TYPE}" in
         "physical")

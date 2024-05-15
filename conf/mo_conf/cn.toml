@@ -1,0 +1,40 @@
+service-type = "CN"
+data-dir = "./mo-data"
+
+[log]
+level = "info"
+# 关掉 log_info 的采集（rawlog表由三部分组成：log_info、span_info、error_info，一般 log_info 部分是最大的）
+disable-store = true 
+
+[cn]
+uuid = "dd1dccb4-4d3c-41f8-b482-5251dc7a41bf"
+port-base = 18000
+
+[cn.txn]
+# 配置事务在commit时对于主键重复值的检查，默认为0表示不检查。如果需要commit时检查主键重复值，可以配置为非0（建议写10或50，不要写1），注意会有一点性能损耗。
+pk-dedup-count=10 
+
+
+[observability]
+# 对日志写入系统表的总开关，false为默认表示写入，由于statement_info需要，所以一般不设置为true
+disableTrace = false 
+# 关闭对表 span_info 的采集。另外，目前对表 error_info 的采集没有单独的开关，所以error_info 和 statement_info都会写入
+disableSpan = true 
+# 关闭表 statement_info 的聚合行为，默认是false即聚合
+# disableStmtAggregation = true
+
+
+[[fileservice]]
+# backend 的枚举值有：S3和DISK
+backend = "S3"
+# name 的枚举值有：LOCAL、S3、ETL
+name = "S3"
+
+[[fileservice]]
+# backend 的枚举值有：S3和DISK
+backend = "DISK"
+# name 的枚举值有：LOCAL、S3、ETL，对应分别是临时文件存储（一般配DISK的backend）、mo的数据存储（一般单机的backend是DISK，分布式的backend是S3）、可观测性系统相关的数据存储（一般与mo的数据存储保持一致）
+name = "S3"
+
+[fileservice.cache]
+memory-capacity = "2GiB"

@@ -359,7 +359,7 @@ function help_restore_notes()
     echo "   1. Common settings       "
     echo "  ------------------------- "
     echo "    1) RESTORE_TYPE [default: physical]: backup type to restore, choose from \"physical\" | \"logical\". e.g. mo_ctl set_conf RESTORE_TYPE=\"logical\""
-    echo "    2) RESTORE_PATH: path to restore, which must be an empty folder, e.g. mo_ctl set_conf RESTORE_PATH=\"/data/mo/restore\""
+    
 
     
 
@@ -369,8 +369,9 @@ function help_restore_notes()
     echo "   2. For physical backups  "
     echo "  ------------------------- "
     echo "    1) BACKUP_MOBR_PATH [default: /data/tools/mo-backup/mo_br]: Path to mo_br backup tool"
-    echo "    2) RESTORE_BKID: backup id to restore, which can be found using cmd \"mo_ctl backup list detail\", e.g. mo_ctl set_conf RESTORE_BKID=\"6363b248-fc9f-11ee-845e-b07b25235fd0\""
-    echo "    3) RESTORE_PHYSICAL_TYPE [default: filesystem]: target restore storage type, choose from \"filesystem\" | \"s3\""
+    echo "    2) RESTORE_PATH: path to restore, which must be an empty folder, e.g. mo_ctl set_conf RESTORE_PATH=\"/data/mo/restore\""
+    echo "    3) RESTORE_BKID: backup id to restore, which can be found using cmd \"mo_ctl backup list detail\", e.g. mo_ctl set_conf RESTORE_BKID=\"6363b248-fc9f-11ee-845e-b07b25235fd0\""
+    echo "    4) RESTORE_PHYSICAL_TYPE [default: filesystem]: target restore storage type, choose from \"filesystem\" | \"s3\""
     echo "      if RESTORE_PHYSICAL_TYPE=s3"
     echo "        a) RESTORE_S3_ENDPOINT [default: '']: s3 endpoint, e.g. https://cos.ap-nanjing.myqcloud.com"
     echo "        b) RESTORE_S3_ID [default: '']: s3 id, e.g. B4v6Khv484X81dk81jQFzc9YxKl98JOyxkX1k"
@@ -386,9 +387,9 @@ function help_restore_notes()
     echo "   3. For logical restore  "
     echo "  ------------------------- "
     echo "    1) BACKUP_MODUMP_PATH [default: /data/tools/mo_dump/mo-dump]: Path to mo-dump backup tool"
-    echo "    2) RESTORE_LOGICAL_DB: optional, if set, will add database name to mysql command when restoring logical backup data. i.e. MYSQL_PWD=xx mysql -hxxx -Pxxx db_name < backup_data.sql"
-
-
+    echo "    2) RESTORE_LOGICAL_SRC: Path of a directory or file to logical backup data source, e.g. /data/backup/db1.sql"
+    echo "    3) RESTORE_LOGICAL_DB: optional, if set, will add database name to mysql command when restoring logical backup data. i.e. MYSQL_PWD=xx mysql -hxxx -Pxxx db_name < backup_data.sql"
+    echo "    4) RESTORE_LOGICAL_TYPE: optional, choose from: ddl | insert | csv"
 
 }
 
