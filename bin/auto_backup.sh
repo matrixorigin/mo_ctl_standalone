@@ -339,7 +339,7 @@ function backup()
     esac
     bk_size="n.a."
     if [[ ${outcome} == "succeeded" ]]; then
-        bk_size=`du -s ${backup_outpath}`
+        bk_size=`du -s ${backup_outpath} | awk '{print $1}'`
     fi
     # output report record
     bakcup_target="${MO_HOST},${MO_PORT},${MO_USER}"
