@@ -9,12 +9,15 @@ function get_branch()
 {
     option=$1
 
-    if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
-        add_log "E" "Currently mo_ctl does not support get_branch when mo deploy mode is docker"
+    if [[ "${MO_DEPLOY_MODE}" != "git" ]]; then
+        add_log "E" "Currently mo_ctl does not support get_branch when mo deploy mode is not git"
         return 1
     fi
 
-    add_log "I" "Try get mo branch"
+    if [[ "${option}" != "less" ]]; then
+        add_log "I" "Try get mo branch"
+    fi
+    
     if [[ ! -d ${MO_PATH}/matrixone ]]; then
         add_log "E" "Path ${MO_PATH}/matrixone does not exist, please make sure mo is deployed properly"
         add_log "E" "Get branch failed, exiting"
@@ -22,10 +25,40 @@ function get_branch()
     fi
     current_branch=`cd ${MO_PATH}/matrixone && git branch | grep "\*" | head -1`
     current_branch=`echo "${current_branch:2}"`
+    
+    cd ${MO_PATH}/matrixone
+    if echo "${current_branch}" | grep "HEAD" >/dev/null 2>&1; then
+        if [[ "${option}" != "less" ]]; then
+            add_log "I" "current_branch is ${current_branch}, contains \"HEAD\" info, thus it's a commit id, trying to find it's real branch"
+        fi
+        commitid_full=`git log | head -n 1 | awk {'print $2'}`
+        commitid_less=`echo "${commitid_full:0:8}"`
+        current_branch=`git branch --contains ${cid_less} | grep -v HEAD | sed 's/ //g'`
+    fi
+
     if [[ "${current_branch}" != "" ]]; then
-        add_log "I" "Get branch succeeded, current branch: ${current_branch}"
+        MO_V_TYPE="branch"
+        if [[ "${option}" != "less" ]]; then
+            add_log "I" "Get branch succeeded, current branch: ${current_branch}"
+        else
+            echo "${current_branch}"
+        fi      
     else
-        add_log "E" "Get branch failed"
+        if [[ "${option}" != "less" ]]; then
+            add_log "I" "No branch contains this commit, try to match a tag"
+        fi
+        current_tag=`git tag --contains ${cid_less} | grep -v HEAD | sed 's/ //g' | sort | head -1`
+        if [[ "${current_tag}" != "" ]]; then
+            MO_V_TYPE="tag"
+            if [[ "${option}" != "less" ]]; then
+                add_log "I" "Get tag succeeded, current tag: ${current_tag}"
+            else
+                echo "${current_tag}"
+            fi
+        else
+            MO_V_TYPE="unkown"
+            add_log "E" "Get tag failed"
+        fi
         return 1
     fi
 }

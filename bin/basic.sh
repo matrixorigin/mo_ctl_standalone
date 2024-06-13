@@ -159,11 +159,17 @@ function add_log()
         ;;
     esac 
 
-    if [[ "${add_line}" == "n" ]]; then
-        echo -n "${nowtime}    [${level}]    ${msg}"
-    else
+    case "${add_line}" in
+        "n" )
+            echo -n "${nowtime}    [${level}]    ${msg}"
+            ;;
+        "l" )
+            echo "${msg}"
+            ;;
+        *)
         echo "${nowtime}    [${level}]    ${msg}"
-    fi
+        ;;
+    esac
 }
 
 # function: compare the version number of 2 given string

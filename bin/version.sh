@@ -7,6 +7,6 @@
 
 function version()
 {
-    echo "Tool version: ${MO_TOOL_NAME} ${MO_TOOL_VERSION}"
+    echo "Tool version: ${TOOL_NAME} ${TOOL_VERSION}"
     echo "Server version: ${MO_SERVER_NAME} ${MO_SERVER_VERSION}"
 }

@@ -32,13 +32,16 @@ function build_image()
     #fi
 
     image_name="matrixone"
-    commitid_full=`cd ${MO_PATH}/matrixone && git log | head -n 1 | awk {'print $2'}`
-    commitid_less=`echo "${commitid_full:0:8}"`
+    #commitid_full=`get_cid less | head -n 2 | tail -n 1`
+    #commitid_less=`echo "${commitid_full:0:8}"`
+    commitid_less=`get_cid less`
 
-    branch=`cd ${MO_PATH}/matrixone && git branch | grep "\*" | head -1`
-    branch=`echo "${branch:2}"`
 
-    add_log "D" "Commit id full: ${commitid_full}, commit id less: ${commitid_less}, branch: ${branch}"
+    #branch=`get_branch | grep "current branch" | awk -F "current branch: " '{print $2}'`
+    branch=`get_branch less`
+
+
+    add_log "D" "Commit id: ${commitid_less}, branch: ${branch}"
 
     if [[ "${commitid_less}" == "" ]] || [[ "${branch}" == "" ]]; then
         add_log "E" "Commit id or branch is empty, exiting"

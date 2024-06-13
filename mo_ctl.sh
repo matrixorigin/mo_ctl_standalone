@@ -21,15 +21,16 @@ BIN_DIR="${WORK_DIR}/bin"
 # log
 LOG_DIR="${WORK_DIR}/log"
 # scripts
-SCRIPT_LIST=("basic" "help" "precheck" "deploy" \
-    "status" "start" "stop" "restart" \
-    "connect" "pprof" "set_conf" "get_conf" "get_cid" \
-    "mysql_to_mo" "ddl_convert" "watchdog" "upgrade" \
-    "get_branch" "uninstall" "sql" "csv_convert" \
-    "version" "auto_backup" "auto_clean_logs" \
-    "build_image" "monitor" \
-)
+#SCRIPT_LIST=("basic" "help" "precheck" "deploy" \
+#    "status" "start" "stop" "restart" \
+#    "connect" "pprof" "set_conf" "get_conf" "get_cid" \
+#    "mysql_to_mo" "ddl_convert" "watchdog" "upgrade" \
+#    "get_branch" "uninstall" "sql" "csv_convert" \
+#    "version" "auto_backup" "auto_clean_logs" \
+#    "build_image" "monitor" "restore" \
+#)
 PIDS=""
+MO_V_TYPE="unknown"
 
 function main()
 {
@@ -38,8 +39,8 @@ function main()
     source "${CONF_FILE}"
 
 
-    for script in ${SCRIPT_LIST[@]}; do
-        source "${BIN_DIR}/${script}.sh"
+    for script in `ls ${BIN_DIR}/ | grep .sh`; do
+        source "${BIN_DIR}/${script}"
     done
 
     rc=0
@@ -72,7 +73,7 @@ function main()
             precheck
             ;;
         "deploy")
-            deploy "${option_2}" "${option_3}"
+            deploy "${option_2}" "${option_3}" "${option_4}"
             ;;
         "status")
             status
@@ -146,6 +147,13 @@ function main()
                 backup_list "${option_3}"
             else
                 backup
+            fi
+            ;;
+        "restore")
+            if [[ "${option_2}" == "list" ]]; then
+                restore_list "${option_3}"
+            else
+                restore
             fi
             ;;
         "clean_backup")

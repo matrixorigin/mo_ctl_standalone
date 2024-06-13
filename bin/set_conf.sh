@@ -5,6 +5,24 @@
 ################################################################
 # set_conf
 
+
+# const
+
+# enum
+ENUM_TOOL_LOG_LEVEL="d,D,I,i,W,w,E,e"
+ENUM_MO_DEPLOY_MODE="git,docker,binary"
+#ENUM_MO_SERVER_TYPE="local,remote"
+ENUM_MO_CONTAINER_AUTO_RESTART="no,yes"
+ENUM_CSV_CONVERT_TYPE="1,2,3"
+ENUM_CSV_CONVERT_TN_TYPE="1,2"
+ENUM_CSV_CONVERT_INSERT_ADD_QUOTE="no,yes"
+ENUM_BACKUP_TYPE="logical,physical"
+ENUM_BACKUP_S3_IS_MINIO="no,yes"
+ENUM_BACKUP_LOGICAL_DATA_TYPE="ddl,insert,csv"
+ENUM_BACKUP_LOGICAL_ONEBYONE="0,1"
+
+
+
 function set_kv()
 {
     key="$1"
@@ -22,20 +40,40 @@ function set_kv()
         return 1
     fi
 
-    # 2. check if value is not empty, that is, a valid value
-    if [[ "${value}" == "" ]]; then
-        case "${key}" in
-            "MO_CONTAINER_DATA_HOST_PATH" | "MO_CONTAINER_CONF_HOST_PATH" | "CSV_CONVERT_META_COLUMN_LIST" | "MO_CONTAINER_LIMIT_CPU" | "MO_CONTAINER_LIMIT_MEMORY" | "MO_CONTAINER_EXTRA_MOUNT_OPTION" | "MO_CONF_SRC_PATH")
-                :
-                ;;
-            *)
-                add_log "E" "The value of conf ${key} is empty, which is not allowed"
-                rc=1
-                return 1
-            ;;
-        esac 
+    # 2. Validity check
+    case "${key}" in
+        # 2.1 enum list
+        #"TOOL_LOG_LEVEL"| "MO_DEPLOY_MODE"| "MO_SERVER_TYPE"| "MO_CONTAINER_AUTO_RESTART"| "CSV_CONVERT_TYPE"| "CSV_CONVERT_TN_TYPE"| "CSV_CONVERT_INSERT_ADD_QUOTE"| "BACKUP_TYPE"| "BACKUP_S3_IS_MINIO"| "BACKUP_LOGICAL_DATA_TYPE"| "BACKUP_LOGICAL_ONEBYONE")
+        "TOOL_LOG_LEVEL"| "MO_DEPLOY_MODE" | "MO_CONTAINER_AUTO_RESTART"| "CSV_CONVERT_TYPE"| "CSV_CONVERT_TN_TYPE"| "CSV_CONVERT_INSERT_ADD_QUOTE"| "BACKUP_TYPE"| "BACKUP_S3_IS_MINIO"| "BACKUP_LOGICAL_DATA_TYPE"| "BACKUP_LOGICAL_ONEBYONE")
 
-    fi
+            enum_list=`eval echo '$'"ENUM_$key"`
+            enum_list_2=`echo "${enum_list}" | sed "s/,/\|/g"`
+            found="false"
+            for enum in $(echo "${enum_list}" | sed "s/,/ /g"); do
+
+                if [[ "${value}" == "${enum}" ]]; then
+                    found="true"
+                fi
+            done
+
+            if [[ "${found}" == "false" ]]; then
+                add_log "E" "The value '${value}' of key '${key}' is not valid, valid range: ${enum_list_2}"
+                return 1
+            fi
+            
+            ;;
+        
+        # TODO: other parameters
+        "MO_CONTAINER_DATA_HOST_PATH" | "MO_CONTAINER_CONF_HOST_PATH" | "CSV_CONVERT_META_COLUMN_LIST" | "MO_CONTAINER_LIMIT_CPU" | "MO_CONTAINER_LIMIT_MEMORY" | "MO_CONTAINER_EXTRA_MOUNT_OPTION" | "MO_CONF_SRC_PATH")
+            :
+            ;;
+        *)
+            :
+            #add_log "E" "The value of conf ${key} is empty, which is not allowed"
+            #rc=1
+            #return 1
+            ;;
+    esac
 
     # 3. Set conf key=value
     add_log "I" "Setting conf ${key}=\"${value}\""
