@@ -70,12 +70,19 @@ function backup_list()
         fi
 
 
+        br_meta_option=""
+        if [[ "${BACKUP_MOBR_META_PATH}" != "" ]]; then
+            br_meta_option="--meta_path ${BACKUP_MOBR_META_PATH}"
+            #add_log "D" "BACKUP_MOBR_META_PATH is not empty, will add option ${br_meta_option}"
+        fi
+
         #add_log "I" "Listing backup report (detail, physical only)"
         #add_log "I" "------------------------------------"
-        cd ${BACKUP_MOBR_DIRNAME} && ./mo_br list
+        #add_log "D" "cmd: cd ${BACKUP_MOBR_DIRNAME} && ./mo_br ${br_meta_option} list"
+        cd ${BACKUP_MOBR_DIRNAME} && ./mo_br ${br_meta_option} list
     else
         if [[ ! -f ${BACKUP_REPORT} ]]; then
-            add_log "E" "No backup action can be found, exiting"
+            add_log "E" "BACKUP_REPORT ${BACKUP_REPORT} is not a valid file, exiting"
             return 1 
         fi
         #add_log "I" "Listing backup report (summary) from ${BACKUP_REPORT}"
@@ -87,7 +94,9 @@ function backup_list()
 function backup()
 {
 
-    ! backup_precheck "mo" && return 1
+    if ! backup_precheck "mo"; then
+        return 1
+    fi
 
     add_log "I" "Backup settings"
     add_log "I" "------------------------------------"
@@ -95,7 +104,7 @@ function backup()
     add_log "I" "------------------------------------"
 
 
-    add_log "I" "Backup starts"
+    add_log "I" "Backup begins"
 
     backup_yearmonth=`date '+%Y%m'`
     backup_timestamp=`date '+%Y%m%d_%H%M%S'`
@@ -112,7 +121,7 @@ function backup()
     mkdir -p ${backup_report_path}
     if [[ ! -f ${BACKUP_REPORT} ]]; then
         add_log "D" "Creating backup report file ${BACKUP_REPORT}"
-        echo "backup_date|backup_target|ds_name|db_list|backup_type|backup_path|logical_data_type|duration_ms|outcome|size_in_bytes" > "${BACKUP_REPORT}"
+        echo "backup_date|backup_target|ds_name|db_list|backup_type|backup_path|logical_data_type|duration_ms|outcome|bk_size_in_bytes|logical_net_buffer_length" > "${BACKUP_REPORT}"
     fi
  
     backup_db_list=""
@@ -124,8 +133,11 @@ function backup()
         # 1) logical backups : mo_dump
         "logical")
             logical_data_type=${BACKUP_LOGICAL_DATA_TYPE}
+            net_buffer_length="${BACKUP_LOGICAL_NETBUFLEN}"
 
-            ! backup_precheck "modump" && return 1
+            if ! backup_precheck "modump";then
+                return 1
+            fi
 
             all_dbs=`MYSQL_PWD="${MO_PW}" mysql -u"${MO_USER}" -P"${MO_PORT}" -h"${MO_HOST}" -e "show databases" -N -s`
             add_log "D" "All databases in current system: ${all_dbs}"
@@ -286,17 +298,25 @@ function backup()
             #backup_db_list="all"
             backup_conf_db_list="all"
             logical_data_type="n.a."
+            net_buffer_length="n.a."
 
-            ! backup_precheck "mobr" && return 1
+            if ! backup_precheck "mobr"; then
+                return 1
+            fi
 
+            br_meta_option=""
+            if [[ "${BACKUP_MOBR_META_PATH}" != "" ]]; then
+                br_meta_option="--meta_path ${BACKUP_MOBR_META_PATH}"
+                add_log "D" "BACKUP_MOBR_META_PATH is not empty, will add option ${br_meta_option}"
+            fi
 
             BACKUP_MOBR_DIRNAME=`dirname "${BACKUP_MOBR_PATH}"`
             case "${BACKUP_PHYSICAL_TYPE}" in
                 "filesystem")
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"filesystem\" --path \"${backup_outpath}/\""
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"filesystem\" --path \"${backup_outpath}/\""
                     
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "filesystem" --path "${backup_outpath}/" ; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "filesystem" --path "${backup_outpath}/" ; then
                         outcome="succeeded"
                     else
                         outcome="failed"
@@ -305,7 +325,7 @@ function backup()
                     ;;
                 "s3")
                     minio_option=""
-                    if [[ "${BACKUP_S3_IS_MINIO}" != "no" ]]; then
+                    if [[ "${BACKUP_S3_IS_MINIO}" == "yes" ]]; then
                         minio_option="--is_minio"
                     fi
 
@@ -314,10 +334,10 @@ function backup()
                         role_arn_option="--role_arn ${BACKUP_S3_ROLE_ARN}"
                     fi
                     
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"s3\" --endpoint \"${BACKUP_S3_ENDPOINT}\" --access_key_id \"${BACKUP_S3_ID}\" --secret_access_key \"${BACKUP_S3_KEY}\" --bucket \"${BACKUP_S3_BUCKET}\" --filepath \"${BACKUP_DATA_PATH}\" --region \"${BACKUP_S3_REGION}\" --compression \"${BACKUP_S3_COMPRESSION}\" \"${role_arn_option}\" \"${minio_option}\""
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"s3\" --endpoint \"${BACKUP_S3_ENDPOINT}\" --access_key_id \"${BACKUP_S3_ID}\" --secret_access_key \"${BACKUP_S3_KEY}\" --bucket \"${BACKUP_S3_BUCKET}\" --filepath \"${BACKUP_DATA_PATH}\" --region \"${BACKUP_S3_REGION}\" --compression \"${BACKUP_S3_COMPRESSION}\" \"${role_arn_option}\" \"${minio_option}\""
 
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "s3" --endpoint "${BACKUP_S3_ENDPOINT}" --access_key_id "${BACKUP_S3_ID}" --secret_access_key "${BACKUP_S3_KEY}" --bucket "${BACKUP_S3_BUCKET}" --filepath "${BACKUP_DATA_PATH}" --region "${BACKUP_S3_REGION}" --compression "${BACKUP_S3_COMPRESSION}" "${role_arn_option}" "${minio_option}"; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "s3" --endpoint "${BACKUP_S3_ENDPOINT}" --access_key_id "${BACKUP_S3_ID}" --secret_access_key "${BACKUP_S3_KEY}" --bucket "${BACKUP_S3_BUCKET}" --filepath "${BACKUP_DATA_PATH}" --region "${BACKUP_S3_REGION}" --compression "${BACKUP_S3_COMPRESSION}" "${role_arn_option}" "${minio_option}"; then
                         outcome="succeeded"
                     else
                         outcome="failed"
@@ -337,13 +357,19 @@ function backup()
             add_log "I" "End with outcome: ${outcome}, cost: ${cost} ms"
 
     esac
+
+    
     bk_size="n.a."
     if [[ ${outcome} == "succeeded" ]]; then
+        add_log "D" "Calculating size of backup path ${backup_outpath}"
         bk_size=`du -s ${backup_outpath} | awk '{print $1}'`
     fi
+
     # output report record
+    add_log "D" "Writing entry to report ${BACKUP_REPORT}"
+    add_log "D" "${backup_timestamp}|${bakcup_target}|${BACKUP_LOGICAL_DS}|${backup_conf_db_list}|${BACKUP_TYPE}|${backup_outpath}|${logical_data_type}|${cost}|${outcome}|${bk_size}|${net_buffer_length}"
     bakcup_target="${MO_HOST},${MO_PORT},${MO_USER}"
-    echo "${backup_timestamp}|${bakcup_target}|${BACKUP_LOGICAL_DS}|${backup_conf_db_list}|${BACKUP_TYPE}|${backup_outpath}/${backup_yearmonth}/${backup_timestamp}/|${logical_data_type}|${cost}|${outcome}|${bk_size}" >> "${BACKUP_REPORT}"
+    echo "${backup_timestamp}|${bakcup_target}|${BACKUP_LOGICAL_DS}|${backup_conf_db_list}|${BACKUP_TYPE}|${backup_outpath}|${logical_data_type}|${cost}|${outcome}|${bk_size}|${net_buffer_length}" >> "${BACKUP_REPORT}"
 
     if [[ ${rc} -ne 0 ]]; then
         add_log "E" "Backup ends with non-zero rc"

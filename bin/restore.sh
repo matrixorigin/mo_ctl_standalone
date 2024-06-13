@@ -9,6 +9,7 @@ ab_name="restore"
 OS=""
 
 
+
 function restore_precheck()
 {
 
@@ -73,7 +74,7 @@ function restore_prep_report()
     mkdir -p ${restore_report_path}
     if [[ ! -f "${RESTORE_REPORT}" ]]; then
         add_log "D" "Creating restore report file ${RESTORE_REPORT}"
-        echo "restore_date|restore_target|restore_type|physical_bk_id|logical_restore_src|logical_type|duration_ms|outcome" > "${RESTORE_REPORT}"
+        echo "restore_date|restore_target|restore_type|physical_bk_id|logical_restore_src|logical_type|duration_ms|outcome|bk_size_in_bytes" > "${RESTORE_REPORT}"
     fi
 }
 
@@ -85,9 +86,13 @@ function restore_physical()
         return 1
     fi
 
-    ! restore_precheck "mo" "down" && return 1
+    if ! restore_precheck "mo" "down"; then
+        return 1
+    fi
 
-    ! restore_precheck "mobr" && return 1
+    if ! restore_precheck "mobr"; then
+        return 1
+    fi
 
     add_log "I" "Restore settings"
     add_log "I" "------------------------------------"
@@ -96,12 +101,22 @@ function restore_physical()
 
     add_log "I" "Step_1. Restore physical data"
 
+    if [[ "${RESTORE_BKID}" == "" ]]; then
+        add_log "E" "RESTORE_BKID seems to be empty, please set it first, e.g. mo_ctl set_conf RESTORE_BKID=xxxxxxx , exiting"
+        return 1
+    fi
+
     add_log "I" "Restore begins"
 
+    br_meta_option=""
+    if [[ "${BACKUP_MOBR_META_PATH}" != "" ]]; then
+        br_meta_option="--meta_path ${BACKUP_MOBR_META_PATH}"
+        add_log "D" "BACKUP_MOBR_META_PATH is not empty, will add option ${br_meta_option}"
+    fi
 
     BACKUP_MOBR_DIRNAME=`dirname "${BACKUP_MOBR_PATH}"`
 
-    cmd="${BACKUP_MOBR_PATH} restore ${RESTORE_BKID} --restore_dir ${RESTORE_PHYSICAL_TYPE}"
+    cmd="${BACKUP_MOBR_PATH} restore ${RESTORE_BKID} ${br_meta_option} --restore_dir ${RESTORE_PHYSICAL_TYPE}"
     case "${RESTORE_PHYSICAL_TYPE}" in
         "filesystem")
             cmd="${cmd} --restore_path ${RESTORE_PATH}"
@@ -150,8 +165,30 @@ function restore_physical()
     
     add_log "I" "Outcome: ${outcome}, cost: ${cost} ms"
 
-    restore_prep_report
-    echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|physical|${RESTORE_BKID}|||${cost}|${outcome}" >> ${RESTORE_REPORT}
+    bk_size="n.a."
+    bk_size_in_bytes="n.a."
+    if [[ ${outcome} == "succeeded" ]]; then
+        add_log "D" "Get size of backup id ${RESTORE_BKID}"
+        bk_size=`cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} list ${br_meta_option} | grep "${RESTORE_BKID}" | awk -F "|" '{print $3}' | sed 's# ##g'`
+        if echo "${bk_size}" | grep "kB"; then
+            number=`echo "${bk_size}" | awk -F "kB" '{print $1}'`
+            let bk_size_in_bytes=bk_size*1024
+        elif echo "${bk_size}" | grep "MB"; then
+            number=`echo "${bk_size}" | awk -F "MB" '{print $1}'`
+            let bk_size_in_bytes=bk_size*1024*1024
+        elif echo "${bk_size}" | grep "GB"; then
+            number=`echo "${bk_size}" | awk -F "GB" '{print $1}'`
+            let bk_size_in_bytes=bk_size*1024*1024*1024
+        else
+            bk_size_in_bytes="${bk_size}"
+        fi
+        add_log "D" "bk_size: ${bk_size}, bk_size_in_bytes: ${bk_size_in_bytes}"
+
+    fi
+
+    add_log "D" "Writing entry to report"
+    add_log "D" "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|physical|${RESTORE_BKID}|||${cost}|${outcome}"    
+    echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|physical|${RESTORE_BKID}|||${cost}|${outcome}|${bk_size_in_bytes}" >> ${RESTORE_REPORT}
 
 
     if [[ ${rc} -ne 0 ]]; then
@@ -208,9 +245,9 @@ function restore_restart_mo()
 function restore_logical()
 {
 
-    ! restore_precheck "connection" && return 1
-
-    #! restore_precheck "modump" && return 1
+    if ! restore_precheck "connection"; then
+        return 1
+    fi
 
     add_log "I" "Restore settings"
     add_log "I" "------------------------------------"
@@ -256,16 +293,16 @@ function restore_logical()
     add_log "I" "Restore begins, please wait"
     i=1
     rc=0
-    for fileName in `ls ${srcPath}/ | grep ".sql"`; do
+    for fileName in `ls ${srcPath}/ | grep "\.sql"`; do
         if [[ "${isFile}" == "true" ]]; then
             file="${RESTORE_LOGICAL_SRC}"
         else
             file="${srcPath}/${fileName}"
         fi
-        add_log "D" "cmd: MYSQL_PWD="${MO_PW}" mysql -h${MO_HOST} -P${MO_PORT} -u${MO_USER} ${dbname_option} < ${file}"
+        add_log "D" "cmd: MYSQL_PWD="${MO_PW}" mysql --local-infile -h${MO_HOST} -P${MO_PORT} -u${MO_USER} ${dbname_option} < ${file}"
         restore_timestamp=`date '+%Y%m%d_%H%M%S'`
         startTime=`get_nanosecond`
-        if MYSQL_PWD="${MO_PW}" mysql -h${MO_HOST} -P${MO_PORT} -u${MO_USER} ${dbname_option} < ${file}; then
+        if MYSQL_PWD="${MO_PW}" mysql --local-infile -h${MO_HOST} -P${MO_PORT} -u${MO_USER} ${dbname_option} < ${file}; then
             outcome="succeeded"
         else
             outcome="failed"
@@ -276,7 +313,16 @@ function restore_logical()
         
 
         add_log "I" "Number: $i, file: ${file}, outcome: ${outcome}, cost: ${cost} ms"
-        echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|logical||${file}|${RESTORE_LOGICAL_TYPE}|${cost}|${outcome}" >> ${RESTORE_REPORT}
+        
+        
+        bk_size="n.a."
+        if [[ ${outcome} == "succeeded" ]]; then
+            add_log "D" "Calculating size of source path ${srcPath}"
+            bk_size=`du -s ${srcPath} | awk '{print $1}'`
+        fi
+
+        add_log "D" "Writing entry to report"
+        echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|logical||${file}|${RESTORE_LOGICAL_TYPE}|${cost}|${outcome}|${bk_size}" >> ${RESTORE_REPORT}
 
         if [[ "${isFile}" == "true" ]]; then
             break
@@ -294,7 +340,7 @@ function restore_logical()
 
 
     if [[ ${rc} -ne 0 ]]; then
-        add_log "E" "Restore ends with non-zero rc"
+        add_log "E" "Restore ends with non-zeor rc"
     else
         add_log "I" "Restore ends with 0 rc"
     fi
@@ -307,12 +353,22 @@ function restore()
 
     case "${RESTORE_TYPE}" in
         "physical")
-            ! restore_physical && return 1
-            ! restore_mo_data && return 1
-            ! restore_restart_mo && return 1
+            if ! restore_physical; then
+                return 1
+            fi
+            
+            if ! restore_mo_data; then
+                return 1
+            fi
+
+            if ! restore_restart_mo; then
+                return 1
+            fi
             ;;
         "logical")
-            ! restore_logical && return 1
+            if ! restore_logical; then
+                return 1
+            fi
             ;;
         *)
             add_log "E" "Invalid RESTORE_TYPE = ${RESTORE_TYPE}, choose from: physical | logical"
@@ -322,3 +378,16 @@ function restore()
   
 }
 
+function restore_list()
+{
+
+    option="$1"
+
+    if [[ ! -f ${RESTORE_REPORT} ]]; then
+        add_log "E" "RESTORE_REPORT ${RESTORE_REPORT} is not a valid file, exiting"
+        return 1 
+    fi
+    #add_log "I" "Listing restore report (summary) from ${RESTORE_REPORT}"
+    #add_log "I" "------------------------------------"
+    cat ${RESTORE_REPORT}
+}

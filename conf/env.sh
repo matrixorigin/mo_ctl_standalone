@@ -41,7 +41,7 @@ MO_DEPLOY_MODE="git"
 # for docker
 # deprecated: MO_REPO="matrixorigin/matrixone"
 # full image name of mo container, default: matrixorigin/matrixone:1.0.1
-MO_CONTAINER_IMAGE="matrixorigin/matrixone:1.1.1"
+MO_CONTAINER_IMAGE="matrixorigin/matrixone:1.2.0"
 # mo container name
 MO_CONTAINER_NAME="mo"
 # mo container sql port (PS: constant value, DONT CHANGE)
@@ -76,7 +76,7 @@ MO_CONTAINER_EXTRA_MOUNT_OPTION=""
 CHECK_LIST=("go" "gcc" "git" "mysql" "docker")
 GCC_VERSION="8.5.0"
 CLANG_VERSION="13.0"
-GO_VERSION="1.20"
+GO_VERSION="1.22.3"
 DOCKER_SERVER_VERSION="20"
 
 # for deploy
@@ -91,7 +91,7 @@ MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 #)
 
 # default version of which mo to be deployed
-MO_DEFAULT_VERSION="v1.1.1"
+MO_DEFAULT_VERSION="v1.2.0"
 # which go proxy to be used when downloading go dependencies
 # you can set this go proxy when building mo-service
 GOPROXY="https://goproxy.cn,direct"
@@ -193,6 +193,9 @@ BACKUP_REPORT="${TOOL_LOG_PATH}/backup-report.txt"
 BACKUP_MOBR_PATH="/data/tools/mo-backup/mo_br"
 # backup target type: filesystem(default)|s3
 BACKUP_PHYSICAL_TYPE="filesystem"
+# mobr meta file
+BACKUP_MOBR_META_PATH="${TOOL_LOG_PATH}/mo_br.meta"
+
 # 1) when BACKUP_PHYSICAL_TYPE="filesystem"
 # backup directory, same as BACKUP_PATH
 # BACKUP_PATH="/data/mo-backup"

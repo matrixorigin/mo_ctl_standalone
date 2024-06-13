@@ -87,9 +87,6 @@ function main()
         "restart")
             restart "${option_2}"
             ;;
-        "restore")
-            restore "${option_2}"
-            ;;
         "connect")
             connect
             ;;
@@ -150,6 +147,13 @@ function main()
                 backup_list "${option_3}"
             else
                 backup
+            fi
+            ;;
+        "restore")
+            if [[ "${option_2}" == "list" ]]; then
+                restore_list "${option_3}"
+            else
+                restore
             fi
             ;;
         "clean_backup")

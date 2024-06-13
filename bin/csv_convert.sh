@@ -421,20 +421,36 @@ function csv_convert()
     case "${CSV_CONVERT_TYPE}" in
         "1")
             convert_type="insert"
-            ! csv_convert_prep ${convert_type} && return 1
-            ! csv_convert_insert_${run_mode} && return 1
+            if ! csv_convert_prep ${convert_type}; then
+                return 1
+            fi
+            
+            if ! csv_convert_insert_${run_mode}; then
+                return 1
+            fi
+
             ;;
         "2")
             line_mode="single"
             convert_type="load-singleline"
-            ! csv_convert_prep ${convert_type} && return 1
-            ! csv_convert_load_${run_mode} "${line_mode}" && return 1
+            if ! csv_convert_prep ${convert_type}; then
+                return 1
+            fi
+
+            if ! csv_convert_load_${run_mode} "${line_mode}"; then
+                return 1
+            fi
             ;;
         "3")
             line_mode="multi"
             convert_type="load-multilines"
-            ! csv_convert_prep ${convert_type} && return 1
-            ! csv_convert_load_${run_mode} "${line_mode}" && return 1
+            if ! csv_convert_prep ${convert_type}; then
+                return 1
+            fi
+            
+            if ! csv_convert_load_${run_mode} "${line_mode}"; then
+                return 1
+            fi
             ;;
         *)
             return 1

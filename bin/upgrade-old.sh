@@ -143,7 +143,9 @@ function validate_target_cid()
     if [[ "${target_branch}" == "main"  ]]; then
         if [[ "${current_branch}" != "main" ]]; then
             add_log "I" "Current branch ${current_branch} is not on main, checking out to main: git checkout main"
-            ! git checkout main && return 1
+            if ! git checkout main; then
+                return 1
+            fi
         fi
         if [[ "${target_cid}" == "latest" ]]; then
             # 4.1. get latest commit id if target cid is set to latest

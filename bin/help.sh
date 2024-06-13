@@ -55,21 +55,27 @@ function help_precheck()
 function help_deploy()
 {
     option="deploy"
-    echo "Usage         : ${TOOL_NAME} ${option} [mo_version] [force] # ${USAGE_DEPLOY}"
+    echo "Usage         : ${TOOL_NAME} ${option} [\$mo_version] [force] [nobuild] # ${USAGE_DEPLOY}"
     echo "              : ${TOOL_NAME} ${option} help        # print help info"
-    echo "  [mo_version]: optional: specify an mo version to deploy"
+    echo "  [\$mo_version]: optional: specify an mo version to deploy"
     echo "  [force]     : optional: if specified will delete all content under MO_PATH and deploy from beginning"
+    echo "  [nobuild]   : optional: if specified will skip building mo-service"
     echo "  Note        : 'deploy' is valid only when MO_DEPLOY_MODE is set to 'git' or 'docker'"
     echo "  e.g.        : ${TOOL_NAME} ${option}             # default, same as ${TOOL_NAME} ${option} ${MO_DEFAULT_VERSION}"
     echo "              : ${TOOL_NAME} ${option} main        # deploy development latest version"
     echo "              : ${TOOL_NAME} ${option} d29764a     # deploy development version d29764a"
-    echo "              : ${TOOL_NAME} ${option} 0.8.0       # deploy stable verson 0.8.0"
+    echo "              : ${TOOL_NAME} ${option} 1.2.0       # deploy stable verson 1.2.0"
     echo "              : ${TOOL_NAME} ${option} force       # delete all under MO_PATH and deploy verson ${MO_DEFAULT_VERSION}"
-    echo "              : ${TOOL_NAME} ${option} 0.8.0 force # delete all under MO_PATH and deploy stable verson 0.8.0 from beginning"
+    echo "              : ${TOOL_NAME} ${option} 1.2.0 force # delete all under MO_PATH and deploy stable verson 1.2.0 from beginning"
 }
 
 
-
+function help_deploy_docker()
+{
+    option="deploy"
+    echo "Usage         : ${TOOL_NAME} ${option}             # ${USAGE_DEPLOY}"
+    echo "              : ${TOOL_NAME} ${option} help        # print help info"
+}
 
 function help_status()
 {
@@ -203,11 +209,11 @@ function help_upgrade()
     option="upgrade"
     echo "Usage           : ${TOOL_NAME} ${option} [version_or_commitid]   # ${USAGE_UPGRADE}"
     echo "              : ${TOOL_NAME} ${option} help        # print help info"
-    echo " [commitid]     : a commit id such as '38888f7', or a stable version such as '0.8.0'"
+    echo " [commitid]     : a commit id such as '38888f7', or a stable version such as '1.2.0'"
     echo "                : use 'latest' to upgrade to latest commit on main branch if you don't know the id"
     echo "  e.g.          : ${TOOL_NAME} ${option} 38888f7              # upgrade/downgrade to commit id 38888f7 on main branch"
     echo "                : ${TOOL_NAME} ${option} latest               # upgrade/downgrade to latest commit on main branch"
-    echo "                : ${TOOL_NAME} ${option} 0.8.0                # upgrade/downgrade to stable version 0.8.0"
+    echo "                : ${TOOL_NAME} ${option} 1.2.0                # upgrade/downgrade to stable version 1.2.0"
 
 }
 
