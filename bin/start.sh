@@ -109,7 +109,7 @@ function start()
 
             # if conf path exists
             if [[ -d ${MO_CONTAINER_CONF_HOST_PATH} ]]; then
-                docker_init_cmd="docker run ${cmd_params} -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_CONTAINER_IMAGE} -launch ${MO_CONTAINER_CONF_CON_FILE}"
+                docker_init_cmd="docker run ${cmd_params} -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_CONTAINER_IMAGE} -debug-http :${MO_CONTAINER_DEBUG_PORT} -launch ${MO_CONTAINER_CONF_CON_FILE}"
             else
                 docker_init_cmd="docker run ${cmd_params} ${MO_CONTAINER_IMAGE}"              
             fi

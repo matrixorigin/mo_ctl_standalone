@@ -108,7 +108,12 @@ function backup()
 
     backup_yearmonth=`date '+%Y%m'`
     backup_timestamp=`date '+%Y%m%d_%H%M%S'`
-    backup_outpath="${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}"
+    if [[ "${BACKUP_DATA_PATH_AUTO_TS}" == "no" ]]; then
+        backup_outpath="${BACKUP_DATA_PATH}"
+    else
+        backup_outpath="${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}"
+    fi
+
     #if [[ "${BACKUP_TYPE}" == "logical" ]] && [[ "${BACKUP_LOGICAL_DS}" != "" ]] ; then
     #    backup_outpath="${backup_outpath}_${BACKUP_LOGICAL_DS}"
     #fi
@@ -310,13 +315,60 @@ function backup()
                 add_log "D" "BACKUP_MOBR_META_PATH is not empty, will add option ${br_meta_option}"
             fi
 
+
             BACKUP_MOBR_DIRNAME=`dirname "${BACKUP_MOBR_PATH}"`
+
+            # 1. incremental
+            add_log "D" "Judging physical backup method(full or incremental): BACKUP_PHYSICAL_METHOD=${BACKUP_PHYSICAL_METHOD}"
+            if [[ "${BACKUP_PHYSICAL_METHOD}" == "incremental" ]]; then
+                add_log "I" "Physical backup method: incremental"
+                add_log "D" "BACKUP_PHYSICAL_BASE_BKID: ${BACKUP_PHYSICAL_BASE_BKID}"
+                
+                if [[ "${BACKUP_PHYSICAL_BASE_BKID}" == "" ]]; then
+                    add_log "E" "Base backup id BACKUP_PHYSICAL_BASE_BKID is empty, please set it first: mo_ctl set_conf BACKUP_PHYSICAL_BASE_BKID=xxx"
+                    add_log "I" "Hints: use 'mo_ctl backup list detail' to show previous backup ids"
+                    return 1
+                else
+                    # get backup path of bkid
+                    add_log "D" "BACKUP_MOBR_PATH: ${BACKUP_MOBR_PATH}"
+                    if [[ "${BACKUP_MOBR_PATH}" != "" ]]; then
+                        add_log "D" "Try to get backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID} from ${BACKUP_MOBR_PATH}"
+                        add_log "D" "cmd: ${BACKUP_MOBR_PATH} | grep ${BACKUP_PHYSICAL_BASE_BKID} | awk -F \"path = \" '{print $2}' | awk -F \"|\" '{print $1}'"
+                        real_bk_path=`${BACKUP_MOBR_PATH} | grep ${BACKUP_PHYSICAL_BASE_BKID} | awk -F "path = " '{print $2}' | awk -F "|" '{print $1}'`
+                    else
+                        add_log "D" "Try to get backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID} from 'mo_ctl backup list detail'"
+                        add_log "D" "cmd: mo_ctl backup list detail  | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F \"|\" '{print $4}' | sed \"s/[[:space:]][[:space:]]*//g\""
+                        real_bk_path=`mo_ctl backup list detail  | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F "|" '{print $4}' | sed "s/[[:space:]][[:space:]]*//g"`
+                    fi
+                    add_log "D" "real_bk_path: ${real_bk_path}"
+
+                    if [[ "${real_bk_path}" == "" ]]; then
+                        add_log "E" "Failed to backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID}"
+                        return 1
+                    else
+                        if [[ "${real_bk_path}" != "${backup_outpath}" ]]; then
+
+                            add_log "E" "Real backup path ${real_bk_path} of backup id ${BACKUP_PHYSICAL_BASE_BKID} does not math given target backup path ${backup_outpath}, please check again"
+                            if [[ "${BACKUP_DATA_PATH_AUTO_TS}" == "yes" ]]; then
+                                add_log "E" "Conf BACKUP_DATA_PATH_AUTO_TS is set to 'yes', please set this to 'no' when trying to perform a delta physical backup: 'mo_ctl set_conf BACKUP_DATA_PATH_AUTO_TS=no'"
+                            fi
+                            return 1
+                        fi
+                    fi 
+                fi
+                delta_option="--backup_type \"incremental\" --base_id \"${BACKUP_PHYSICAL_BASE_BKID}\""
+            # 2. full
+            else
+                add_log "I" "Physical backup method: full"
+                delta_option=""
+            fi
+
             case "${BACKUP_PHYSICAL_TYPE}" in
                 "filesystem")
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"filesystem\" --path \"${backup_outpath}/\""
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"filesystem\" --path \"${backup_outpath}/\" ${delta_option}"
                     
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "filesystem" --path "${backup_outpath}/" ; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "filesystem" --path "${backup_outpath}/ ${delta_option}" ; then
                         outcome="succeeded"
                     else
                         outcome="failed"
@@ -334,10 +386,10 @@ function backup()
                         role_arn_option="--role_arn ${BACKUP_S3_ROLE_ARN}"
                     fi
                     
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"s3\" --endpoint \"${BACKUP_S3_ENDPOINT}\" --access_key_id \"${BACKUP_S3_ID}\" --secret_access_key \"${BACKUP_S3_KEY}\" --bucket \"${BACKUP_S3_BUCKET}\" --filepath \"${BACKUP_DATA_PATH}\" --region \"${BACKUP_S3_REGION}\" --compression \"${BACKUP_S3_COMPRESSION}\" \"${role_arn_option}\" \"${minio_option}\""
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"s3\" --endpoint \"${BACKUP_S3_ENDPOINT}\" --access_key_id \"${BACKUP_S3_ID}\" --secret_access_key \"${BACKUP_S3_KEY}\" --bucket \"${BACKUP_S3_BUCKET}\" --filepath \"${backup_outpath}\" --region \"${BACKUP_S3_REGION}\" --compression \"${BACKUP_S3_COMPRESSION}\" \"${role_arn_option}\" \"${minio_option}\" ${delta_option}"
 
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "s3" --endpoint "${BACKUP_S3_ENDPOINT}" --access_key_id "${BACKUP_S3_ID}" --secret_access_key "${BACKUP_S3_KEY}" --bucket "${BACKUP_S3_BUCKET}" --filepath "${BACKUP_DATA_PATH}" --region "${BACKUP_S3_REGION}" --compression "${BACKUP_S3_COMPRESSION}" "${role_arn_option}" "${minio_option}"; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "s3" --endpoint "${BACKUP_S3_ENDPOINT}" --access_key_id "${BACKUP_S3_ID}" --secret_access_key "${BACKUP_S3_KEY}" --bucket "${BACKUP_S3_BUCKET}" --filepath "${backup_outpath}" --region "${BACKUP_S3_REGION}" --compression "${BACKUP_S3_COMPRESSION}" "${role_arn_option}" "${minio_option}" ${delta_option}; then
                         outcome="succeeded"
                     else
                         outcome="failed"
@@ -385,24 +437,32 @@ function backup()
 
 function clean_backup()
 {
+
+    if [[ "${BACKUP_DATA_PATH_AUTO_TS}" == "no" ]]; then
+        add_log "E" "Clean backup is only supported when BACKUP_DATA_PATH_AUTO_TS is set to 'yes', please set it first: mo_ctl set_conf BACKUP_DATA_PATH_AUTO_TS='yes'"
+        return 1
+    else
+        clean_path="${BACKUP_DATA_PATH}"
+    fi
+
     add_log "I" "Cleaning backups before ${BACKUP_CLEAN_DAYS_BEFORE} days"
     clean_date=`date -d "${BACKUP_CLEAN_DAYS_BEFORE} day ago" +%Y%m%d`
     add_log "I" "Clean date: ${clean_date}"
 
-    for month in `ls ${BACKUP_DATA_PATH}`; do
-        for backup_dir in `ls ${BACKUP_DATA_PATH}/${month}`; do
+    for month in `ls ${clean_path}`; do
+        for backup_dir in `ls ${clean_path}/${month}`; do
             backup_date=`echo "${backup_dir}" | awk -F"_" '{print $1}'`
             backup_date_int=`date -d "${backup_date}" +%s`
             clean_date_int=`date -d "${clean_date}" +%s`
             if [[ ${backup_date_int} -le ${clean_date_int} ]]; then
-                add_log "I" "Backup directory : ${BACKUP_DATA_PATH}/${month}/${backup_dir}, action: delete"
-                if cd ${BACKUP_DATA_PATH}/${month} && rm -rf ./${backup_dir}; then
+                add_log "I" "Backup directory : ${clean_path}/${month}/${backup_dir}, action: delete"
+                if cd ${clean_path}/${month} && rm -rf ./${backup_dir}; then
                     add_log "I" "Succeeded"
                 else
                     add_log "E" "Failed"
                 fi
             else
-                add_log "I" "Backup directory : ${BACKUP_DATA_PATH}/${month}/${backup_dir}/${backup_dir}, action: skip"
+                add_log "I" "Backup directory : ${clean_path}/${month}/${backup_dir}/${backup_dir}, action: skip"
             fi
         done
     done

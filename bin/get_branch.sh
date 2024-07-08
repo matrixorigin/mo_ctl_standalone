@@ -58,7 +58,7 @@ function get_branch()
         else
             MO_V_TYPE="unkown"
             add_log "E" "Get tag failed"
+            return 1
         fi
-        return 1
     fi
 }

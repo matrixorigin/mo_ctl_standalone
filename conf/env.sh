@@ -66,6 +66,9 @@ MO_CONTAINER_AUTO_RESTART="yes"
 MO_CONTAINER_LIMIT_CPU=""
 # extra mount options
 MO_CONTAINER_EXTRA_MOUNT_OPTION=""
+# replace below image repo with ccr.ccs.tencentyun.com/mo-infra? option: yes | no
+# images: golang:1.22.3-bookworm , ubuntu:22.04
+MO_CONTAINER_DEPIMAGE_REPLACE_REPO="yes" 
 
 
 ###########################################
@@ -167,9 +170,9 @@ CSV_CONVERT_INSERT_ADD_QUOTE="no"
 
 # for version
 MO_TOOL_NAME="mo_ctl"
-MO_TOOL_VERSION="V1.0"
+MO_TOOL_VERSION="V1.2"
 MO_SERVER_NAME="超融合数据库MatrixOne企业版软件"
-MO_SERVER_VERSION="V1.0"
+MO_SERVER_VERSION="V1.2"
 
 # for auto backup, currently only linux is supported
 # backup
@@ -179,6 +182,8 @@ BACKUP_TYPE="physical"
 BACKUP_CRON_SCHEDULE="30 23 * * *"
 # backup data path
 BACKUP_DATA_PATH="/data/mo-backup"
+# add timestamp subpaths to backup data path? format: ${BACKUP_DATA_PATH}/202406/20240620_161838
+BACKUP_DATA_PATH_AUTO_TS="yes"
 # auto clean old backups
 # clean old backup files before [x] (default: 31) days
 BACKUP_CLEAN_DAYS_BEFORE="31"
@@ -195,6 +200,10 @@ BACKUP_MOBR_PATH="/data/tools/mo-backup/mo_br"
 BACKUP_PHYSICAL_TYPE="filesystem"
 # mobr meta file
 BACKUP_MOBR_META_PATH="${TOOL_LOG_PATH}/mo_br.meta"
+# backup physical method: full(default)|incremental
+BACKUP_PHYSICAL_METHOD="full"
+# backup physical base backup id, only valid when BACKUP_PHYSICAL_METHOD='incremental' 
+BACKUP_PHYSICAL_BASE_BKID=""
 
 # 1) when BACKUP_PHYSICAL_TYPE="filesystem"
 # backup directory, same as BACKUP_PATH
