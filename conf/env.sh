@@ -112,6 +112,9 @@ MO_DEBUG_PORT="9876"
 MO_CONF_FILE="${MO_PATH}/matrixone/etc/launch/launch.toml"
 # GO memory limit ratio, x%. By default, 90% is recommended
 GO_MEM_LIMIT_RATIO=90
+# time interval (in seconds) of auto profile collecting. Empty by default, meaning will not turn on auto profile collecting
+PPROF_INTERVAL=""
+
 
 # for restart
 # interval between stop and start, unit: seconds
@@ -223,7 +226,7 @@ BACKUP_S3_IS_MINIO="no"
 # 2. logical backups
 # mo-dump
 BACKUP_MODUMP_PATH="/data/tools/mo_dump/mo-dump"
-# backup databases, seperated by ',' for each database. Note: 'all' and 'all_no_system' are special settings
+# backup databases, seperated by ',' for each database. Note: 'all' and 'all_no_sysdb' are special settings
 # all: all databases, including all system and user databases
 # all_no_sysdb: (default) all databases, including all user databases, but no system databases
 # other settings by user, e.g. db1,db2,db3

@@ -55,13 +55,15 @@ function build_image()
     if [[ "${MO_CONTAINER_DEPIMAGE_REPLACE_REPO}" == "yes" ]]; then
         add_log "D" "Repace repo for some images"
         
-        add_log "D" "s#FROM golang:1.22.3-bookworm as builder#FROM ccr.ccs.tencentyun.com/mo-infra/golang:1.22.3-bookworm as builder#g' optools/images/Dockerfile"
+        add_log "D" "sed -i 's#FROM golang:1.22.3-bookworm as builder#FROM ccr.ccs.tencentyun.com/mo-infra/golang:1.22.3-bookworm as builder#g' optools/images/Dockerfile"
         sed -i 's#FROM golang:1.22.3-bookworm as builder#FROM ccr.ccs.tencentyun.com/mo-infra/golang:1.22.3-bookworm as builder#g' optools/images/Dockerfile
 
-        add_log "D" "s#FROM ubuntu:22.04#FROM ccr.ccs.tencentyun.com/mo-infra/ubuntu:22.04#g' optools/images/Dockerfile"
+        add_log "D" "sed -i 's#FROM ubuntu:22.04#FROM ccr.ccs.tencentyun.com/mo-infra/ubuntu:22.04#g' optools/images/Dockerfile"
         sed -i 's#FROM ubuntu:22.04#FROM ccr.ccs.tencentyun.com/mo-infra/ubuntu:22.04#g' optools/images/Dockerfile
     fi
 
+
+    add_log "D" "Cmd: docker build -f optools/images/Dockerfile -t ${image_name}:${branch}_${commitid_less} . --build-arg GOPROXY=\"${GOPROXY}\""
     if docker build -f optools/images/Dockerfile -t ${image_name}:${branch}_${commitid_less} . --build-arg GOPROXY="${GOPROXY}" ; then
         :
     else
