@@ -383,7 +383,7 @@ function check_cron_service()
 # function: get local timezone setting
 function get_tz()
 {
-    
+    echo "todo"
 }
 
 # function: check if cron is enabled
