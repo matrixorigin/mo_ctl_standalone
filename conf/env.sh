@@ -69,6 +69,8 @@ MO_CONTAINER_EXTRA_MOUNT_OPTION=""
 # replace below image repo with ccr.ccs.tencentyun.com/mo-infra? option: yes | no
 # images: golang:1.22.3-bookworm , ubuntu:22.04
 MO_CONTAINER_DEPIMAGE_REPLACE_REPO="yes" 
+# timezone, choose from: default(usually UTC) | host (same as host local time)
+MO_CONTAINER_TIMEZONE="default"
 
 
 ###########################################

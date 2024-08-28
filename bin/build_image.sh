@@ -60,6 +60,11 @@ function build_image()
 
         add_log "D" "sed -i 's#FROM ubuntu:22.04#FROM ccr.ccs.tencentyun.com/mo-infra/ubuntu:22.04#g' optools/images/Dockerfile"
         sed -i 's#FROM ubuntu:22.04#FROM ccr.ccs.tencentyun.com/mo-infra/ubuntu:22.04#g' optools/images/Dockerfile
+
+        add_log "D" "sed -i 's#FROM golang:1.23.0-bookworm#FROM ccr.ccs.tencentyun.com/mo-infra/golang:1.23.0-bookworm#g' optools/images/Dockerfile"
+        sed -i 's#FROM golang:1.23.0-bookworm#FROM ccr.ccs.tencentyun.com/mo-infra/golang:1.23.0-bookworm#g' optools/images/Dockerfile
+
+
     fi
 
 

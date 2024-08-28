@@ -171,6 +171,9 @@ function main()
         "monitor")
             monitor "${option_2}" "${option_3}"
             ;;
+        "basic")
+            basic "${option_2}" "${option_3}" "${option_4}" 
+            ;;
         *)
             add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"
             help_1

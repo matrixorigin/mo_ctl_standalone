@@ -379,3 +379,18 @@ function check_cron_service()
         fi
     fi
 }
+
+# function: get local timezone setting
+function get_tz()
+{
+    
+}
+
+# function: check if cron is enabled
+function basic()
+{
+    func_name=$1
+    option_1=$2
+    option_2=$3
+    ${func_name} ${option_1} ${option_2}
+}

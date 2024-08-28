@@ -107,6 +107,10 @@ function start()
                 cmd_params="${cmd_params} --privileged=true"
             fi
 
+            if [[ "${MO_CONTAINER_TIMEZONE}" == "host" ]]; then
+                cmd_params="${cmd_params} -v /etc/localtime:/etc/localtime"
+            fi
+
             debug_option=""
             if [[ "${MO_CONTAINER_DEBUG_PORT}" != "" ]]; then
                 debug_option="-debug-http :${MO_CONTAINER_DEBUG_PORT}"
@@ -116,6 +120,8 @@ function start()
             if [[ "${PPROF_INTERVAL}" != "" ]]; then
                 pprof_option="-profile-interval ${PPROF_INTERVAL}s"
             fi
+
+
 
             # if conf path exists
             if [[ -d ${MO_CONTAINER_CONF_HOST_PATH} ]]; then
