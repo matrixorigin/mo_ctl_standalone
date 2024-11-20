@@ -10,9 +10,14 @@ cb_name="auto_clean_old_backup"
 BACKUP_CRON_PATH="/etc/cron.d"
 BACKUP_CRON_FILE_NAME="mo_backup"
 BACKUP_CRON_USER=""
-BACKUP_CRON_SCRIPT="/usr/local/bin/mo_ctl backup"
-BACKUP_CRON_CONTENT=""
-BACKUP_SYSDB_LIST="mo_task,information_schema,mysql,system_metrics,system,mo_catalog"
+BACKUP_CRON_SCRIPT_FULL="( /usr/local/bin/mo_ctl set_conf BACKUP_DATA_PATH_AUTO_TS=yes  && /usr/local/bin/mo_ctl set_conf BACKUP_PHYSICAL_METHOD=full  && /usr/local/bin/mo_ctl backup )"
+BACKUP_CRON_SCRIPT_INCREMENTAL="( sleep 2 && /usr/local/bin/mo_ctl set_conf BACKUP_PHYSICAL_METHOD=incremental  && /usr/local/bin/mo_ctl backup )"
+
+
+
+
+BACKUP_CRON_CONTENT_FULL=""
+BACKUP_CRON_CONTENT_INCREMENTAL=""
 CLEAN_BK_CRON_FILE_NAME="mo_clean_old_backup"
 CLEAN_BK_CRON_SCRIPT="/usr/local/bin/mo_ctl clean_backup"
 BACKUP_MOBR_DIRNAME=""
@@ -21,6 +26,18 @@ BACKUP_MOBR_DIRNAME=""
 # BACKUP_CRON_PLIST_FILE="${WORK_DIR}/bin/mo_autobacup.plist"
 OS=""
 
+
+function backup_get_last_physical_bkid()
+{
+    option="$1"
+    last_bkid=""
+    if [[ "${BACKUP_MOBR_META_PATH}" == "" ]]; then
+        BACKUP_MOBR_META_PATH="${BACKUP_MOBR_PATH}/mo_br.meta"
+    fi
+
+    last_bkid=`grep "${option}" ${BACKUP_MOBR_META_PATH} | tail -n 1 | awk -F "," '{print $1}' |  sed "s/[[:space:]][[:space:]]*//g"`
+    echo "${last_bkid}"
+}
 
 function backup_precheck()
 {
@@ -41,6 +58,15 @@ function backup_precheck()
                 add_log "E" "BACKUP_MOBR_PATH ${BACKUP_MOBR_PATH} is not a file or does not exist, please check again, exiting"
                 return 1
             fi
+
+            mo_br_ps_info=`ps -ef |grep "mo_br backup" |grep -v grep`
+            if [[ "${mo_br_ps_info}" != "" ]] ; then
+                add_log "D" "mo_br_ps_info"
+                add_log "D" "${mo_br_ps_info}" "l"
+                add_log "E" "At least one mo_br process is running, will not perform physical backup until it's done, exiting"
+                return 1
+            fi
+
             ;;
         "modump")
             if [[ ! -f ${BACKUP_MODUMP_PATH} ]] ; then
@@ -114,12 +140,17 @@ function backup()
         backup_outpath="${BACKUP_DATA_PATH}/${backup_yearmonth}/${backup_timestamp}"
     fi
 
+    add_log "D" "backup_outpath: ${backup_outpath}"
+
     #if [[ "${BACKUP_TYPE}" == "logical" ]] && [[ "${BACKUP_LOGICAL_DS}" != "" ]] ; then
     #    backup_outpath="${backup_outpath}_${BACKUP_LOGICAL_DS}"
     #fi
 
-    add_log "D" "Creating backup data direcory: mkdir -p ${backup_outpath}/"
-    mkdir -p ${backup_outpath}/
+    add_log "D" "BACKUP_TYPE: ${BACKUP_TYPE}, BACKUP_PHYSICAL_METHOD: ${BACKUP_PHYSICAL_METHOD}"
+    if [[ "${BACKUP_TYPE}" != "physical" ]] || [[ "${BACKUP_PHYSICAL_METHOD}" != "incremental" ]] ; then 
+        add_log "D" "Creating backup data direcory: mkdir -p ${backup_outpath}"
+        mkdir -p ${backup_outpath}
+    fi
 
     backup_report_path=`dirname "${BACKUP_REPORT}"`
     add_log "D" "Creating backup report direcory: mkdir -p ${backup_report_path}"
@@ -194,9 +225,9 @@ function backup()
                     for db in $(echo "${backup_db_list}" | sed "s/,/ /g"); do
                         add_log "I" "Begin to back up database: ${db}"
 
-                        add_log "D" "Backup command: cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}.sql && cd - >/dev/null 2>&1"
+                        add_log "D" "Backup command: cd ${backup_outpath} && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}.sql && cd - >/dev/null 2>&1"
                         startTime=`get_nanosecond`
-                        if cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}.sql && cd - >/dev/null 2>&1; then
+                        if cd ${backup_outpath} && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${db} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}.sql && cd - >/dev/null 2>&1; then
                             endTime=`get_nanosecond`
                             outcome="succeeded"
                         else
@@ -219,10 +250,10 @@ function backup()
                     fi
                     add_log "D" "BACKUP_LOGICAL_ONEBYONE is not set to 1, will backup databases all at once"
                     add_log "I" "Begin to back up databases in list: ${backup_db_list}"
-                    add_log "D" "Backup command: cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${backup_outpath}/${outfile_name} && cd - >/dev/null 2>&1"
+                    add_log "D" "Backup command: cd ${backup_outpath} && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${backup_outpath}/${outfile_name} && cd - >/dev/null 2>&1"
                 
                     startTime=`get_nanosecond`
-                    if cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${backup_outpath}/${outfile_name} && cd - >/dev/null 2>&1; then
+                    if cd ${backup_outpath} && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${csv_option} ${no_data_option} > ${backup_outpath}/${outfile_name} && cd - >/dev/null 2>&1; then
                         endTime=`get_nanosecond`
                         outcome="succeeded"
                     else
@@ -252,10 +283,10 @@ function backup()
                         tbl_option="-tbl ${BACKUP_LOGICAL_TBL_LIST}"
                     fi
                     
-                    add_log "D" "Backup command: cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${tbl_option} ${csv_option} ${no_data_option} > ${backup_outpath}/${backup_db_list}.sql && cd - >/dev/null 2>&1"
+                    add_log "D" "Backup command: cd ${backup_outpath} && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${tbl_option} ${csv_option} ${no_data_option} > ${backup_outpath}/${backup_db_list}.sql && cd - >/dev/null 2>&1"
                 
                     startTime=`get_nanosecond`
-                    if cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${tbl_option} ${csv_option} ${no_data_option} > ${backup_outpath}/${backup_db_list}.sql && cd - >/dev/null 2>&1; then
+                    if cd ${backup_outpath} && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} ${tbl_option} ${csv_option} ${no_data_option} > ${backup_outpath}/${backup_db_list}.sql && cd - >/dev/null 2>&1; then
                         endTime=`get_nanosecond`
                         outcome="succeeded"
                     else
@@ -274,9 +305,9 @@ function backup()
                     for tbl in $(echo "${BACKUP_LOGICAL_TBL_LIST}" | sed "s/,/ /g"); do
                         add_log "I" "Begin to back up table: ${tbl}"
 
-                        add_log "D" "Backup command: cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}_${tbl}.sql && cd - >/dev/null 2>&1"
+                        add_log "D" "Backup command: cd ${backup_outpath} && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}_${tbl}.sql && cd - >/dev/null 2>&1"
                         startTime=`get_nanosecond`
-                        if cd ${backup_outpath}/ && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}_${tbl}.sql && cd - >/dev/null 2>&1; then
+                        if cd ${backup_outpath} && ${BACKUP_MODUMP_PATH} -net-buffer-length ${BACKUP_LOGICAL_NETBUFLEN} -u ${MO_USER} -P ${MO_PORT} -h ${MO_HOST} -p ${MO_PW} -db ${backup_db_list} -tbl ${tbl} ${csv_option} ${no_data_option} > ${backup_outpath}/${db}_${tbl}.sql && cd - >/dev/null 2>&1; then
                             endTime=`get_nanosecond`
                             outcome="succeeded"
                         else
@@ -333,11 +364,11 @@ function backup()
                     add_log "D" "BACKUP_MOBR_PATH: ${BACKUP_MOBR_PATH}"
                     if [[ "${BACKUP_MOBR_PATH}" != "" ]]; then
                         add_log "D" "Try to get backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID} from ${BACKUP_MOBR_PATH}"
-                        add_log "D" "cmd: ${BACKUP_MOBR_PATH} | grep ${BACKUP_PHYSICAL_BASE_BKID} | awk -F \"path = \" '{print $2}' | awk -F \"|\" '{print $1}'"
-                        real_bk_path=`${BACKUP_MOBR_PATH} | grep ${BACKUP_PHYSICAL_BASE_BKID} | awk -F "path = " '{print $2}' | awk -F "|" '{print $1}'`
+                        add_log "D" "cmd: ${BACKUP_MOBR_PATH} list ${br_meta_option} | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID} | tail -n 1 | awk -F  \"|\" '{print \$4}' | sed 's/ //g'"
+                        real_bk_path=`${BACKUP_MOBR_PATH} list ${br_meta_option} | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID} | tail -n 1 | awk -F  "|" '{print $4}' | sed 's/ //g'`
                     else
                         add_log "D" "Try to get backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID} from 'mo_ctl backup list detail'"
-                        add_log "D" "cmd: mo_ctl backup list detail  | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F \"|\" '{print $4}' | sed \"s/[[:space:]][[:space:]]*//g\""
+                        add_log "D" "cmd: mo_ctl backup list detail  | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F \"|\" '{print \$4}' | sed \"s/[[:space:]][[:space:]]*//g\""
                         real_bk_path=`mo_ctl backup list detail  | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F "|" '{print $4}' | sed "s/[[:space:]][[:space:]]*//g"`
                     fi
                     add_log "D" "real_bk_path: ${real_bk_path}"
@@ -345,18 +376,24 @@ function backup()
                     if [[ "${real_bk_path}" == "" ]]; then
                         add_log "E" "Failed to backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID}"
                         return 1
+                    
                     else
-                        if [[ "${real_bk_path}" != "${backup_outpath}" ]]; then
-
-                            add_log "E" "Real backup path ${real_bk_path} of backup id ${BACKUP_PHYSICAL_BASE_BKID} does not math given target backup path ${backup_outpath}, please check again"
-                            if [[ "${BACKUP_DATA_PATH_AUTO_TS}" == "yes" ]]; then
-                                add_log "E" "Conf BACKUP_DATA_PATH_AUTO_TS is set to 'yes', please set this to 'no' when trying to perform a delta physical backup: 'mo_ctl set_conf BACKUP_DATA_PATH_AUTO_TS=no'"
-                            fi
-                            return 1
-                        fi
+                        backup_outpath="${real_bk_path}"
+                        add_log "D" "backup_outpath: ${backup_outpath}"
+                    #    real_bk_path=`readlink -f ${real_bk_path}`
+                    #    backup_outpath=`readlink -f ${backup_outpath}`
+                    #    if [[ "${real_bk_path}" != "${backup_outpath}" ]]; then
+                    #        add_log "E" "Real backup path ${real_bk_path} of backup id ${BACKUP_PHYSICAL_BASE_BKID} #does not math given target backup path ${backup_outpath}, please check again"
+                    #        if [[ "${BACKUP_DATA_PATH_AUTO_TS}" == "yes" ]]; then
+                    #            add_log "E" "Conf BACKUP_DATA_PATH_AUTO_TS is set to 'yes', please set this to 'no' #when trying to perform a delta physical backup: 'mo_ctl set_conf #BACKUP_DATA_PATH_AUTO_TS=no'"
+                    #        fi
+                    #        return 1
+                    #    fi
+                    
                     fi 
+
                 fi
-                delta_option="--backup_type \"incremental\" --base_id \"${BACKUP_PHYSICAL_BASE_BKID}\""
+                delta_option="--backup_type incremental --base_id ${BACKUP_PHYSICAL_BASE_BKID}"
             # 2. full
             else
                 add_log "I" "Physical backup method: full"
@@ -365,10 +402,9 @@ function backup()
 
             case "${BACKUP_PHYSICAL_TYPE}" in
                 "filesystem")
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"filesystem\" --path \"${backup_outpath}/\" ${delta_option}"
-                    
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host ${MO_HOST} --port ${MO_PORT} --user ${MO_USER} --password ${MO_PW} --backup_dir filesystem --path ${backup_outpath} ${delta_option}"
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "filesystem" --path "${backup_outpath}/ ${delta_option}" ; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host ${MO_HOST} --port ${MO_PORT} --user ${MO_USER} --password ${MO_PW} --backup_dir filesystem --path ${backup_outpath} ${delta_option}; then
                         outcome="succeeded"
                     else
                         outcome="failed"
@@ -427,6 +463,11 @@ function backup()
         add_log "E" "Backup ends with non-zero rc"
     else
         add_log "I" "Backup ends with 0 rc"
+        if [[ "${BACKUP_AUTO_SET_LAST_BKID}" == "yes" ]]; then
+            add_log "D" "BACKUP_AUTO_SET_LAST_BKID is set to 'yes', try to get last success backup id"
+            bkid=`backup_get_last_physical_bkid`
+            set_conf BACKUP_PHYSICAL_BASE_BKID="${bkid}"
+        fi
     fi
 
     return ${rc}
@@ -479,16 +520,10 @@ function auto_backup_status()
         # 2. Linux
 
         # auto backup
-        if [[ -f ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} ]]; then
+        if [[ -s ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} ]]; then
             add_log "D" "Cron file ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} for ${ab_name} already exists, trying to get content: "
             bk_content=`cat ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME}`
             add_log "D" "${bk_content}"
-            if [[ "${bk_content}" == "" ]];then
-                add_log "E" "Content seems to be empty, something might be wrong when enabling ${ab_name}." 
-                add_log "D" "The correct content should be: ${BACKUP_CRON_CONTENT}"
-                add_log "I" "${ab_name} status：disabled"
-                rc=1
-            fi
             add_log "I" "${ab_name} status：enabled"
         else
             add_log "D" "Cron file ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} for ${ab_name} does not exist"
@@ -544,9 +579,9 @@ function auto_backup_enable()
         else    
             # 2. Linux
             add_log "I" "Creating cron file ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} for ${ab_name}"
-            add_log "D" "Content: ${BACKUP_CRON_CONTENT}"
+            add_log "D" "Content: ${BACKUP_CRON_CONTENT_FULL}"
 
-            if sudo touch ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} && sudo chown ${BACKUP_CRON_USER} ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} && sudo echo "${BACKUP_CRON_CONTENT}"> ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} ; then
+            if sudo touch ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} && sudo chown ${BACKUP_CRON_USER} ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} && sudo echo "${BACKUP_CRON_CONTENT_FULL}" > ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} && sudo echo "${BACKUP_CRON_CONTENT_INCREMENTAL}" >> ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} ; then
                 add_log "I" "Succeeded"
                 sudo chown root:root ${BACKUP_CRON_PATH}/${BACKUP_CRON_FILE_NAME} 
             else
@@ -619,7 +654,8 @@ function auto_backup()
 
     # backup cron file and its content 
     date_expr="\$(date '+\\%Y\\%m\\%d_\\%H\\%M\\%S')"
-    BACKUP_CRON_CONTENT="${BACKUP_CRON_SCHEDULE} ${BACKUP_CRON_USER} ${BACKUP_CRON_SCRIPT} > ${TOOL_LOG_PATH}/${ab_name}/log.${date_expr}.log 2>&1"
+    BACKUP_CRON_CONTENT_FULL="${BACKUP_CRON_SCHEDULE_FULL} ${BACKUP_CRON_USER} ${BACKUP_CRON_SCRIPT_FULL} >> ${TOOL_LOG_PATH}/${ab_name}/log.${date_expr}.log 2>&1"
+    BACKUP_CRON_CONTENT_INCREMENTAL="${BACKUP_CRON_SCHEDULE_INCREMENTAL} ${BACKUP_CRON_USER} ${BACKUP_CRON_SCRIPT_INCREMENTAL} >> ${TOOL_LOG_PATH}/${ab_name}/log.${date_expr}.log 2>&1"
 
     # clean up for old backups cron file and its content     
     CLEAN_BK_CRON_CONTENT="${BACKUP_CLEAN_CRON_SCHEDULE} ${BACKUP_CRON_USER} ${CLEAN_BK_CRON_SCRIPT} > ${TOOL_LOG_PATH}/${cb_name}/log.${date_expr} 2>&1"

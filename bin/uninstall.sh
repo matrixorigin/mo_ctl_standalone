@@ -50,11 +50,7 @@ function uninstall()
         fi
 
         add_log "W" "You're uninstalling MO container ${MO_CONTAINER_NAME} and image ${MO_CONTAINER_IMAGE}, are you sure? (Yes/No)"
-        read -t 30 user_confirm
-        if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
-            add_log "E" "User input not confirmed or timed out, exiting"
-            return 1
-        fi
+        read_user_confirm
 
         add_log "I" "Removing container ${MO_CONTAINER_NAME}"
         if ! docker rm ${MO_CONTAINER_NAME}; then
@@ -77,11 +73,7 @@ function uninstall()
 
     else
         add_log "W" "You're uninstalling MO from path ${MO_PATH}/matrixone, are you sure? (Yes/No)"
-        read -t 30 user_confirm
-        if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
-            add_log "E" "User input not confirmed or timed out, exiting"
-            return 1
-        fi
+        read_user_confirm
 
         if ! check_uninstall_pre_requisites; then
             return 1

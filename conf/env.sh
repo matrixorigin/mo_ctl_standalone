@@ -19,6 +19,15 @@ TOOL_LOG_PATH="/data/logs/mo_ctl"
 MO_PATH="/data/mo/"
 # log path used to store mo-service logs
 MO_LOG_PATH="${MO_PATH}/matrixone/logs"
+
+# mo-service log file prefix
+# enum: yes(default)|no , where,
+# 'yes': meaning automatically creating timestamp as log file name postfix, e.g. stdout-20240929_110548.log. Everytime when mo-service is started or restarted, 2 new log files will be created and log content will be written.  
+# 'no': meaning no postfix will be added to the log file name, e.g. stdout.log. Everytime when mo-service is started or restarted, the log content will be appended to the log files used last time and before.
+MO_LOG_POSTFIX="no"  
+
+
+
 # conf file source folder
 MO_CONF_SRC_PATH=""
 
@@ -36,7 +45,8 @@ MO_USER="root"
 MO_PW="111"
 # mo deploy mode: docker | git | binary, default: git
 MO_DEPLOY_MODE="git"
-
+# env GOTOOLCHAIN used when 'make build' of mo-service, e.g. go1.22.3
+MO_MAKE_BUILD_GOTOOLCHAIN=""
 
 # for docker
 # deprecated: MO_REPO="matrixorigin/matrixone"
@@ -116,6 +126,8 @@ MO_CONF_FILE="${MO_PATH}/matrixone/etc/launch/launch.toml"
 GO_MEM_LIMIT_RATIO=90
 # time interval (in seconds) of auto profile collecting. Empty by default, meaning will not turn on auto profile collecting
 PPROF_INTERVAL=""
+# use nohup or -daemon(default) to start mo-service? choose from: nohup | daemon
+DAEMON_METHOD="daemon" 
 
 
 # for restart
@@ -148,7 +160,6 @@ CSV_CONVERT_TGT_DIR="/tmp/"
 # $XXX$ 
 # into table db_1.tb_1;
 CSV_CONVERT_TYPE=3
-
 # metadata info, containing below info and in below format:
 # This will be converted automatically into
 # format: ${DB}.${TABLE}(${COL_1},${COL_2}, ...., ${COL_N})
@@ -172,6 +183,8 @@ CSV_CONVERT_TMP_DIR="/tmp"
 # add " or not? (no|yes)
 CSV_CONVERT_INSERT_ADD_QUOTE="no"
 
+# fields terminated by
+CSV_FIELDS_TERMINATED_BY=""
 
 # for version
 MO_TOOL_NAME="mo_ctl"
@@ -181,10 +194,14 @@ MO_SERVER_VERSION="V1.2"
 
 # for auto backup, currently only linux is supported
 # backup
+# DONT CHANGE
+BACKUP_SYSDB_LIST="mo_task,information_schema,mysql,system_metrics,system,mo_catalog,mo_debug"
 # backup type: physical(default)|logical
 BACKUP_TYPE="physical"
-# cron to control auto backup schedule time and frequency, in standard cron format (https://crontab.guru/)
-BACKUP_CRON_SCHEDULE="30 23 * * *"
+# full backup: cron to control auto backup schedule time and frequency, in standard cron format (https://crontab.guru/)
+BACKUP_CRON_SCHEDULE_FULL="30 23 * * *"
+# incremental backup: same as above
+BACKUP_CRON_SCHEDULE_INCREMENTAL="* * * * *"
 # backup data path
 BACKUP_DATA_PATH="/data/mo-backup"
 # add timestamp subpaths to backup data path? format: ${BACKUP_DATA_PATH}/202406/20240620_161838
@@ -209,6 +226,9 @@ BACKUP_MOBR_META_PATH="${TOOL_LOG_PATH}/mo_br.meta"
 BACKUP_PHYSICAL_METHOD="full"
 # backup physical base backup id, only valid when BACKUP_PHYSICAL_METHOD='incremental' 
 BACKUP_PHYSICAL_BASE_BKID=""
+# if yes, will automatically set BACKUP_PHYSICAL_BASE_BKID to last sucess backup id: yes(default)|no
+BACKUP_AUTO_SET_LAST_BKID="yes"
+
 
 # 1) when BACKUP_PHYSICAL_TYPE="filesystem"
 # backup directory, same as BACKUP_PATH
@@ -233,20 +253,15 @@ BACKUP_MODUMP_PATH="/data/tools/mo_dump/mo-dump"
 # all_no_sysdb: (default) all databases, including all user databases, but no system databases
 # other settings by user, e.g. db1,db2,db3
 BACKUP_LOGICAL_DB_LIST="all_no_sysdb"
-
 # backup tables, seperated by ','
 # Note: BACKUP_LOGICAL_TBL_LIST is only vailid when BACKUP_LOGICAL_DB_LIST has exactly one database, otherwise it will be ignored
 BACKUP_LOGICAL_TBL_LIST=""
-
 # backup data type(only valid when BACKUP_TYPE=logical) : insert | csv(default) | ddl
 BACKUP_LOGICAL_DATA_TYPE="csv"
-
 # backup data per database one by one (only valid when BACKUP_TYPE=logical): 0 (default, all at once) | 1 (one by one)
 BACKUP_LOGICAL_ONEBYONE="0"
-
 # backup net buffer length(integer): 1048576(default, 1M), Max is 16777216 (16M)
 BACKUP_LOGICAL_NETBUFLEN="1048576"
-
 # backup logical dataset name: (optional) the dataset name of the backup database
 BACKUP_LOGICAL_DS=""
 
@@ -254,7 +269,7 @@ BACKUP_LOGICAL_DS=""
 # for restore
 
 # restore type: physical | logical
-RESTORE_TYPE="physical" # 
+RESTORE_TYPE="physical"
 RESTORE_PATH="/data/mo/restore"
 RESTORE_REPORT="${TOOL_LOG_PATH}/restore-report.txt"
 
@@ -284,7 +299,7 @@ RESTORE_LOGICAL_DB=""
 # restore data path (directory or file)
 RESTORE_LOGICAL_SRC=""
 # restore data type: csv | insert | ddl
-RESTORE_LOGICAL_TYPE=""
+RESTORE_LOGICAL_TYPE="ddl"
 
 
 
@@ -297,6 +312,21 @@ CLEAN_LOGS_TABLE_LIST="statement_info,rawlog,metric"
 # cron to control auto clean of old backups
 CLEAN_LOGS_CRON_SCHEDULE="0 3 * * *"
 
+# for auto log rotate
+# enum: daily(default)|size, where,
+# 'daily': only takes effect when MO_LOG_POSTFIX is set to no, meaning mo-service log(including stdout.log and stderr.log), will be auto splited and archived on a daily basis
+# 'size': only takes effect when MO_LOG_POSTFIX is set to no, meaning mo-service log(including stdout.log and stderr.log), will be auto splited and archived when their sizes exeeced the setting of MO_LOG_MAX_SIZE
+MO_LOG_AUTO_SPLIT="daily"
+
+# only takes effect when MO_LOG_AUTO_SPLIT is set to size, where:
+# ${MAX_SIZE}: Maximum log size before it will be splitted and archived, e.g. 1024M
+# unit: bytes(default), KB (sizek), or MB (sizem)
+MO_LOG_MAX_SIZE="1024M"
+
+# only takes effect when MO_LOG_AUTO_SPLIT is set to 'size' or 'daily', where:
+# ${NUM}: number of archived log files , e.g. 100
+MO_LOG_RESERVE_NUM="10000"
+
 
 # for build image
 MO_BUILD_IMAGE_PATH="/tmp/"
@@ -308,3 +338,12 @@ MONITOR_URL_PREFIX_2="https://dl.grafana.com"
 MONITOR_NODE_EXPORTER_VERSION="1.7.0"
 MONITOR_PROMETHEUS_VERSION="2.48.1"
 MONITOR_GRAFANA_VERSION="10.2.3"
+
+# for datax
+# installation path to datax tool, e.g. /data/tools/datax/
+DATAX_TOOL_PATH="/data/tools/datax"
+# path to datax conf file, e.g. /data/tools/datax/conf/test.json , or a directory containing multiple conf files, e.g. /data/tools/datax/conf/
+DATAX_CONF_PATH="/data/tools/datax/conf/test.json"
+# path to mo_ctl datax report file
+DATAX_REPORT_FILE="${TOOL_LOG_PATH}/datax.report"
+

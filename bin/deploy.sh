@@ -22,12 +22,7 @@ function git_clone()
             return 1
         else
             add_log "W" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, please confirm if you really want to overwrite it(Yes/No): "
-            user_confirm=""
-            read -t 30 user_confirm
-            if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
-                add_log "E" "User input not confirmed or timed out, exiting"
-                return 1
-            fi
+            read_user_confirm
         fi
     fi 
 
@@ -126,7 +121,7 @@ function build_mo_service()
 {
     # mo-service
     add_log "I" "Try to build mo-service: make build"
-    if cd ${MO_PATH}/matrixone/ && make build ; then
+    if cd ${MO_PATH}/matrixone/ && GOTOOLCHAIN="${MO_MAKE_BUILD_GOTOOLCHAIN}" make build ; then
         add_log "I" "Build succeeded"
     else
         add_log "E" "Build failed"

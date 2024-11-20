@@ -8,8 +8,9 @@
 function pprof()
 {
     option=$1
+
     duration="$2"
-    DEFAULT_OPION="profile"
+    DEFAULT_OPION="cpu"
     DEFAULT_DURATION=30
     if [[ ! -d "${PPROF_OUT_PATH}" ]]; then
         add_log "E" "Directory PPROF_OUT_PATH=${PPROF_OUT_PATH} does not exist, please check again"
@@ -23,12 +24,16 @@ function pprof()
 
     fi
 
+    if [[ "${option}" == "cpu" ]]; then
+        option="profile"
+    fi
 
 
     MAX_DURATION=3600
     RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
     OUT_FILE="${PPROF_OUT_PATH}/${option}-${RUN_TAG}.pprof"
     URL="http://${MO_HOST}:${MO_DEBUG_PORT}/debug/pprof/${option}"
+    URL_2="http://${MO_HOST}:${MO_DEBUG_PORT}/debug/${option}"
 
     add_log "I" "pprof option is ${option}" 
 
@@ -54,8 +59,11 @@ function pprof()
         "allocs" | "heap" | "goroutine")
             :
             ;;
+        "malloc")
+            URL="${URL_2}";
+            ;;
         *)
-            add_log "E" "Invalid option ${option} for pprof. Available: profile | pprof | heap"
+            add_log "E" "Invalid option ${option} for pprof. Available: cpu | trace | allocs | heap | goroutine | malloc"
             help_pprof
             exit 1
             ;;

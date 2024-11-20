@@ -283,18 +283,18 @@ function csv_convert_load_serial()
             # get batch size lines and replace char \n with string \\n
             sed -n "${start_line},${end_line}p" ${CSV_CONVERT_SRC_FILE} | ':a;N;$!ba;s/\n/\\n/g' >> ${TGT_FILE}
             if [[ "${CSV_CONVERT_META_COLUMN_LIST}" == "" ]]; then
-                echo "' into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE};" >> ${TGT_FILE}
+                echo "' into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} ${fileds_termiated_by} ;" >> ${TGT_FILE}
             else
-                echo "' into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE}(${CSV_CONVERT_META_COLUMN_LIST});" >> ${TGT_FILE}
+                echo "' into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} ${fileds_termiated_by} (${CSV_CONVERT_META_COLUMN_LIST});" >> ${TGT_FILE}
             fi
         else
             echo "load data inline format='csv', data=\$XXX\$" >> ${TGT_FILE}
             sed -n "${start_line},${end_line}p" ${CSV_CONVERT_SRC_FILE} >> ${TGT_FILE}
             echo "\$XXX\$" >> ${TGT_FILE}
             if [[ "${CSV_CONVERT_META_COLUMN_LIST}" == "" ]]; then
-                echo "into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE};" >> ${TGT_FILE}
+                echo "into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} ${fileds_termiated_by} ;" >> ${TGT_FILE}
             else
-                echo "into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE}(${CSV_CONVERT_META_COLUMN_LIST});" >> ${TGT_FILE}
+                echo "into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} ${fileds_termiated_by} (${CSV_CONVERT_META_COLUMN_LIST});" >> ${TGT_FILE}
             fi
         fi
 
@@ -309,7 +309,14 @@ function csv_convert_load_parallel()
     # multi or single
     line_mode="$1"
 
+
     add_log "I" "Convert csv file to \"load data inline format='csv' (multiple lines) \" sql file"
+
+    fileds_termiated_by=""
+    if [[ "${CSV_FIELDS_TERMINATED_BY}" != "" ]]; then
+        add_log "D" "CSV_FIELDS_TERMINATED_BY: ${CSV_FIELDS_TERMINATED_BY}"
+        fileds_termiated_by="fields terminated by '${CSV_FIELDS_TERMINATED_BY}'"
+    fi
 
     for((i=0; i < ${LOOP_COUNT}; i++));do
 
@@ -342,9 +349,9 @@ function csv_convert_load_parallel()
                     sed -i "s#^#load data inline format='csv', data='#g" ${sql_tmp_file}
                     # add to the end
                     if [[ "${CSV_CONVERT_META_COLUMN_LIST}" == "" ]]; then
-                        sed -i "s#\$# into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE};#g" ${sql_tmp_file}
+                        sed -i "s#\$# into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} ${fileds_termiated_by};#g" ${sql_tmp_file}
                     else
-                        sed -i "s#\$# into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE}(${CSV_CONVERT_META_COLUMN_LIST});#g" ${sql_tmp_file}
+                        sed -i "s#\$# into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} ${fileds_termiated_by} (${CSV_CONVERT_META_COLUMN_LIST});#g" ${sql_tmp_file}
                     fi
                 else
                     sed -i "" ':a;N;$!ba;s/\n/\\n/g' ${sql_tmp_file}
@@ -352,9 +359,9 @@ function csv_convert_load_parallel()
                     sed -i "" "s#^#load data inline format='csv', data='#g" ${sql_tmp_file}
                     # add to the end
                     if [[ "${CSV_CONVERT_META_COLUMN_LIST}" == "" ]]; then
-                        sed -i "" "s#\$# into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE};#g" ${sql_tmp_file}
+                        sed -i "" "s#\$# into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} ${fileds_termiated_by};#g" ${sql_tmp_file}
                     else
-                        sed -i "" "s#\$# into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE}(${CSV_CONVERT_META_COLUMN_LIST});#g" ${sql_tmp_file}
+                        sed -i "" "s#\$# into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} ${fileds_termiated_by} (${CSV_CONVERT_META_COLUMN_LIST});#g" ${sql_tmp_file}
                     fi
                 fi
             # 2) multi lines
@@ -372,9 +379,9 @@ function csv_convert_load_parallel()
                 fi
                 echo "\$XXX\$" >> ${sql_tmp_file}
                 if [[ "${CSV_CONVERT_META_COLUMN_LIST}" == "" ]]; then
-                    echo "into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE};" >> ${sql_tmp_file}
+                    echo "into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE}  ${fileds_termiated_by} ;" >> ${sql_tmp_file}
                 else
-                    echo "into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE}(${CSV_CONVERT_META_COLUMN_LIST});" >> ${sql_tmp_file}
+                    echo "into table ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE}  ${fileds_termiated_by}  (${CSV_CONVERT_META_COLUMN_LIST});" >> ${sql_tmp_file}
                 fi
 
             fi
@@ -404,11 +411,7 @@ function csv_convert()
     fi
 
     add_log "I" "Please make sure above configurations are correct, continue? (Yes/No)"
-    read -t 30 user_confirm
-    if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
-        add_log "E" "User input not confirmed or timed out, exiting"
-        return 1
-    fi
+    read_user_confirm
 
     add_log "I" "Conversion begins, this may take a while depending on the size of source file and processing ability of your machine. Please wait..."
 

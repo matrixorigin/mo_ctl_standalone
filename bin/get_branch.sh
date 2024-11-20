@@ -31,9 +31,11 @@ function get_branch()
         if [[ "${option}" != "less" ]]; then
             add_log "I" "current_branch is ${current_branch}, contains \"HEAD\" info, thus it's a commit id, trying to find it's real branch"
         fi
-        commitid_full=`git log | head -n 1 | awk {'print $2'}`
-        commitid_less=`echo "${commitid_full:0:8}"`
-        current_branch=`git branch --contains ${cid_less} | grep -v HEAD | sed 's/ //g'`
+        cid_full=`git log | head -n 1 | awk {'print $2'}`
+        cid_less=`echo "${cid_full:0:8}"`
+        cd ${MO_PATH}/matrixone
+        current_branch=`git branch --contains ${cid_less} -a | grep -v HEAD | sed 's/ //g' | awk -F "/" '{print $NF}'`
+        add_log "D" "cid_full: ${cid_full}, cid_less: ${cid_less}, current_branch: ${current_branch}"
     fi
 
     if [[ "${current_branch}" != "" ]]; then
