@@ -346,4 +346,6 @@ DATAX_TOOL_PATH="/data/tools/datax"
 DATAX_CONF_PATH="/data/tools/datax/conf/test.json"
 # path to mo_ctl datax report file
 DATAX_REPORT_FILE="${TOOL_LOG_PATH}/datax.report"
+# parameter lists of datax -p option, e.g. 'db_name,table_name'
+DATAX_PARA_NAME_LIST=""
 

@@ -110,8 +110,8 @@ function start()
             fi
 
             debug_option=""
-            if [[ "${MO_CONTAINER_DEBUG_PORT}" != "" ]]; then
-                debug_option="-debug-http :${MO_CONTAINER_DEBUG_PORT}"
+            if [[ "${MO_DEBUG_PORT}" != "" ]]; then
+                debug_option="-debug-http :${MO_DEBUG_PORT}"
             fi
 
             pprof_option=""
@@ -157,8 +157,8 @@ function start()
         fi
 
         debug_option=""
-        if [[ "${MO_CONTAINER_DEBUG_PORT}" != "" ]]; then
-            debug_option="-debug-http :${MO_CONTAINER_DEBUG_PORT}"
+        if [[ "${MO_DEBUG_PORT}" != "" ]]; then
+            debug_option="-debug-http :${MO_DEBUG_PORT}"
         fi
 
         pprof_option=""

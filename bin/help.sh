@@ -541,6 +541,7 @@ function help_datax()
     echo "                  1. DATAX_TOOL_PATH (default: /data/tools/datax): installation path to datax tool"
     echo "                  2. DATAX_CONF_PATH (default: /data/tools/datax/conf/test.json): path to datax conf file, e.g. /data/tools/datax/conf/test.json , or a directory containing multiple conf files, e.g. /data/tools/datax/conf/"
     echo "                  3. DATAX_REPORT_FILE (optional, default:  \${TOOL_LOG_PATH}/backup/report.txt): path to mo_ctl datax report file"
+    echo "                  4. DATAX_PARA_NAME_LIST (optional, default: none): parameter lists of datax -p option, e.g. 'db_name,table_name'"
     echo "Examples        : ${TOOL_NAME} ${option}                        # run datax jobs"
     echo "                : ${TOOL_NAME} ${option} list                   # list datax report"
 }

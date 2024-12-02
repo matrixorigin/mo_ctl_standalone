@@ -27,15 +27,18 @@ function get_branch()
     current_branch=`echo "${current_branch:2}"`
     
     cd ${MO_PATH}/matrixone
-    if echo "${current_branch}" | grep "HEAD" >/dev/null 2>&1; then
+    if echo "${current_branch}" | grep "HEAD" >/dev/null 2>&1   || echo "${current_branch}" | grep "detached" >/dev/null 2>&1 ; then
         if [[ "${option}" != "less" ]]; then
             add_log "I" "current_branch is ${current_branch}, contains \"HEAD\" info, thus it's a commit id, trying to find it's real branch"
         fi
         cid_full=`git log | head -n 1 | awk {'print $2'}`
         cid_less=`echo "${cid_full:0:8}"`
         cd ${MO_PATH}/matrixone
-        current_branch=`git branch --contains ${cid_less} -a | grep -v HEAD | sed 's/ //g' | awk -F "/" '{print $NF}'`
-        add_log "D" "cid_full: ${cid_full}, cid_less: ${cid_less}, current_branch: ${current_branch}"
+        current_branch=`git branch --contains ${cid_less} -a | grep -v HEAD | grep -v "detached" | grep "remotes" | sed 's/ //g' | awk -F "/" '{print $NF}'`
+        if [[ "${option}" != "less" ]]; then
+            add_log "D" "cid_full: ${cid_full}, cid_less: ${cid_less}, current_branch: ${current_branch}"
+        fi
+        
     fi
 
     if [[ "${current_branch}" != "" ]]; then

@@ -219,7 +219,6 @@ function restore_physical()
 function restore_mo_data()
 {
     add_log "I" "Step_2. Move mo-data path"
-
     if [[ "${MO_DEPLOY_MODE}" == "git" ]]; then
         mo_path="${MO_PATH}/matrixone"
     elif [[ "${MO_DEPLOY_MODE}" == "binary" ]]; then
@@ -229,17 +228,17 @@ function restore_mo_data()
         return 1
     fi
 
+    add_log "D" "MO_DEPLOY_MODE: ${MO_DEPLOY_MODE}, mo_path: ${mo_path}"
     current_time=`date +"%Y%m%d_%H%M%S"`
     if [[ ! -d "${mo_path}/mo-data/" ]]; then
-        add_log "W" "${MO_PATH}/mo-data/ does not exist, skip moving it"
-        return 0
-    fi
-
-    add_log "I" "Moving ${mo_path}/mo-data to ${mo_path}/mo-data-bk-${current_time}"
-    add_log "D" "cmd: mv ${mo_path}/mo-data ${mo_path}/mo-data-bk-${current_time}"
-    if ! mv ${mo_path}/mo-data ${mo_path}/mo-data-bk-${current_time}; then
-        add_log "E" "Failed, exiting"
-        return 1
+        add_log "W" "${mo_path}/mo-data/ does not exist, skip renaming it"
+    else
+        add_log "I" "Renaming ${mo_path}/mo-data to ${mo_path}/mo-data-bk-${current_time}"
+        add_log "D" "cmd: mv ${mo_path}/mo-data ${mo_path}/mo-data-bk-${current_time}"
+        if ! mv ${mo_path}/mo-data ${mo_path}/mo-data-bk-${current_time}; then
+            add_log "E" "Failed, exiting"
+            return 1
+        fi
     fi
 
     add_log "I" "Moving ${RESTORE_PATH}/mo-data to ${mo_path}/mo-data"
