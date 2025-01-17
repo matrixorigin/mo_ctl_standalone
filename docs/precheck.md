@@ -1,4 +1,4 @@
-# mo_ctl precheck
+# precheck
 ## 1. 作用
 检查部署单机mo前，所在服务器是否符合实施要求。
 

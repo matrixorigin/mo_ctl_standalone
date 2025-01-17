@@ -1,4 +1,4 @@
-# mo_ctl status
+# status
 ## 1. 作用
 检查本地单机mo服务的运行状态。
 

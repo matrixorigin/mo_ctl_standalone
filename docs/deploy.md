@@ -1,4 +1,4 @@
-# mo_ctl deploy
+# deploy
 ## 1. 作用
 在本地部署一个单机的mo数据库实例。
 

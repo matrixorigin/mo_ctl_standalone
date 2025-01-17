@@ -5,42 +5,6 @@
 ################################################################
 # basic funtions
 
-function check_cmd()
-{  
-    cmd="$1"
-    if [[ "${cmd}" == "" ]]; then
-        add_log "E" "Command is empty, please input a command name"
-        return 1
-    fi
-
-    if ! command -v ${cmd} >/dev/null 2>&1; then
-        add_log "E" "Command '${cmd}' is not found"
-        return 1
-    else
-        add_log "D" "Command '${cmd}' is found"
-    fi
-}
-
-function check_conf_item_not_empty()
-{  
-    conf_item="$1"
-
-    if [[ "${conf_item}" == "" ]]; then
-        add_log "E" "conf_item is empty, please input a conf item name"
-        return 1
-    fi
-
-
-    conf_value=`eval echo '$'${conf_item}`
-    if [[ "${conf_value}" == "" ]]; then
-        add_log "E" "Conf item ${conf_item} is empty, please set it first"
-        return 1
-    else
-        add_log "D" "Conf item ${conf_item} is set to ${conf_value}"
-    fi
-}
-
-
 # fuction: return os name of current machine
 # usage: what_os
 # in: none
@@ -207,6 +171,44 @@ function add_log()
         ;;
     esac
 }
+
+
+function check_cmd()
+{  
+    cmd="$1"
+    if [[ "${cmd}" == "" ]]; then
+        add_log "E" "Command is empty, please input a command name"
+        return 1
+    fi
+
+    if ! command -v ${cmd} >/dev/null 2>&1; then
+        add_log "E" "Command '${cmd}' is not found"
+        return 1
+    else
+        add_log "D" "Command '${cmd}' is found"
+    fi
+}
+
+function check_conf_item_not_empty()
+{  
+    conf_item="$1"
+
+    if [[ "${conf_item}" == "" ]]; then
+        add_log "E" "conf_item is empty, please input a conf item name"
+        return 1
+    fi
+
+
+    conf_value=`eval echo '$'${conf_item}`
+    if [[ "${conf_value}" == "" ]]; then
+        add_log "E" "Conf item ${conf_item} is empty, please set it first"
+        return 1
+    else
+        add_log "D" "Conf item ${conf_item} is set to ${conf_value}"
+    fi
+}
+
+
 
 # function: compare the version number of 2 given string
 # usage: cmp_version [v1] [v2]

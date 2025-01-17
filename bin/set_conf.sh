@@ -79,9 +79,17 @@ function set_kv()
     add_log "I" "Setting conf ${key}=\"${value}\""
     os=`what_os`
     if [[ ${os} == "Linux" ]] ; then
-        sed -i "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
+        if echo "${value}" | grep "#" >/dev/null 2>&1 ; then
+            sed -i "s|^${key}=.*|${key}=\"${value}\"|g" "${CONF_FILE}"
+        else
+            sed -i "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
+        fi
     else
-        sed -i "" "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
+        if echo "${value}" | grep "#" >/dev/null 2>&1 ; then
+            sed -i "" "s|^${key}=.*|${key}=\"${value}\"|g" "${CONF_FILE}"
+        else
+            sed -i "" "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
+        fi
     fi 
 
 }

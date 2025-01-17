@@ -201,7 +201,7 @@ BACKUP_TYPE="physical"
 # full backup: cron to control auto backup schedule time and frequency, in standard cron format (https://crontab.guru/)
 BACKUP_CRON_SCHEDULE_FULL="30 23 * * *"
 # incremental backup: same as above
-BACKUP_CRON_SCHEDULE_INCREMENTAL="* * * * *"
+BACKUP_CRON_SCHEDULE_INCREMENTAL="* */2 * * *"
 # backup data path
 BACKUP_DATA_PATH="/data/mo-backup"
 # add timestamp subpaths to backup data path? format: ${BACKUP_DATA_PATH}/202406/20240620_161838
@@ -228,7 +228,8 @@ BACKUP_PHYSICAL_METHOD="full"
 BACKUP_PHYSICAL_BASE_BKID=""
 # if yes, will automatically set BACKUP_PHYSICAL_BASE_BKID to last sucess backup id: yes(default)|no
 BACKUP_AUTO_SET_LAST_BKID="yes"
-
+# physical backup parallism, default: 2
+BACKUP_PHYSICAL_PARALLEL_NUM=2
 
 # 1) when BACKUP_PHYSICAL_TYPE="filesystem"
 # backup directory, same as BACKUP_PATH

@@ -346,6 +346,11 @@ function backup()
                 add_log "D" "BACKUP_MOBR_META_PATH is not empty, will add option ${br_meta_option}"
             fi
 
+            if [[ "${BACKUP_PHYSICAL_PARALLEL_NUM}" == "" ]]; then
+                BACKUP_PHYSICAL_PARALLEL_NUM="1"
+                add_log "D" "BACKUP_PHYSICAL_PARALLEL_NUM is empty, will use default value 1"
+            fi
+
 
             BACKUP_MOBR_DIRNAME=`dirname "${BACKUP_MOBR_PATH}"`
 
@@ -402,9 +407,9 @@ function backup()
 
             case "${BACKUP_PHYSICAL_TYPE}" in
                 "filesystem")
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host ${MO_HOST} --port ${MO_PORT} --user ${MO_USER} --password ${MO_PW} --backup_dir filesystem --path ${backup_outpath} ${delta_option}"
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --parallelism ${BACKUP_PHYSICAL_PARALLEL_NUM} --host ${MO_HOST} --port ${MO_PORT} --user ${MO_USER} --password ${MO_PW} --backup_dir filesystem --path ${backup_outpath} ${delta_option}"
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host ${MO_HOST} --port ${MO_PORT} --user ${MO_USER} --password ${MO_PW} --backup_dir filesystem --path ${backup_outpath} ${delta_option}; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --parallelism ${BACKUP_PHYSICAL_PARALLEL_NUM} --host ${MO_HOST} --port ${MO_PORT} --user ${MO_USER} --password ${MO_PW} --backup_dir filesystem --path ${backup_outpath} ${delta_option}; then
                         outcome="succeeded"
                     else
                         outcome="failed"
@@ -422,10 +427,10 @@ function backup()
                         role_arn_option="--role_arn ${BACKUP_S3_ROLE_ARN}"
                     fi
                     
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"s3\" --endpoint \"${BACKUP_S3_ENDPOINT}\" --access_key_id \"${BACKUP_S3_ID}\" --secret_access_key \"${BACKUP_S3_KEY}\" --bucket \"${BACKUP_S3_BUCKET}\" --filepath \"${backup_outpath}\" --region \"${BACKUP_S3_REGION}\" --compression \"${BACKUP_S3_COMPRESSION}\" \"${role_arn_option}\" \"${minio_option}\" ${delta_option}"
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --parallelism \"${BACKUP_PHYSICAL_PARALLEL_NUM}\" --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"s3\" --endpoint \"${BACKUP_S3_ENDPOINT}\" --access_key_id \"${BACKUP_S3_ID}\" --secret_access_key \"${BACKUP_S3_KEY}\" --bucket \"${BACKUP_S3_BUCKET}\" --filepath \"${backup_outpath}\" --region \"${BACKUP_S3_REGION}\" --compression \"${BACKUP_S3_COMPRESSION}\" \"${role_arn_option}\" \"${minio_option}\" ${delta_option}"
 
                     startTime=`get_nanosecond`
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "s3" --endpoint "${BACKUP_S3_ENDPOINT}" --access_key_id "${BACKUP_S3_ID}" --secret_access_key "${BACKUP_S3_KEY}" --bucket "${BACKUP_S3_BUCKET}" --filepath "${backup_outpath}" --region "${BACKUP_S3_REGION}" --compression "${BACKUP_S3_COMPRESSION}" "${role_arn_option}" "${minio_option}" ${delta_option}; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --parallelism "${BACKUP_PHYSICAL_PARALLEL_NUM}" --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "s3" --endpoint "${BACKUP_S3_ENDPOINT}" --access_key_id "${BACKUP_S3_ID}" --secret_access_key "${BACKUP_S3_KEY}" --bucket "${BACKUP_S3_BUCKET}" --filepath "${backup_outpath}" --region "${BACKUP_S3_REGION}" --compression "${BACKUP_S3_COMPRESSION}" "${role_arn_option}" "${minio_option}" ${delta_option}; then
                         outcome="succeeded"
                     else
                         outcome="failed"

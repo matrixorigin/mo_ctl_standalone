@@ -34,7 +34,7 @@ function get_branch()
         cid_full=`git log | head -n 1 | awk {'print $2'}`
         cid_less=`echo "${cid_full:0:8}"`
         cd ${MO_PATH}/matrixone
-        current_branch=`git branch --contains ${cid_less} -a | grep -v HEAD | grep -v "detached" | grep "remotes" | sed 's/ //g' | awk -F "/" '{print $NF}'`
+        current_branch=`git branch --contains ${cid_less} -a | grep -v HEAD | grep -v "detached" | grep "remotes" | sed 's/ //g' | awk -F "/" '{print $NF}' | head -n 1`
         if [[ "${option}" != "less" ]]; then
             add_log "D" "cid_full: ${cid_full}, cid_less: ${cid_less}, current_branch: ${current_branch}"
         fi

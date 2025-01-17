@@ -301,7 +301,7 @@ function help_bk_notes()
     echo "               ------------------------- "
 
     echo "               1) BACKUP_CRON_SCHEDULE_FULL (optional, default: 30 23 * * *): for auto_backup of physical full type, cron expression to control backup schedule time and frequency, in standard cron format (https://crontab.guru/)"
-    echo "               2) BACKUP_CRON_SCHEDULE_INCREMENTAL (optional, default: */2 * * * *): for auto_backup of physical incremental type, same format as BACKUP_CRON_SCHEDULE_FULL"
+    echo "               2) BACKUP_CRON_SCHEDULE_INCREMENTAL (optional, default: * */2 * * *): for auto_backup of physical incremental type, same format as BACKUP_CRON_SCHEDULE_FULL"
     echo "               3) BACKUP_CLEAN_DAYS_BEFORE (optional, default: 31): for auto_backup clean up, clean old backup files before [x] days"
     echo "               4) BACKUP_CLEAN_CRON_SCHEDULE (optional, default: 0 6 * * *): for auto_backup clean up, cron to control auto clean of old backups"
 
@@ -314,8 +314,9 @@ function help_bk_notes()
     echo "                       full: perform a full data backup from scratch"
     echo "                       incremental: perform an incremental data backup based on a full backup or incremental backup"
     echo "               3) BACKUP_PHYSICAL_BASE_BKID (required, when BACKUP_PHYSICAL_METHOD=incremental): the backup id which incremental to be based on"
-    echo "               4) BACKUP_AUTO_SET_LAST_BKID (optional, default: yes): available: 'yes'|'no'. If 'yes', will automatically set BACKUP_PHYSICAL_BASE_BKID to last success backup id"
-    echo "               5) BACKUP_PHYSICAL_TYPE (optional, default: filesystem): target backup storage type, choose from \"filesystem\" | \"s3\""
+    echo "               4) BACKUP_PHYSICAL_PARALLEL_NUM (optional, default: 2): physical backup parallism"
+    echo "               5) BACKUP_AUTO_SET_LAST_BKID (optional, default: yes): available: 'yes'|'no'. If 'yes', will automatically set BACKUP_PHYSICAL_BASE_BKID to last success backup id"
+    echo "               6) BACKUP_PHYSICAL_TYPE (optional, default: filesystem): target backup storage type, choose from \"filesystem\" | \"s3\""
     echo "               if BACKUP_PHYSICAL_TYPE=s3, please set below confs:"
     echo "                 a) BACKUP_S3_ENDPOINT (optional, default: ''): s3 endpoint, e.g. https://cos.ap-nanjing.myqcloud.com"
     echo "                 b) BACKUP_S3_ID (optional, default: ''): s3 id, e.g. B4v6Khv484X81dk81jQFzc9YxKl98JOyxkX1k"
@@ -338,6 +339,8 @@ function help_bk_notes()
     echo "                   c) db1,db2,db3: example to backup db1, db2 and db3"
     echo "                 3) BACKUP_LOGICAL_DATA_TYPE (optional, default: csv): available: insert | csv. Backup data type"
     echo "                 4) BACKUP_LOGICAL_ONEBYONE (optional, default: 0): available: 0|1. If set to 1, will backup databases/tables one by one into multiple backup files."
+    echo "                 5) BACKUP_LOGICAL_NETBUFLEN (optional, default: 1048576): backup net buffer length(bytes, integer), default: 1048576(1M) , max: 16777216(16M)"
+    echo "                 6) BACKUP_LOGICAL_DS (optional, default: none): backup logical dataset name: (optional) the dataset name of the backup database, e.g. myds_001"
 
 }
 
