@@ -1,15 +1,17 @@
-# clean_logs/auto_clean_logs
+# `clean_logs`/`auto_clean_logs`
 ## 1. 作用
 手动或自动清理数据库中系统日志表数据
 
 ## 2. 用法
+手动清理的帮助说明：
 ```bash
 mo_ctl clean_logs help
 mo_ctl clean_logs # 手动清理系统日志表数据
 ```
 
+自动清理的帮助说明：
 ```bash
-mo_ctl clean_logs help
+mo_ctl auto_clean_logs help
 Usage           : mo_ctl auto_clean_logs [option]    # 设置自动清理系统日志表数据
   [option]      : enable | disable | status(default)
 ```
@@ -139,4 +141,22 @@ github@shpc2-10-222-1-9:/data/mo/main/matrixone$ mo_ctl auto_clean_logs disable
 2025-01-03 17:29:38.993 UTC+0800    [INFO]    Succeeded
 2025-01-03 17:29:38.998 UTC+0800    [DEBUG]    Cron file /etc/cron.d/mo_clean_logs for auto_clean_logs does not exist
 2025-01-03 17:29:39.003 UTC+0800    [INFO]    auto_clean_logs status：disabled
+```
+
+查看自动清理任务的日志：
+```bash
+# 获取变量TOOL_LOG_PATH，查找工具日志的路径
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ mo_ctl get_conf TOOL_LOG_PATH
+2025-01-21 14:15:39.091 UTC+0800    [INFO]    Get conf succeeded: TOOL_LOG_PATH="/data/logs/mo_ctl"
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ cd /data/logs/mo_ctl/
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ ls -lthr
+total 24K
+drwxr-xr-x 2 github github 4.0K Oct  9 18:42 backup
+-rwxr-xr-x 1 github github   64 Jan  3 16:43 mo_br.meta.sha256
+-rwxr-xr-x 1 github github 3.7K Jan  3 16:43 mo_br.meta
+drwxr-xr-x 2 github github 4.0K Jan  3 17:00 auto_clean_old_backup
+drwxr-xr-x 2 github github 4.0K Jan  3 17:00 auto_backup
+drwxr-xr-x 2 github github 4.0K Jan  3 17:28 auto_clean_logs
+# 位于子目录auto_clean_logs/
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ cd auto_clean_logs/
 ```

@@ -276,6 +276,8 @@ function help_csv_convert()
     echo "                     1: multi transactions"
     echo "                     2: single transation(will add 'begin;' at first line and 'end;' at last line)"
     echo "                   9. CSV_CONVERT_TMP_DIR: [optional, default: /tmp] a directory to contain temporary files, e.g. ${TOOL_NAME} set_conf CSV_CONVERT_TMP_DIR=/tmp/"
+    echo "                   10. CSV_CONVERT_INSERT_ADD_QUOTE="no": [optional, default: no] add quote to column value"
+
 }
 
 function help_version()

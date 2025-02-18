@@ -1,4 +1,4 @@
-# backup/auto_backup
+# `backup`/`auto_backup`
 ## 1. 作用
 手动或自动备份您的mo数据库实例的数据。
 
@@ -89,6 +89,16 @@ Note         : Currently only supported on Linux. Please set below confs first
                  4) BACKUP_LOGICAL_ONEBYONE (optional, default: 0): available: 0|1. If set to 1, will backup databases/tables one by one into multiple backup files.
                  5) BACKUP_LOGICAL_NETBUFLEN (optional, default: 1048576): backup net buffer length(bytes, integer), default: 1048576(1M) , max: 16777216(16M)
                  6) BACKUP_LOGICAL_DS (optional, default: none): backup logical dataset name: (optional) the dataset name of the backup database, e.g. myds_001
+```
+
+### 2.3. 清理旧备份
+```bash
+Usage           : mo_ctl clean_backup            # 清理旧备份
+```
+
+注意：请先设置好以下参数：
+```bash
+mo_ctl set_conf BACKUP_CLEAN_DAYS_BEFORE=31 # 可选，清理x天前的备份数据，默认值：31
 ```
 
 
@@ -482,6 +492,25 @@ github@test0:/data/mo/main/matrixone$ mo_ctl auto_backup disable
 2025-01-03 17:02:15.635 UTC+0800    [INFO]    auto_clean_old_backup status：disabled
 ```
 
+查看自动清理任务的日志：
+```bash
+# 获取变量TOOL_LOG_PATH，查找工具日志的路径
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ mo_ctl get_conf TOOL_LOG_PATH
+2025-01-21 14:15:39.091 UTC+0800    [INFO]    Get conf succeeded: TOOL_LOG_PATH="/data/logs/mo_ctl"
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ cd /data/logs/mo_ctl/
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ ls -lthr
+total 24K
+drwxr-xr-x 2 github github 4.0K Oct  9 18:42 backup
+-rwxr-xr-x 1 github github   64 Jan  3 16:43 mo_br.meta.sha256
+-rwxr-xr-x 1 github github 3.7K Jan  3 16:43 mo_br.meta
+drwxr-xr-x 2 github github 4.0K Jan  3 17:00 auto_clean_old_backup
+drwxr-xr-x 2 github github 4.0K Jan  3 17:00 auto_backup
+drwxr-xr-x 2 github github 4.0K Jan  3 17:28 auto_clean_logs
+# 位于子目录auto_backup/ 和 auto_clean_old_backup
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ cd auto_backup/
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ cd ..
+github@shpc2-10-222-1-9:/data/logs/mo_ctl$ cd auto_clean_old_backup/
+```
 
 ### 4.4 列举备份历史
 显示历史的备份操作记录。
@@ -517,3 +546,19 @@ github@test0:~$ mo_ctl backup list detail
 | 01942b55-546b-7da4-a3af-303a907bcdfd | 12 MB  |            BackupDir: filesystem  Path:            | 2025-01-03 16:43:20 +0800 | 887.311298ms | 2025-01-03 16:43:20 +0800 | 1735893800063297593-1 | incremental |
 |                                      |        | /data/mo-backup-reg/data-bk/202501/20250103_164248 |                           |              |                           |                       |             |
 +--------------------------------------+--------+----------------------------------------------------+---------------------------+--------------+---------------------------+-----------------------+-------------+
+```
+
+### 4.5 清理备份数据
+以清理31天前的备份数据为例：
+```bash
+github@shpc2-10-222-1-9:~$ mo_ctl clean_backup
+2025-01-21 14:10:28.972 UTC+0800    [INFO]    Cleaning backups before 31 days
+2025-01-21 14:10:28.978 UTC+0800    [INFO]    Clean date: 20241221
+2025-01-21 14:10:28.989 UTC+0800    [INFO]    Backup directory : /data/mo-backup-reg/data-bk/202412/20241218_142202, action: delete
+2025-01-21 14:10:28.995 UTC+0800    [INFO]    Succeeded
+2025-01-21 14:10:29.003 UTC+0800    [INFO]    Backup directory : /data/mo-backup-reg/data-bk/202501/20250103_150554/20250103_150554, action: skip
+2025-01-21 14:10:29.011 UTC+0800    [INFO]    Backup directory : /data/mo-backup-reg/data-bk/202501/20250103_150625/20250103_150625, action: skip
+2025-01-21 14:10:29.018 UTC+0800    [INFO]    Backup directory : /data/mo-backup-reg/data-bk/202501/20250103_162731/20250103_162731, action: skip
+2025-01-21 14:10:29.025 UTC+0800    [INFO]    Backup directory : /data/mo-backup-reg/data-bk/202501/20250103_164248/20250103_164248, action: skip
+```
+

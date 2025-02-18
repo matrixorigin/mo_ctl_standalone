@@ -1,4 +1,4 @@
-# auto_log_rotate
+# `auto_log_rotate`
 ## 1. 作用
 针对mo数据库进程的日志文件，按一定的规则进行切分，避免文件过大
 
