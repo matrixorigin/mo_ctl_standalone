@@ -5,7 +5,7 @@
 ################################################################
 # restore
 
-ab_name="restore"
+restore_name="restore"
 OS=""
 
 
@@ -59,6 +59,12 @@ function restore_precheck()
                 return 1
             fi
             ;;
+        "deploy_mode")
+            if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
+                add_log "D" "Currently restoring from a physical backup is only supported when MO_DEPLOY_MODE is set to 'git' or 'binary', current setting is ${MO_DEPLOY_MODE}"
+                return 1
+            fi
+            ;;
         *)
             add_log "E" "Invalid option for backup_precheck: ${option}"
             return 1
@@ -72,17 +78,20 @@ function restore_prep_report()
     restore_report_path=`dirname "${RESTORE_REPORT}"`
     add_log "D" "Creating restore report direcory: mkdir -p ${restore_report_path}"
     mkdir -p ${restore_report_path}
-    if [[ ! -f "${RESTORE_REPORT}" ]]; then
+    if [[ ! -s "${RESTORE_REPORT}" ]]; then
         add_log "D" "Creating restore report file ${RESTORE_REPORT}"
-        echo "restore_date|restore_target|restore_type|physical_bk_id|logical_restore_src|logical_type|duration_ms|outcome|bk_size_in_bytes" > "${RESTORE_REPORT}"
+        echo "restore_date|restore_target|restore_type|physical_bk_id|logical_restore_src|logical_type|duration_ms|outcome|bk_size" > "${RESTORE_REPORT}"
     fi
 }
 
 function restore_physical()
 {
-    add_log "I" "MO_HOST: ${MO_HOST}"
     if [[ "${MO_HOST}" != "127.0.0.1" ]]; then
         add_log "E" "Currently mo_ctl only support restoring physical backup data on a local mo server, thus please set MO_HOST to 127.0.0.1 if that's the case."
+        return 1
+    fi
+
+    if ! restore_precheck "deploy_mode"; then
         return 1
     fi
 
@@ -170,25 +179,32 @@ function restore_physical()
     if [[ ${outcome} == "succeeded" ]]; then
         add_log "D" "Get size of backup id ${RESTORE_BKID}"
         bk_size=`cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} list ${br_meta_option} | grep "${RESTORE_BKID}" | awk -F "|" '{print $3}' | sed 's# ##g'`
-        if echo "${bk_size}" | grep "kB"; then
-            number=`echo "${bk_size}" | awk -F "kB" '{print $1}'`
-            let bk_size_in_bytes=bk_size*1024
-        elif echo "${bk_size}" | grep "MB"; then
-            number=`echo "${bk_size}" | awk -F "MB" '{print $1}'`
-            let bk_size_in_bytes=bk_size*1024*1024
-        elif echo "${bk_size}" | grep "GB"; then
-            number=`echo "${bk_size}" | awk -F "GB" '{print $1}'`
-            let bk_size_in_bytes=bk_size*1024*1024*1024
-        else
-            bk_size_in_bytes="${bk_size}"
+        add_log "D" "bk_size: ${bk_size}"
+        if [[ "1" == "0" ]]; then
+            if echo "${bk_size}" | grep "kB" >/dev/null; then
+                number=`echo "${bk_size}" | awk -F "kB" '{print $1}'`
+                #let bk_size_in_bytes=number*1024
+                bk_size_in_bytes=`awk -v n1="$number" 'BEGIN{print n1*1024}'`
+            elif echo "${bk_size}" | grep "MB" >/dev/null; then
+                number=`echo "${bk_size}" | awk -F "MB" '{print $1}'`
+                #let bk_size_in_bytes=number*1024*1024
+                bk_size_in_bytes=`awk -v n1="$number" 'BEGIN{print n1*1024*1024}'`
+
+            elif echo "${bk_size}" | grep "GB" >/dev/null; then
+                number=`echo "${bk_size}" | awk -F "GB" '{print $1}'`
+                #let bk_size_in_bytes=number*1024*1024*1024
+                bk_size_in_bytes=`awk -v n1="$number" 'BEGIN{print n1*1024*1024*1024}'`
+            else
+                bk_size_in_bytes="${bk_size}"
+            fi
         fi
         add_log "D" "bk_size: ${bk_size}, bk_size_in_bytes: ${bk_size_in_bytes}"
 
     fi
 
-    add_log "D" "Writing entry to report"
-    add_log "D" "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|physical|${RESTORE_BKID}|||${cost}|${outcome}"    
-    echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|physical|${RESTORE_BKID}|||${cost}|${outcome}|${bk_size_in_bytes}" >> ${RESTORE_REPORT}
+    add_log "D" "Writing entry to report ${RESTORE_REPORT}"
+    add_log "D" "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|physical|${RESTORE_BKID}|||${cost}|${outcome}|${bk_size}"    
+    echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|physical|${RESTORE_BKID}|||${cost}|${outcome}|${bk_size}" >> ${RESTORE_REPORT}
 
 
     if [[ ${rc} -ne 0 ]]; then
@@ -203,29 +219,26 @@ function restore_physical()
 function restore_mo_data()
 {
     add_log "I" "Step_2. Move mo-data path"
-
     if [[ "${MO_DEPLOY_MODE}" == "git" ]]; then
         mo_path="${MO_PATH}/matrixone"
     elif [[ "${MO_DEPLOY_MODE}" == "binary" ]]; then
-        mo_path="${MO_PATH}/matrixone"
+        mo_path="${MO_PATH}"
     else
-        # todo
+        add_log "D" "Currently restoring from a physical backup is only supported when MO_DEPLOY_MODE is set to 'git' or 'binary', current setting is ${MO_DEPLOY_MODE}"
         return 1
     fi
 
+    add_log "D" "MO_DEPLOY_MODE: ${MO_DEPLOY_MODE}, mo_path: ${mo_path}"
     current_time=`date +"%Y%m%d_%H%M%S"`
     if [[ ! -d "${mo_path}/mo-data/" ]]; then
-        add_log "W" "${MO_PATH}/mo-data/ does not exist, skip moving it"
-        return 0
-    fi
-
-
-
-    add_log "I" "Moving ${mo_path}/mo-data to ${mo_path}/mo-data-bk-${current_time}"
-    add_log "D" "cmd: mv ${mo_path}/mo-data ${mo_path}/mo-data-bk-${current_time}"
-    if ! mv ${mo_path}/mo-data ${mo_path}/mo-data-bk-${current_time}; then
-        add_log "E" "Failed, exiting"
-        return 1
+        add_log "W" "${mo_path}/mo-data/ does not exist, skip renaming it"
+    else
+        add_log "I" "Renaming ${mo_path}/mo-data to ${mo_path}/mo-data-bk-${current_time}"
+        add_log "D" "cmd: mv ${mo_path}/mo-data ${mo_path}/mo-data-bk-${current_time}"
+        if ! mv ${mo_path}/mo-data ${mo_path}/mo-data-bk-${current_time}; then
+            add_log "E" "Failed, exiting"
+            return 1
+        fi
     fi
 
     add_log "I" "Moving ${RESTORE_PATH}/mo-data to ${mo_path}/mo-data"
@@ -254,13 +267,6 @@ function restore_logical()
     get_conf | grep RESTORE
     add_log "I" "------------------------------------"
 
-    add_log "W" "Please confirm your settings before performing a restore(Yes/No):"
-    user_confirm=""
-    read -t 30 user_confirm
-    if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
-        add_log "E" "User input not confirmed or timed out, exiting"
-        return 1
-    fi
 
     add_log "I" "Step_1. Restore logical data"
 
@@ -288,7 +294,7 @@ function restore_logical()
         return 1
     fi
 
-    restore_prep_report
+    
 
     add_log "I" "Restore begins, please wait"
     i=1
@@ -322,6 +328,7 @@ function restore_logical()
         fi
 
         add_log "D" "Writing entry to report"
+        restore_prep_report
         echo "${restore_timestamp}|${MO_HOST},${MO_PORT},${MO_USER}|logical||${file}|${RESTORE_LOGICAL_TYPE}|${cost}|${outcome}|${bk_size}" >> ${RESTORE_REPORT}
 
         if [[ "${isFile}" == "true" ]]; then
@@ -347,9 +354,27 @@ function restore_logical()
     return ${rc}
 }
 
+function restore_list()
+{
+
+    option="$1"
+
+    if [[ ! -f ${RESTORE_REPORT} ]]; then
+        add_log "E" "RESTORE_REPORT ${RESTORE_REPORT} is not a valid file, exiting"
+        return 1 
+    fi
+    #add_log "I" "Listing restore report (summary) from ${RESTORE_REPORT}"
+    #add_log "I" "------------------------------------"
+    cat ${RESTORE_REPORT}
+}
+
 function restore()
 {
-    add_log "I" "RESTORE_TYPE: ${RESTORE_TYPE}"
+    add_log "I" "Current confs:"
+    get_conf | grep -E "RESTORE|MO_PATH|MO_DEPLOY_MODE"
+    
+    add_log "W" "Please make sure if you really want to perform a restore(Yes/No):"
+    read_user_confirm
 
     case "${RESTORE_TYPE}" in
         "physical")
@@ -378,16 +403,4 @@ function restore()
   
 }
 
-function restore_list()
-{
 
-    option="$1"
-
-    if [[ ! -f ${RESTORE_REPORT} ]]; then
-        add_log "E" "RESTORE_REPORT ${RESTORE_REPORT} is not a valid file, exiting"
-        return 1 
-    fi
-    #add_log "I" "Listing restore report (summary) from ${RESTORE_REPORT}"
-    #add_log "I" "------------------------------------"
-    cat ${RESTORE_REPORT}
-}

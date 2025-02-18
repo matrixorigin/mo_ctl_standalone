@@ -45,7 +45,7 @@ function main()
 
     rc=0
     all_vars="$*"
-    var_2=`echo ${all_vars} | awk '{print $2}'`
+    #var_2=`echo ${all_vars} | awk '{print $2}'`
     option_1=`echo "${all_vars}" | awk '{print $1}'`
     option_2=`echo "${all_vars}" | awk '{print $2}'`
     option_3=`echo "${all_vars}" | awk '{print $3}'`
@@ -98,15 +98,20 @@ function main()
             ;;
         "set_conf")
             shift_vars=`echo "${all_vars#* }"`
-            if [[ "${var_2}" == "" ]]; then
-                add_log "E" "Set content is empty, please check again"
-                help_set_conf
-                return 1
+            if [[ -s "${option_2}" ]]; then
+                add_log "I" "Option 1 ${option_1} is a file, will set_conf based on it and ignore the rest options"
+                set_conf_by_file "${shift_vars}"
+            else
+                if  [[ "${option_2}" == "" ]]; then
+                    add_log "E" "Set content is empty, please check again"
+                    help_set_conf
+                    return 1
+                fi
+                set_conf "${shift_vars}"
             fi
-            set_conf "${shift_vars}"
             ;;
         "get_conf")
-            get_conf "${option_2}"
+            get_conf "${option_2}" "${option_3}"
             ;;
         "ddl_convert")
             ddl_convert "${option_2}" "${option_3}" "${option_4}"
@@ -124,7 +129,7 @@ function main()
             uninstall
             ;;
         "sql")
-            if [[ "${var_2}" == "" ]]; then
+            if [[ "${option_2}" == "" ]]; then
                 add_log "E" "Query is empty, please check again"
                 help_sql
                 return 1
@@ -171,6 +176,21 @@ function main()
         "monitor")
             monitor "${option_2}" "${option_3}"
             ;;
+        "basic")
+            "${option_2}" "${option_3}" "${option_4}" 
+            ;;
+
+        "auto_log_rotate")
+            auto_log_rotate "${option_2}"
+            ;;
+        "datax")
+            if [[ "${option_2}" == "list" ]]; then
+                datax_report_list
+            else
+                datax
+            fi
+            ;;
+
         *)
             add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"
             help_1

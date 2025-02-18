@@ -79,12 +79,45 @@ function set_kv()
     add_log "I" "Setting conf ${key}=\"${value}\""
     os=`what_os`
     if [[ ${os} == "Linux" ]] ; then
-        sed -i "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
+        if echo "${value}" | grep "#" >/dev/null 2>&1 ; then
+            sed -i "s|^${key}=.*|${key}=\"${value}\"|g" "${CONF_FILE}"
+        else
+            sed -i "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
+        fi
     else
-        sed -i "" "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
+        if echo "${value}" | grep "#" >/dev/null 2>&1 ; then
+            sed -i "" "s|^${key}=.*|${key}=\"${value}\"|g" "${CONF_FILE}"
+        else
+            sed -i "" "s#^${key}=.*#${key}=\"${value}\"#g" "${CONF_FILE}"
+        fi
     fi 
 
 }
+
+function set_conf_by_file()
+{
+    conf_file="$*"
+    add_log "D" "conf_file: ${conf_file}"
+    i=1
+    while read line; do
+        add_log "D" "Conf line number: ${i}, line content: ${line}"
+        if echo "${line}" | grep -e "^#" >/dev/null 2>&1; then
+            add_log "D" "Line has '#' in the beginning, ignoring it as a comment line"
+            let i=i+1
+            continue
+        fi
+        key=`echo "${line}" | awk -F "=" '{print $1}'`
+        value=`echo "${line}" | awk -F "=" '{print $2}' | sed 's/^"//;s/"$//'`
+        if [[ "${key}" == "" ]]; then
+            add_log "W" "Conf key is empty, ignoring"
+            let i=i+1
+            continue
+        fi
+        set_conf "${key}=${value}"
+        let i=i+1
+    done < ${conf_file}
+}
+
 
 function set_conf()
 {
@@ -101,11 +134,8 @@ function set_conf()
     # reset conf
     elif [[ "${tmp_key}" == "reset" ]]; then
         add_log "I" "You're about to set all confs, which will be replaced by default settings. This could be dangerous since all of your current settings will be lost!!! Are you sure? (Yes/No)"
-        read -t 30 user_confirm
-        if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then
-            add_log "E" "User input not confirmed or timed out, exiting"
-            return 1
-        fi
+        
+        read_user_confirm 
         
         if cp -pf ${CONF_FILE_DEFAULT} ${CONF_FILE}; then
             add_log "I" "Reset all confs succeeded"
@@ -127,7 +157,7 @@ function set_conf()
     kv="${list}"
     # 1. check if format is key=value
     if ! echo "${kv}" | grep "=" >/dev/null 2>&1; then
-        add_log "E" "Conf ${kv} is an invalid format, please set conf as key=value, skipping"
+        add_log "E" "Conf ${kv} is an invalid format, please set conf as key=value as key=value, skipping"
         rc=1
     fi
 

@@ -89,16 +89,14 @@ function start()
             fi
 
             # get hostname
-            this_hostname=`hostname`
-            if [[ "${this_hostname}" == "" ]]; then 
-                add_log "W" "Failed to get hostname, will use default value: MO_CONTAINER_HOSTNAME=${MO_CONTAINER_HOSTNAME}"
-                cmd_params="${cmd_params} --hostname ${MO_CONTAINER_HOSTNAME}"
-            else
-                add_log "D" "Get hostname of host: ${this_hostname}"
-                add_log "D" "Setting conf container hostname: MO_CONTAINER_HOSTNAME=${this_hostname}"
-                set_conf MO_CONTAINER_HOSTNAME=${this_hostname}
-                cmd_params="${cmd_params} --hostname ${this_hostname}"
+            add_log "D" "Get hostname conf MO_CONTAINER_HOSTNAME: ${MO_CONTAINER_HOSTNAME}"
+            if [[ "${MO_CONTAINER_HOSTNAME}" == "" ]]; then 
+                real_hostname=`hostname`
+                add_log "W" "Failed to get hostname, will use default value: MO_CONTAINER_HOSTNAME=${real_hostname}"
+                MO_CONTAINER_HOSTNAME="${real_hostname}"
             fi
+
+            cmd_params="${cmd_params} --hostname ${MO_CONTAINER_HOSTNAME}"
             
 
             # if docker_server_ver ≥ DOCKER_SERVER_VERSION, don't use privileged
@@ -107,11 +105,29 @@ function start()
                 cmd_params="${cmd_params} --privileged=true"
             fi
 
+            if [[ "${MO_CONTAINER_TIMEZONE}" == "host" ]]; then
+                cmd_params="${cmd_params} -v /etc/localtime:/etc/localtime"
+            fi
+
+            debug_option=""
+            if [[ "${MO_DEBUG_PORT}" != "" ]]; then
+                debug_option="-debug-http :${MO_DEBUG_PORT}"
+            fi
+
+            pprof_option=""
+            if [[ "${PPROF_INTERVAL}" != "" ]]; then
+                pprof_option="-profile-interval ${PPROF_INTERVAL}s"
+            fi
+
+
+
             # if conf path exists
             if [[ -d ${MO_CONTAINER_CONF_HOST_PATH} ]]; then
-                docker_init_cmd="docker run ${cmd_params} -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_CONTAINER_IMAGE} -launch ${MO_CONTAINER_CONF_CON_FILE}"
+                docker_init_cmd="docker run ${cmd_params} -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_CONTAINER_IMAGE} ${debug_option} ${pprof_option} -launch ${MO_CONTAINER_CONF_CON_FILE}"
             else
-                docker_init_cmd="docker run ${cmd_params} ${MO_CONTAINER_IMAGE}"              
+                #docker_init_cmd="docker run ${cmd_params} ${MO_CONTAINER_IMAGE}"
+                docker_init_cmd="docker run ${cmd_params} --entrypoint /mo-service ${MO_CONTAINER_IMAGE} ${debug_option} ${pprof_option} -launch ${MO_CONTAINER_CONF_CON_FILE}"
+
             fi
 
 
@@ -140,14 +156,35 @@ function start()
             exit 1
         fi
 
+        debug_option=""
+        if [[ "${MO_DEBUG_PORT}" != "" ]]; then
+            debug_option="-debug-http :${MO_DEBUG_PORT}"
+        fi
+
+        pprof_option=""
+        if [[ "${PPROF_INTERVAL}" != "" ]]; then
+            pprof_option="-profile-interval ${PPROF_INTERVAL}s"
+        fi
+
+
         if [[ "${go_mem_limit}" == "" ]]; then
             add_log "W" "GO memory limit seems to be empty, thus will not set this limit"
-            add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
-            cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+            if [[ "${DAEMON_METHOD}" == "nohup" ]]; then
+                add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && nohup ${mo_actual_path}/mo-service ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log &"
+                cd ${mo_actual_path}/ && nohup ${mo_actual_path}/mo-service ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log &
+            else
+                add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
+                cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+            fi
         else
             add_log "D" "Start command will add GOMEMLIMIT=${go_mem_limit}MiB"
-            add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
-            cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon -debug-http :${MO_DEBUG_PORT} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+            if [[ "${DAEMON_METHOD}" == "nohup" ]]; then
+                add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB nohup ${mo_actual_path}/mo-service  ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log &"
+                cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB nohup ${mo_actual_path}/mo-service ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log &
+            else
+                add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
+                cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+            fi
         fi
         
         add_log "I" "Wait for ${START_INTERVAL} seconds"
