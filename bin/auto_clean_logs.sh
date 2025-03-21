@@ -14,7 +14,7 @@ OS=""
 
 function clean_logs()
 {
-    clean_sysdb_logs_date=`date -d "${CLEAN_LOGS_DAYS_BEFORE} day ago" +%Y%m%d`
+    clean_sysdb_logs_date=`date -d "@$(($(date +%s) - CLEAN_LOGS_DAYS_BEFORE * 86400))" +%Y%m%d`
     add_log "I" "CLEAN_LOGS_DAYS_BEFORE: ${CLEAN_LOGS_DAYS_BEFORE}, clean date: ${clean_sysdb_logs_date}"
     for table in $(echo "${CLEAN_LOGS_TABLE_LIST}" | sed "s/,/ /g"); do
         sql="select PURGE_LOG('${table}', '${clean_sysdb_logs_date}');"

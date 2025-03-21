@@ -350,3 +350,5 @@ DATAX_REPORT_FILE="${TOOL_LOG_PATH}/datax.report"
 # parameter lists of datax -p option, e.g. 'db_name,table_name'
 DATAX_PARA_NAME_LIST=""
 
+# the log directory of this ctl tool.
+CTL_LOG_DIR=""
