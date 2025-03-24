@@ -161,14 +161,26 @@ function add_log()
 
     case "${add_line}" in
         "n" )
-            echo -n "${nowtime}    [${level}]    ${msg}"
+            if [ "x$CTL_LOG_FILE" != "x" ]; then
+                echo -n "${nowtime}    [${level}]    ${msg}" 2>&1 | tee -a $CTL_LOG_FILE
+            else
+                echo -n "${nowtime}    [${level}]    ${msg}"
+            fi
             ;;
         "l" )
-            echo "${msg}"
+            if [ "x$CTL_LOG_FILE" != "x" ]; then
+                echo "${msg}" 2>&1 | tee -a $CTL_LOG_FILE
+            else
+                echo "${msg}"
+            fi
             ;;
         *)
-        echo "${nowtime}    [${level}]    ${msg}"
-        ;;
+            if [ "x$CTL_LOG_FILE" != "x" ]; then
+                echo "${nowtime}    [${level}]    ${msg}" 2>&1 | tee -a $CTL_LOG_FILE
+            else
+                echo "${nowtime}    [${level}]    ${msg}"
+            fi
+            ;;
     esac
 }
 
@@ -308,10 +320,10 @@ function time_cost_ms()
     start=$1
     end=$2
   
-    start_s=$(echo $start | cut -d '.' -f 1)
-    start_ns=$(echo $start | cut -d '.' -f 2)
-    end_s=$(echo $end | cut -d '.' -f 1)
-    end_ns=$(echo $end | cut -d '.' -f 2)
+    start_s=$(echo $start | awk -F. '{print $1}')
+    start_ns=$(echo $start | awk -F. '{print $2}')
+    end_s=$(echo $end | awk -F. '{print $1}')
+    end_ns=$(echo $end | awk -F. '{print $2}')
 
     # deprecated: it depends on bc
     # cost=`expr $time_micro/1000 | bc`
@@ -319,8 +331,13 @@ function time_cost_ms()
     #if [[ "${os}" == "Mac" ]]; then
     #    cost=$(( ( $end_s - $start_s ) * 1000 + ( $end_ns / 1000000 - $start_ns / 1000000 ) ))
     #else
-        cost=$(( ( 10#$end_s - 10#$start_s ) * 1000 + ( 10#$end_ns / 1000000 - 10#$start_ns / 1000000 ) ))
+    #    cost=$(expr \( $end_s - $start_s \) \* 1000 + \( $end_ns \/ 1000000 - $start_ns \/ 1000000 \) )
     #fi
+    if [ "x$start_ns" = "x" -o "x$end_ns" = "x" ]; then
+        cost=$(expr \( $end_s - $start_s \) \* 1000 )
+    else
+        cost=$(expr \( $end_s - $start_s \) \* 1000 + \( $end_ns \/ 1000000 - $start_ns \/ 1000000 \) )
+    fi
 
     echo "${cost}"
 }

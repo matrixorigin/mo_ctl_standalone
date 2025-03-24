@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-metadata-pvc # change me
+  namespace: mo-job
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi #change me
+  storageClassName: directpv-min-io # change me

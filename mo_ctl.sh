@@ -32,17 +32,22 @@ LOG_DIR="${WORK_DIR}/log"
 PIDS=""
 MO_V_TYPE="unknown"
 
+# Get confs and scripts
+source "${CONF_FILE}"
+for script in `ls ${BIN_DIR}/ | grep .sh`; do
+    source "${BIN_DIR}/${script}"
+done
+
+function apply_env()
+{
+    for var in $(env | grep '^_CTL_' | cut -d= -f1); do
+        name=${var#_CTL_}
+        eval "$name=${!var}"
+    done
+}
+
 function main()
 {
-
-    # Get confs and scripts
-    source "${CONF_FILE}"
-
-
-    for script in `ls ${BIN_DIR}/ | grep .sh`; do
-        source "${BIN_DIR}/${script}"
-    done
-
     rc=0
     all_vars="$*"
     #var_2=`echo ${all_vars} | awk '{print $2}'`
@@ -64,6 +69,14 @@ function main()
     fi
 
     current_path=`pwd`
+
+    # apply the envs.
+    apply_env
+
+    if [ "x$CTL_LOG_DIR" != "x" ]; then
+        mkdir -p $CTL_LOG_DIR
+        CTL_LOG_FILE=$CTL_LOG_DIR/`date '+%Y%m%d_%H%M%S'`-`hostname`.log
+    fi
 
     case "${option_1}" in
         "" | "help")
@@ -151,6 +164,14 @@ function main()
             if [[ "${option_2}" == "list" ]]; then
                 backup_list "${option_3}"
             else
+                if [ -z "$BACKUP_S3_ID" -a ! -z $AWS_ACCESS_KEY_ID ]; then
+                    set_conf BACKUP_S3_ID=$AWS_ACCESS_KEY_ID
+                    eval "BACKUP_S3_ID=$AWS_ACCESS_KEY_ID"
+                fi
+                if [ -z "$BACKUP_S3_KEY" -a ! -z $AWS_SECRET_ACCESS_KEY ]; then
+                    set_conf BACKUP_S3_KEY=$AWS_SECRET_ACCESS_KEY
+                    eval "BACKUP_S3_KEY=$AWS_SECRET_ACCESS_KEY"
+                fi
                 backup
             fi
             ;;

@@ -361,43 +361,37 @@ function backup()
                 add_log "D" "BACKUP_PHYSICAL_BASE_BKID: ${BACKUP_PHYSICAL_BASE_BKID}"
                 
                 if [[ "${BACKUP_PHYSICAL_BASE_BKID}" == "" ]]; then
-                    add_log "E" "Base backup id BACKUP_PHYSICAL_BASE_BKID is empty, please set it first: mo_ctl set_conf BACKUP_PHYSICAL_BASE_BKID=xxx"
-                    add_log "I" "Hints: use 'mo_ctl backup list detail' to show previous backup ids"
+                    add_log "I" "Base backup id is empty, try to get it"
+                    bkid=`backup_get_last_physical_bkid`
+                    add_log "I" "Got base backup id: $bkid"
+                    if [[ "$bkid" == "" ]]; then
+                        add_log "E" "Cannot get base backup id, it is still empty."
+                        add_log "I" "Hints: use 'mo_ctl backup list detail' to show previous backup ids"
+                        return 1
+                    fi
+                    BACKUP_PHYSICAL_BASE_BKID="${bkid}"
+                fi
+                # get backup path of bkid
+                add_log "D" "BACKUP_MOBR_PATH: ${BACKUP_MOBR_PATH}"
+                if [[ "${BACKUP_MOBR_PATH}" != "" ]]; then
+                    add_log "D" "Try to get backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID} from ${BACKUP_MOBR_PATH}"
+                    add_log "D" "cmd: ${BACKUP_MOBR_PATH} list ${br_meta_option} | grep -A 4 ${BACKUP_PHYSICAL_BASE_BKID} | tail -n 1 | awk -F  \"|\" '{print \$4}' | awk '{print $1}' | sed 's/ //g'"
+                    real_bk_path=`${BACKUP_MOBR_PATH} list ${br_meta_option} | grep -A 4 ${BACKUP_PHYSICAL_BASE_BKID} | tail -n 1 | awk -F  "|" '{print $4}' | awk '{print $1}' | sed 's/ //g'`
+                else
+                    add_log "D" "Try to get backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID} from 'mo_ctl backup list detail'"
+                    add_log "D" "cmd: mo_ctl backup list detail  | grep -A 4 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F \"|\" '{print \$4}' | sed \"s/[[:space:]][[:space:]]*//g\""
+                    real_bk_path=`mo_ctl backup list detail  | grep -A 4 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F "|" '{print $4}' | sed "s/[[:space:]][[:space:]]*//g"`
+                fi
+                add_log "D" "real_bk_path: ${real_bk_path}"
+
+                if [[ "${real_bk_path}" == "" ]]; then
+                    add_log "E" "Failed to backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID}"
                     return 1
                 else
-                    # get backup path of bkid
-                    add_log "D" "BACKUP_MOBR_PATH: ${BACKUP_MOBR_PATH}"
-                    if [[ "${BACKUP_MOBR_PATH}" != "" ]]; then
-                        add_log "D" "Try to get backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID} from ${BACKUP_MOBR_PATH}"
-                        add_log "D" "cmd: ${BACKUP_MOBR_PATH} list ${br_meta_option} | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID} | tail -n 1 | awk -F  \"|\" '{print \$4}' | sed 's/ //g'"
-                        real_bk_path=`${BACKUP_MOBR_PATH} list ${br_meta_option} | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID} | tail -n 1 | awk -F  "|" '{print $4}' | sed 's/ //g'`
-                    else
-                        add_log "D" "Try to get backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID} from 'mo_ctl backup list detail'"
-                        add_log "D" "cmd: mo_ctl backup list detail  | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F \"|\" '{print \$4}' | sed \"s/[[:space:]][[:space:]]*//g\""
-                        real_bk_path=`mo_ctl backup list detail  | grep -A 1 ${BACKUP_PHYSICAL_BASE_BKID}  | tail -n 1 | awk -F "|" '{print $4}' | sed "s/[[:space:]][[:space:]]*//g"`
-                    fi
-                    add_log "D" "real_bk_path: ${real_bk_path}"
-
-                    if [[ "${real_bk_path}" == "" ]]; then
-                        add_log "E" "Failed to backup path of backup id ${BACKUP_PHYSICAL_BASE_BKID}"
-                        return 1
-                    
-                    else
-                        backup_outpath="${real_bk_path}"
-                        add_log "D" "backup_outpath: ${backup_outpath}"
-                    #    real_bk_path=`readlink -f ${real_bk_path}`
-                    #    backup_outpath=`readlink -f ${backup_outpath}`
-                    #    if [[ "${real_bk_path}" != "${backup_outpath}" ]]; then
-                    #        add_log "E" "Real backup path ${real_bk_path} of backup id ${BACKUP_PHYSICAL_BASE_BKID} #does not math given target backup path ${backup_outpath}, please check again"
-                    #        if [[ "${BACKUP_DATA_PATH_AUTO_TS}" == "yes" ]]; then
-                    #            add_log "E" "Conf BACKUP_DATA_PATH_AUTO_TS is set to 'yes', please set this to 'no' #when trying to perform a delta physical backup: 'mo_ctl set_conf #BACKUP_DATA_PATH_AUTO_TS=no'"
-                    #        fi
-                    #        return 1
-                    #    fi
-                    
-                    fi 
-
+                    backup_outpath="${real_bk_path}"
+                    add_log "D" "backup_outpath: ${backup_outpath}"
                 fi
+
                 delta_option="--backup_type incremental --base_id ${BACKUP_PHYSICAL_BASE_BKID}"
             # 2. full
             else
@@ -453,7 +447,7 @@ function backup()
 
     
     bk_size="n.a."
-    if [[ ${outcome} == "succeeded" ]]; then
+    if [ ${outcome} = "succeeded" -a ${BACKUP_PHYSICAL_TYPE} = "filesystem" ]; then
         add_log "D" "Calculating size of backup path ${backup_outpath}"
         bk_size=`du -s ${backup_outpath} | awk '{print $1}'`
     fi

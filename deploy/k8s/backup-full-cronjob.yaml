@@ -1,0 +1,78 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-backup-full
+  namespace: mo-job
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 20
+  failedJobsHistoryLimit: 20
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: db-backup-full
+            image: mo-ctl:latest # change me
+            imagePullPolicy: IfNotPresent
+            args:
+            - "backup"
+            env:
+            # connection info 
+            - name: _CTL_MO_HOST
+              value: "mo-proxy.mo-db.svc.cluster.local" # change me
+            - name: _CTL_MO_PORT
+              value: "6001"
+            - name: _CTL_MO_USER
+              value: "dump"
+            - name: _CTL_MO_PW
+              value: "111"
+              
+            # backup info
+            - name: _CTL_BACKUP_PHYSICAL_TYPE
+              value: "s3"
+            - name: _CTL_BACKUP_PHYSICAL_METHOD
+              value: "full" # change me
+            - name: _CTL_BACKUP_S3_ENDPOINT
+              value: "http://minio.minio-tenant.svc.cluster.local" # change me
+            - name: _CTL_BACKUP_S3_BUCKET
+              value: "matrix-qa"
+            - name: _CTL_BACKUP_DATA_PATH
+              value: "/mo-backup"
+            - name: _CTL_BACKUP_MOBR_PATH
+              value: /mo_br
+            - name: _CTL_TOOL_LOG_PATH
+              value: /data/logs/mo_ctl
+            - name: _CTL_BACKUP_S3_IS_MINIO
+              value: "yes"
+
+            - name: _CTL_CTL_LOG_DIR
+              value: "/data/logs/mo_ctl/logs"
+
+            # s3 credentials
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: s3key
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3key
+                  key: AWS_SECRET_ACCESS_KEY
+            volumeMounts:
+            - name: backup-metadata
+              mountPath: /data/logs/mo_ctl
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "100m"
+              limits:
+                memory: "512Mi"
+                cpu: "200m"
+          volumes:
+          - name: backup-metadata
+            persistentVolumeClaim:
+              claimName: backup-metadata-pvc
+          restartPolicy: OnFailure

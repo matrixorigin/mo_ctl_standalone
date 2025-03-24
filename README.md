@@ -5,15 +5,19 @@
 Depending on whether your machine has access to the Internet or not, you can choose to install `mo_ctl` online or offline. Please remember to run the commands as root or a user with sudo privileges (and add `sudo` to each command). Also `install.sh` will use `unzip` command to extract `mo_ctl`, thus please make sure `unzip` is installed.
 
 ```bash
-# Option-A. install with the Internet
-wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/install.sh && bash +x ./install.sh
+# Option-A. install locally with the Internet
+wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/deploy/local/install.sh && bash +x ./install.sh
 # download from gitee.com
-# wget https://gitee.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh && bash +x ./install.sh
+# wget https://gitee.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/install.sh && bash +x ./install.sh
 
-# Option-B. install without the Internet
+# Option-B. install locally without the Internet
 # 1. download them to your local pc first, then upload them to your server machine
 wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/install.sh
 wget https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
+
+# Option-C. install and use it in K8S.
+# 1. build docker image:
+sudo docker build -t mo-ctl --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} .
 
 # 2. install from offline pacakge
 bash +x ./install.sh mo_ctl.zip
@@ -25,11 +29,11 @@ In case you have network issues accessing above address, you can use the backup 
 # backup address
 
 # Option-A. install with the Internet
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh && bash +x install.sh
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/install.sh && bash +x install.sh
 
 # Option-B. install without the Internet
 # 1. download them to your pc first, then upload them to your machine
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/install.sh
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/install.sh
 wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
 
 # 2. install from offline pacakge
@@ -39,18 +43,29 @@ bash +x ./install.sh mo_ctl.zip
 You can uninstall mo_ctl using below command.
 
 ```bash
-wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/uninstall.sh && bash +x ./uninstall.sh
+wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/deploy/local/uninstall.sh && bash +x ./uninstall.sh
 
 # backup address
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/uninstall.sh && bash +x uninstall.sh
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/uninstall.sh && bash +x uninstall.sh
 
 # on Ubuntu, MacOS or any other Linux with a non-root user with sudo privilges
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/uninstall.sh && sudo bash +x uninstall.sh
+wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/uninstall.sh && sudo bash +x uninstall.sh
 ```
 
 # How to use it
 
 After `mo_ctl` is installed, you can use `mo_ctl help` to print help info on how to use.
+Or, if you depoy it in K8S, apply a YAML file to start a job, take the full-backup job for example:
+
+```
+# use the backup cronjob
+sudo crictl pull --creds ${username}:${password} mo-ctl:latest
+kubectl create ns mo-job
+kubectl get secret s3key -n mo-db -o yaml | sed 's/namespace: mo-db/namespace: mo-job/' | kubectl apply -f -
+kubectl apply -f deploy/k8s/backup-pvc.yaml
+# before run the next command, you should change the envs to set the confs of this tool, which starts with "_CTL_".
+kubectl apply -f deploy/k8s/backup-full-cronjob.yaml
+```
 
 # Quick start
 1. Take a quick look at the tool guide. 
