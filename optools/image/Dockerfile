@@ -6,16 +6,13 @@ RUN if [ -z "$GITHUB_TOKEN" ]; then \
         echo "Error: GITHUB_TOKEN must be specified" && exit 1; \
     fi
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
-    && apk update
-
 RUN apk add --no-cache \
     git \
     make \
     gcc \
     musl-dev
 
-RUN go env -w  GOPROXY=https://goproxy.cn,direct
+RUN go env -w GOPROXY=https://proxy.golang.org,direct
 
 RUN git clone https://x-access-token:${GITHUB_TOKEN}@github.com/matrixorigin/mo-backup.git /build/mo-backup && \
     cd /build/mo-backup && \
