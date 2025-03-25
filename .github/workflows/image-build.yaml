@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build Image and Push
-    runs-on: ubuntu-latest
+    runs-on: amd64-mo-shanghai-dind
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
