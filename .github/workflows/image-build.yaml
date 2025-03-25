@@ -1,4 +1,4 @@
-name: Build EKS Runner Image
+name: Build MO_CTL_STANDALONE Image
 
 on:
   push:
