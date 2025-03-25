@@ -1,7 +1,9 @@
 # What it is
+
 `mo_ctl` tool is a tool designed to help you easily manage your standalone MatrixOne server, such as deploying, starting, stopping, connect and much more fun admin operations for you to discover!
 
 # How to get it
+
 Depending on whether your machine has access to the Internet or not, you can choose to install `mo_ctl` online or offline. Please remember to run the commands as root or a user with sudo privileges (and add `sudo` to each command). Also `install.sh` will use `unzip` command to extract `mo_ctl`, thus please make sure `unzip` is installed.
 
 ```bash
@@ -17,7 +19,7 @@ wget https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.z
 
 # Option-C. install and use it in K8S.
 # 1. build docker image:
-sudo docker build -t mo-ctl --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} .
+sudo docker build -t mo_ctl_standalone --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} . -f optools/image/Dockerfile
 
 # 2. install from offline pacakge
 bash +x ./install.sh mo_ctl.zip
@@ -68,7 +70,9 @@ kubectl apply -f deploy/k8s/backup-full-cronjob.yaml
 ```
 
 # Quick start
-1. Take a quick look at the tool guide. 
+
+1. Take a quick look at the tool guide.
+
 ```bash
 mo_ctl help
 ```
@@ -83,16 +87,19 @@ mo_ctl set_conf MO_GIT_URL="https://mirror.ghproxy.com/https://github.com/matrix
 ```
 
 3. Deploy a standalone mo instance of latest stable release version(current: 0.8.0)
+
 ```bash
 mo_ctl deploy
 ```
 
 4. Check mo-service status
+
 ```bash
 mo_ctl status
 ```
 
 5. Connect to mo-service after a few seconds when mo-service's initialization is finished
+
 ```bash
 mo_ctl connect
 ```
@@ -104,6 +111,7 @@ mo_ctl connect
 ## Command reference
 
 ### help - print help info
+
 ```bash
 github@shpc2-10-222-1-9:/data$ mo_ctl help
 Usage               : mo_ctl [option_1] [option_2]
@@ -142,5 +150,5 @@ Options             :
   [option_2]        : Option for [option_1]. Use 'mo_ctl [option_1] help' to get more info
 
 Examples            : mo_ctl status
-                      mo_ctl status help 
+                      mo_ctl status help
 ```
