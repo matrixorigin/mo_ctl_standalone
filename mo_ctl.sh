@@ -165,11 +165,9 @@ function main()
                 backup_list "${option_3}"
             else
                 if [ -z "$BACKUP_S3_ID" -a ! -z $AWS_ACCESS_KEY_ID ]; then
-                    set_conf BACKUP_S3_ID=$AWS_ACCESS_KEY_ID
                     eval "BACKUP_S3_ID=$AWS_ACCESS_KEY_ID"
                 fi
                 if [ -z "$BACKUP_S3_KEY" -a ! -z $AWS_SECRET_ACCESS_KEY ]; then
-                    set_conf BACKUP_S3_KEY=$AWS_SECRET_ACCESS_KEY
                     eval "BACKUP_S3_KEY=$AWS_SECRET_ACCESS_KEY"
                 fi
                 backup
