@@ -20,7 +20,9 @@ spec:
             - "clean_backup"
             env:
             - name: _CTL_S3_CLIENT
-              value: "/usr/bin/mc"
+              value: "/usr/local/bin/mc"
+            - name: _CTL_S3_API_VERSION
+              value: "S3v4"
             - name: _CTL_S3_CONFIG_DIR
               value: "/tmp/s3_config"
             - name: _CTL_BACKUP_PHYSICAL_TYPE
@@ -33,6 +35,18 @@ spec:
               value: "/mo-backup"
             - name: _CTL_TOOL_LOG_PATH
               value: /data/logs/mo_ctl
+
+            # s3 credentials
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: s3key
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: s3key
+                  key: AWS_SECRET_ACCESS_KEY
             volumeMounts:
             - name: backup-metadata
               mountPath: /data/logs/mo_ctl

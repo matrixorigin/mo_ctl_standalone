@@ -516,12 +516,16 @@ function clean_backup()
         fi
 
         # set some variables
+        alias_name="backup"
         extra_args=""
         if [[ ! ${S3_CONFIG_DIR} == "" ]]; then
             extra_args="--config-dir ${S3_CONFIG_DIR}"
         fi
-        alias_name="backup"
-        ${S3_CLIENT} ${extra_args} alias set ${alias_name} ${BACKUP_S3_ENDPOINT} ${BACKUP_S3_ID} ${BACKUP_S3_KEY}
+        api_args=""
+        if [[ ! ${S3_API_VERSION} == "" ]]; then
+            api_args="--api ${S3_API_VERSION}"
+        fi
+        ${S3_CLIENT} ${extra_args} alias set ${alias_name} ${BACKUP_S3_ENDPOINT} ${BACKUP_S3_ID} ${BACKUP_S3_KEY} ${api_args}
     fi
 
     if [[ "${BACKUP_DATA_PATH_AUTO_TS}" == "no" ]]; then
