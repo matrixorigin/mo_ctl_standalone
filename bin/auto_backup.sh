@@ -473,10 +473,56 @@ function backup()
 
 }
 
+function get_sub_path()
+{
+    base_path=$1
+    if [[ ${BACKUP_PHYSICAL_TYPE} == "s3" ]]; then
+        base_path="${base_path#/}"
+        ${S3_CLIENT} ${extra_args} ls ${alias_name}/${BACKUP_S3_BUCKET}/${base_path} | awk '{print $NF}'
+    else
+        ls ${base_path}
+    fi
+}
 
+function delete_dir()
+{
+    dir_to_delete=$1
+
+    if [[ ${dir_to_delete} == "" || ${dir_to_delete} == "/" ]]; then
+        add_log "E" "invalid dir to delete: ${dir_to_delete}"
+        return 1
+    fi
+
+    if [[ ${BACKUP_PHYSICAL_TYPE} == "s3" ]]; then
+        dir_to_delete=`echo ${dir_to_delete} | sed -E 's#//*#/#g; s#^/##'`
+        ${S3_CLIENT} ${extra_args} rm --recursive --force ${alias_name}/${BACKUP_S3_BUCKET}/${dir_to_delete}
+        return $?
+    else
+        rm -rf ${dir_to_delete}
+        return 0
+    fi
+}
 
 function clean_backup()
 {
+    if [[ ${BACKUP_PHYSICAL_TYPE} == "s3" ]]; then
+        if [[ ${S3_CLIENT} == "" ]]; then
+            add_log "E" "Clean backup cannot be done as S3_CLIENT is not set"
+            return 1
+        fi
+        if [[ ! -f ${S3_CLIENT} ]]; then
+            add_log "E" "Clean backup cannot be done as S3_CLIENT could not be found"
+            return 1
+        fi
+
+        # set some variables
+        extra_args=""
+        if [[ ! ${S3_CONFIG_DIR} == "" ]]; then
+            extra_args="--config-dir ${S3_CONFIG_DIR}"
+        fi
+        alias_name="backup"
+        ${S3_CLIENT} ${extra_args} alias set ${alias_name} ${BACKUP_S3_ENDPOINT} ${BACKUP_S3_ID} ${BACKUP_S3_KEY}
+    fi
 
     if [[ "${BACKUP_DATA_PATH_AUTO_TS}" == "no" ]]; then
         add_log "E" "Clean backup is only supported when BACKUP_DATA_PATH_AUTO_TS is set to 'yes', please set it first: mo_ctl set_conf BACKUP_DATA_PATH_AUTO_TS='yes'"
@@ -486,17 +532,19 @@ function clean_backup()
     fi
 
     add_log "I" "Cleaning backups before ${BACKUP_CLEAN_DAYS_BEFORE} days"
-    clean_date=`date -d "${BACKUP_CLEAN_DAYS_BEFORE} day ago" +%Y%m%d`
+    clean_date=`date -d "@$(($(date +%s) - BACKUP_CLEAN_DAYS_BEFORE * 86400))" +%Y-%m-%d`
     add_log "I" "Clean date: ${clean_date}"
 
-    for month in `ls ${clean_path}`; do
-        for backup_dir in `ls ${clean_path}/${month}`; do
-            backup_date=`echo "${backup_dir}" | awk -F"_" '{print $1}'`
+    for month in `get_sub_path ${clean_path}`; do
+        for backup_dir in `get_sub_path ${clean_path}/${month}`; do
+            backup_date_tmp=`echo "${backup_dir}" | awk -F"_" '{print $1}'`
+            backup_date="${backup_date_tmp:0:4}-${backup_date_tmp:4:2}-${backup_date_tmp:6:2}"
             backup_date_int=`date -d "${backup_date}" +%s`
             clean_date_int=`date -d "${clean_date}" +%s`
             if [[ ${backup_date_int} -le ${clean_date_int} ]]; then
                 add_log "I" "Backup directory : ${clean_path}/${month}/${backup_dir}, action: delete"
-                if cd ${clean_path}/${month} && rm -rf ./${backup_dir}; then
+                delete_dir ${clean_path}/${month}/${backup_dir}
+                if [[ $? -eq 0 ]]; then
                     add_log "I" "Succeeded"
                 else
                     add_log "E" "Failed"

@@ -4,7 +4,7 @@ metadata:
   name: db-clean-logs
   namespace: mo-job
 spec:
-  schedule: "*/5 * * * *" # change me
+  schedule: "0 3 * * *" # change me
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 20
   failedJobsHistoryLimit: 20
