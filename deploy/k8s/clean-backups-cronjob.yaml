@@ -1,10 +1,10 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: db-backup-incr
+  name: db-clean-backups
   namespace: mo-job
 spec:
-  schedule: "0 2 * * *"
+  schedule: "0 4 * * *" # change me
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 20
   failedJobsHistoryLimit: 20
@@ -13,57 +13,31 @@ spec:
       template:
         spec:
           containers:
-          - name: db-backup-incr
-            image: mo-ctl:latest # change me
+          - name: db-clean-backups
+            image: mo_ctl_standalone:latest # change me
             imagePullPolicy: IfNotPresent
             args:
-            - "backup"
+            - "clean_backup"
             env:
-            # connection info 
-            - name: _CTL_MO_HOST
-              value: "mo-proxy.mo-db.svc.cluster.local" # change me
-            - name: _CTL_MO_PORT
-              value: "6001"
-            - name: _CTL_MO_USER
-              value: "dump"
-            - name: _CTL_MO_PW
-              value: "111"
-              
-            # backup info
+            - name: _CTL_S3_CLIENT
+              value: "/usr/bin/mc"
+            - name: _CTL_S3_CONFIG_DIR
+              value: "/tmp/s3_config"
             - name: _CTL_BACKUP_PHYSICAL_TYPE
               value: "s3"
-            - name: _CTL_BACKUP_PHYSICAL_METHOD
-              value: "incremental" # change me
             - name: _CTL_BACKUP_S3_ENDPOINT
               value: "http://minio.minio-tenant.svc.cluster.local" # change me
             - name: _CTL_BACKUP_S3_BUCKET
               value: "matrix-qa"
             - name: _CTL_BACKUP_DATA_PATH
               value: "/mo-backup"
-            - name: _CTL_BACKUP_MOBR_PATH
-              value: /mo_br
             - name: _CTL_TOOL_LOG_PATH
               value: /data/logs/mo_ctl
-            - name: _CTL_BACKUP_S3_IS_MINIO
-              value: "yes"
-
-            - name: _CTL_CTL_LOG_DIR
-              value: "/data/logs/mo_ctl/logs"
-
-            # s3 credentials
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: s3key
-                  key: AWS_ACCESS_KEY_ID
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: s3key
-                  key: AWS_SECRET_ACCESS_KEY
             volumeMounts:
             - name: backup-metadata
               mountPath: /data/logs/mo_ctl
+            - name: tmp-config-dir
+              mountPath: /tmp/s3_config
             resources:
               requests:
                 memory: "256Mi"
@@ -75,4 +49,6 @@ spec:
           - name: backup-metadata
             persistentVolumeClaim:
               claimName: backup-metadata-pvc
+          - name: tmp-config-dir
+            emptyDir: {}
           restartPolicy: OnFailure

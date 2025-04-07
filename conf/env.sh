@@ -216,6 +216,9 @@ BACKUP_REPORT="${TOOL_LOG_PATH}/backup-report.txt"
 
 # 1. physical backups
 # backup tools
+# s3 client
+S3_CLIENT="/usr/local/bin/mc"
+S3_CONFIG_DIR=""
 # mo_br
 BACKUP_MOBR_PATH="/data/tools/mo-backup/mo_br"
 # backup target type: filesystem(default)|s3

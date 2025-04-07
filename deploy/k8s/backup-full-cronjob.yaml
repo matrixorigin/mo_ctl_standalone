@@ -4,7 +4,7 @@ metadata:
   name: db-backup-full
   namespace: mo-job
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "0 1 */7 * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 20
   failedJobsHistoryLimit: 20
