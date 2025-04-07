@@ -8,38 +8,37 @@
 query=""
 TIMEOUT="1h"
 
-function exec_path()
-{
+function exec_path() {
     rc=0
-    os=`what_os`
+    os=$(what_os)
     add_log "I" "Input ${query} is a path, listing .sql files in it: "
     ls -A ${query}/ | grep "\.sql\$"
     # deprecated: Mac is using bash v3 by default, but declare -A requires bash v4, thus it will fail
     # declare -A query_report
     query_report=""
-    for query_file in `ls -A ${query}/ | grep "\.sql\$"`; do
+    for query_file in $(ls -A ${query}/ | grep "\.sql$"); do
         add_log "I" "Begin executing query file ${query_file}"
 
-        startTime=`get_nanosecond`
+        startTime=$(get_nanosecond)
 
-        if MYSQL_PWD="${MO_PW}" timeout ${TIMEOUT} mysql --local-infile -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -vvv < "${query}/${query_file}"; then
-            endTime=`get_nanosecond`
+        if MYSQL_PWD="${MO_PW}" timeout ${TIMEOUT} mysql --local-infile -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -vvv <"${query}/${query_file}"; then
+            endTime=$(get_nanosecond)
             add_log "I" "End executing query file ${query_file}, succeeded"
             outcome="succeeded"
         else
-            endTime=`get_nanosecond`
+            endTime=$(get_nanosecond)
             add_log "E" "End executing query file ${query_file}, failed"
             outcome="failed"
             rc=1
         fi
-        cost=`time_cost_ms ${startTime} ${endTime}`
+        cost=$(time_cost_ms ${startTime} ${endTime})
         # deprecated: Mac is using bash v3 by default, but declare -A requires bash v4, thus it will fail
         # query_report["${query_file}"]="${outcome},${cost}"
         query_report="${query_report}|${query_file},${outcome},${cost}"
     done
 
     add_log "I" "Done executing all query files in path ${query}"
-    
+
     # print final report:
     add_log "I" "Query report:"
     echo "query_file,outcome,time_cost_ms"
@@ -57,46 +56,43 @@ function exec_path()
     return ${rc}
 }
 
-function exec_file()
-{
+function exec_file() {
     rc=0
     add_log "I" "Input ${query} is a file"
     add_log "I" "Begin executing query file ${query}"
-    startTime=`get_nanosecond`
-    if MYSQL_PWD="${MO_PW}" timeout ${TIMEOUT} mysql --local-infile -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -vvv < "${query}"; then
-        endTime=`get_nanosecond`
+    startTime=$(get_nanosecond)
+    if MYSQL_PWD="${MO_PW}" timeout ${TIMEOUT} mysql --local-infile -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -vvv <"${query}"; then
+        endTime=$(get_nanosecond)
         add_log "I" "End executing query file ${query}, succeeded"
         outcome="succeeded"
     else
-        endTime=`get_nanosecond`
+        endTime=$(get_nanosecond)
         add_log "E" "End executing query file ${query}, failed"
         outcome="failed"
         rc=1
     fi
-    cost=`time_cost_ms ${startTime} ${endTime}`
+    cost=$(time_cost_ms ${startTime} ${endTime})
     add_log "I" "Query report:"
     echo "query_file,outcome,time_cost_ms"
     echo "${query},${outcome},${cost}"
     return ${rc}
 }
 
-
-function exec_query()
-{
+function exec_query() {
     add_log "I" "Input \"${query}\" is not a path or a file, try to execute it as a query"
     add_log "I" "Begin executing query \"${query}\""
-    startTime=`get_nanosecond`
+    startTime=$(get_nanosecond)
     if MYSQL_PWD="${MO_PW}" timeout ${TIMEOUT} mysql --local-infile -h"${MO_HOST}" -P"${MO_PORT}" -u"${MO_USER}" -vvv -e "${query}"; then
-        endTime=`get_nanosecond`
+        endTime=$(get_nanosecond)
         add_log "I" "End executing query ${query}, succeeded"
         outcome="succeeded"
     else
-        endTime=`get_nanosecond`
+        endTime=$(get_nanosecond)
         add_log "E" "End executing query ${query}, failed"
         outcome="failed"
         rc=1
     fi
-    cost=`time_cost_ms ${startTime} ${endTime}`
+    cost=$(time_cost_ms ${startTime} ${endTime})
 
     add_log "I" "Query report:"
     echo "query,outcome,time_cost_ms"
@@ -104,8 +100,7 @@ function exec_query()
     return ${rc}
 }
 
-function sql()
-{
+function sql() {
     query="$*"
     # 1. empty query
     if [[ "${query}" == "" ]]; then
