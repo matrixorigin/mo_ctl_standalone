@@ -14,32 +14,14 @@ wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/deplo
 
 # Option-B. install locally without the Internet
 # 1. download them to your local pc first, then upload them to your server machine
-wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/install.sh
+wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/deploy/local/install.sh
 wget https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
+# 2. install from offline pacakge
+bash +x ./install.sh mo_ctl.zip
 
 # Option-C. install and use it in K8S.
 # 1. build docker image:
 sudo docker build -t mo_ctl_standalone --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} . -f optools/image/Dockerfile
-
-# 2. install from offline pacakge
-bash +x ./install.sh mo_ctl.zip
-```
-
-In case you have network issues accessing above address, you can use the backup address below.
-
-```bash
-# backup address
-
-# Option-A. install with the Internet
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/install.sh && bash +x install.sh
-
-# Option-B. install without the Internet
-# 1. download them to your pc first, then upload them to your machine
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/install.sh
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/archive/refs/heads/main.zip -O mo_ctl.zip
-
-# 2. install from offline pacakge
-bash +x ./install.sh mo_ctl.zip
 ```
 
 You can uninstall mo_ctl using below command.
@@ -47,11 +29,8 @@ You can uninstall mo_ctl using below command.
 ```bash
 wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/deploy/local/uninstall.sh && bash +x ./uninstall.sh
 
-# backup address
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/uninstall.sh && bash +x uninstall.sh
-
 # on Ubuntu, MacOS or any other Linux with a non-root user with sudo privilges
-wget https://mirror.ghproxy.com/https://github.com/matrixorigin/mo_ctl_standalone/blob/main/deploy/local/uninstall.sh && sudo bash +x uninstall.sh
+wget https://raw.githubusercontent.com/matrixorigin/mo_ctl_standalone/main/deploy/local/uninstall.sh && sudo bash +x uninstall.sh
 ```
 
 # How to use it
@@ -83,7 +62,7 @@ mo_ctl help
 ```bash
 mo_ctl get_conf MO_PATH # check default value of mo path to be installed
 mo_ctl set_conf MO_PATH="/data/mo/20230701/matrixone" # set your own mo path
-mo_ctl set_conf MO_GIT_URL="https://mirror.ghproxy.com/https://github.com/matrixorigin/matrixone.git" # in case have network issues, you can set this conf by overwritting default value MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
+mo_ctl set_conf MO_GIT_URL="https://gitee.com/matrixorigin/matrixone.git" # in case have network issues, you can set this conf by overwritting default value MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 ```
 
 3. Deploy a standalone mo instance of latest stable release version(current: 0.8.0)
