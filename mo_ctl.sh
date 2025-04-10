@@ -77,6 +77,12 @@ function main()
         mkdir -p $CTL_LOG_DIR
         CTL_LOG_FILE=$CTL_LOG_DIR/`date '+%Y%m%d_%H%M%S'`-`hostname`.log
     fi
+    if [ -z "$BACKUP_S3_ID" -a ! -z $AWS_ACCESS_KEY_ID ]; then
+        eval "BACKUP_S3_ID=$AWS_ACCESS_KEY_ID"
+    fi
+    if [ -z "$BACKUP_S3_KEY" -a ! -z $AWS_SECRET_ACCESS_KEY ]; then
+        eval "BACKUP_S3_KEY=$AWS_SECRET_ACCESS_KEY"
+    fi
 
     case "${option_1}" in
         "" | "help")
@@ -164,12 +170,6 @@ function main()
             if [[ "${option_2}" == "list" ]]; then
                 backup_list "${option_3}"
             else
-                if [ -z "$BACKUP_S3_ID" -a ! -z $AWS_ACCESS_KEY_ID ]; then
-                    eval "BACKUP_S3_ID=$AWS_ACCESS_KEY_ID"
-                fi
-                if [ -z "$BACKUP_S3_KEY" -a ! -z $AWS_SECRET_ACCESS_KEY ]; then
-                    eval "BACKUP_S3_KEY=$AWS_SECRET_ACCESS_KEY"
-                fi
                 backup
             fi
             ;;
