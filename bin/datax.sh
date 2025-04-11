@@ -9,8 +9,7 @@ datax_name="datax"
 datax_db_name=""
 datax_table_name=""
 
-function datax_precheck()
-{
+function datax_precheck() {
 
     cmd_list=("python3" "java")
     conf_item_list=("DATAX_TOOL_PATH" "DATAX_CONF_PATH" "DATAX_REPORT_FILE")
@@ -21,7 +20,7 @@ function datax_precheck()
         if ! check_cmd "${cmd}"; then
             flag=1
         fi
-    done 
+    done
 
     if [[ "${flag}" == "1" ]]; then
         return 1
@@ -33,32 +32,30 @@ function datax_precheck()
         if ! check_conf_item_not_empty "${conf_item}"; then
             flag=1
         fi
-    done 
+    done
     if [[ "${flag}" == "1" ]]; then
         return 1
     fi
 
 }
 
-function datax_get_db_and_table()
-{
-    datax_db_name=`grep "jdbc:" "${DATAX_CONF_PATH}" | awk -F "/" '{print $4}' | awk -F "?" '{print $1}'  | sort  | uniq | head -n 1`
-    if echo "${datax_db_name}" | grep "$" >/dev/null 2>&1 ; then
-        datax_db_name=`eval echo ${datax_db_name}`
+function datax_get_db_and_table() {
+    datax_db_name=$(grep "jdbc:" "${DATAX_CONF_PATH}" | awk -F "/" '{print $4}' | awk -F "?" '{print $1}' | sort  | uniq | head -n 1)
+    if echo "${datax_db_name}" | grep "$" > /dev/null 2>&1; then
+        datax_db_name=$(eval echo ${datax_db_name})
     fi
-    datax_table_name=`grep '"table":' "${DATAX_CONF_PATH}"  | awk -F ":" '{print $2}' | sed "s#\[##g" | sed "s#\]##g" | sed "s#\"##g" | sed "s# ##g" | sort | uniq | head -n 1`
-    if echo "${datax_table_name}" | grep "$" >/dev/null 2>&1 ; then
-        datax_table_name=`eval echo ${datax_table_name}`
+    datax_table_name=$(grep '"table":' "${DATAX_CONF_PATH}" | awk -F ":" '{print $2}' | sed "s#\[##g" | sed "s#\]##g" | sed "s#\"##g" | sed "s# ##g" | sort | uniq | head -n 1)
+    if echo "${datax_table_name}" | grep "$" > /dev/null 2>&1; then
+        datax_table_name=$(eval echo ${datax_table_name})
     fi
 
     add_log "D" "datax_db_name: ${datax_db_name}, datax_table_name: ${datax_table_name}"
 }
 
-function datax_report_write()
-{
-    this_date=`date '+%Y-%m-%d'`
+function datax_report_write() {
+    this_date=$(date '+%Y-%m-%d')
     log_path="${DATAX_TOOL_PATH}/log/${this_date}"
-    log_file_name=`ls -tr ${log_path}| tail -n 1`
+    log_file_name=$(ls -tr ${log_path} | tail -n 1)
     log_file="${log_path}/${log_file_name}"
     add_log "D" "log_file: ${log_file}"
     if [ ! -s ${DATAX_REPORT_FILE} ]; then
@@ -71,7 +68,7 @@ function datax_report_write()
 
     k_count=1
     for key in ${key_list[@]}; do
-        value=`grep "${key}" "${log_file}" | awk -F ": " '{print $2}' | sed "s/^ *//g"`
+        value=$(grep "${key}" "${log_file}" | awk -F ": " '{print $2}' | sed "s/^ *//g")
         add_log "D" "k_count: ${k_count}, key: ${key}, value: ${value}"
         let k_count=k_count+1
 
@@ -87,14 +84,12 @@ function datax_report_write()
 
 }
 
-function datax_get_conf()
-{
+function datax_get_conf() {
     add_log "I" "Get datax related confs"
     get_conf | grep DATAX
 }
 
-function datax_run()
-{
+function datax_run() {
 
     add_log "D" "DATAX_PARA_NAME_LIST: ${DATAX_PARA_NAME_LIST}"
     if [[ "${DATAX_PARA_NAME_LIST}" != "" ]]; then
@@ -102,7 +97,7 @@ function datax_run()
         para_count=1
         p_option=""
         for para_name in $(echo "${DATAX_PARA_NAME_LIST}" | sed "s/,/ /g"); do
-            para_value=`eval echo '$'${para_name}`
+            para_value=$(eval echo '$'${para_name})
             add_log "D" "para_count: ${para_count}, para_name: ${para_name}, para_value: ${para_value}"
             if [[ "${p_option}" == "" ]]; then
                 p_option="-D${para_name}=${para_value}"
@@ -125,14 +120,14 @@ function datax_run()
 
         i=1
         failed="0"
-        for conf_file in `ls ${DATAX_CONF_PATH}`; do
+        for conf_file in $(ls ${DATAX_CONF_PATH}); do
             datax_get_db_and_table
-            basename_conf_file=`basename ${conf_file}`
+            basename_conf_file=$(basename ${conf_file})
             conf_dir="${DATAX_CONF_PATH}"
             if  [[ -s ${DATAX_CONF_PATH} ]]; then
-                conf_dir=`dirname "${DATAX_CONF_PATH}"`
+                conf_dir=$(dirname "${DATAX_CONF_PATH}")
             fi
-            
+
             add_log "I" "File No.: ${i}, file_path: ${conf_dir}/${basename_conf_file}"
             if [[ "${p_option}" != "" ]]; then
                 add_log "D" "cmd: python3 ${DATAX_TOOL_PATH}/bin/datax.py -p ${p_option} ${conf_dir}/${basename_conf_file}"
@@ -173,8 +168,7 @@ function datax_run()
 
 }
 
-function datax_report_list()
-{
+function datax_report_list() {
     if [[ ! -s ${DATAX_REPORT_FILE} ]]; then
         add_log "E" "Report DATAX_REPORT_FILE ${DATAX_REPORT_FILE} does not exist or is empty, exiting"
         return 1
@@ -184,9 +178,7 @@ function datax_report_list()
 
 }
 
-
-function datax()
-{
+function datax() {
     if ! datax_precheck; then
         return 1
     fi

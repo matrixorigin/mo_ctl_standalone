@@ -16,12 +16,9 @@ action_type=""
 is_cid_notlatest_notstable_valid=""
 #declare -A stable_list
 
-
-
-function init_global_vars()
-{
-    current_cid=`get_cid less | sed -n '2p'`
-    current_branch=`get_branch | grep "current branch" | head -n 1 | awk -F "current branch: " '{print $2}'`
+function init_global_vars() {
+    current_cid=$(get_cid less | sed -n '2p')
+    current_branch=$(get_branch | grep "current branch" | head -n 1 | awk -F "current branch: " '{print $2}')
     target_branch="${current_branch}"
     RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
     MO_UPGRADE_PATH="${MO_PATH}/matrixone-bk-${RUN_TAG}"
@@ -41,10 +38,7 @@ function init_global_vars()
 
 }
 
-
-
-function check_upgrade_pre_requisites()
-{
+function check_upgrade_pre_requisites() {
     rc=0
     if [[ "${target_cid}" == "" ]]; then
         add_log "E" "Please specify a commit id to upgrade"
@@ -67,11 +61,10 @@ function check_upgrade_pre_requisites()
     return ${rc}
 }
 
-function copy_mo_path()
-{
+function copy_mo_path() {
     add_log "I" "Copying upgrade path from ${MO_PATH}/matrixone/ to ${MO_UPGRADE_PATH}/"
     mkdir -p ${MO_UPGRADE_PATH}/
-    if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-data|mo-service|mo-dump" | xargs -I{} cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ >/dev/null 2>&1; then
+    if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-data|mo-service|mo-dump" | xargs -I{} cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ > /dev/null 2>&1; then
         add_log "I" "Succeeded"
     else
         add_log "E" "Failed, exiting"
@@ -79,9 +72,7 @@ function copy_mo_path()
     fi
 }
 
-
-function validate_target_cid()
-{
+function validate_target_cid() {
 
     cd ${MO_UPGRADE_PATH}
 
@@ -90,9 +81,8 @@ function validate_target_cid()
     add_log "I" "1. current branch: ${current_branch}, current commit id: ${current_cid}"
     add_log "I" "2. target branch: ${target_branch}, target commit id: ${target_cid}"
 
-
     # 1. check if target commit id is a valid stable version
-    s_cid=`get_stable_cid "${target_cid}"`
+    s_cid=$(get_stable_cid "${target_cid}")
     if [[ "${s_cid}" != "${target_cid}" ]]; then
         add_log "I" "Target commit id ${target_cid} is a stable version, whose last commit id is ${s_cid}"
         target_branch="${target_cid}"
@@ -108,7 +98,7 @@ function validate_target_cid()
     #fi
 
     # 2. currently mo is already on this commit id
-    if echo "${current_cid}" | grep "${target_cid}" >/dev/null 2>&1 || echo "${target_cid}" | grep "${current_cid}" >/dev/null 2>&1 ; then
+    if echo "${current_cid}" | grep "${target_cid}" > /dev/null 2>&1 || echo "${target_cid}" | grep "${current_cid}" > /dev/null 2>&1; then
         add_log "I" "Current commit id seems to match target, thus no need to perform any upgrade, exiting"
         exit 0
     fi
@@ -150,11 +140,11 @@ function validate_target_cid()
         if [[ "${target_cid}" == "latest" ]]; then
             # 4.1. get latest commit id if target cid is set to latest
             before_t_cid="${target_cid}"
-            target_cid=`git rev-parse origin/${target_branch} | head  -n 1`
+            target_cid=$(git rev-parse origin/${target_branch} | head -n 1)
                 add_log "I" "Target commit id is latest, thus it's an UPGRADE"
                 action_type="upgrade"
                 add_log "I" "Latest commit id on remote repository is ${target_cid}"
-            if echo "${current_cid}" | grep "${target_cid}" >/dev/null 2>&1; then
+            if echo "${current_cid}" | grep "${target_cid}" > /dev/null 2>&1; then
                 add_log "I" "Target commit id ${target_cid} seems to match current commit id ${current_cid}"
                 add_log "I" "No need to perform any upgrade, exiting"
                 exit 0
@@ -163,8 +153,8 @@ function validate_target_cid()
         else
             # 4.2. check if target commit id is submitted, that is, a valid commit id
             add_log "I" "Check if the given commit id ${target_cid} is valid: git merge-base --is-ancestor ${current_cid} ${target_cid}"
-            git merge-base --is-ancestor ${current_cid} ${target_cid} >/dev/null 2>&1
-            check_cid_result=`echo $?`
+            git merge-base --is-ancestor ${current_cid} ${target_cid} > /dev/null 2>&1
+            check_cid_result=$(echo $?)
             if [[ "${check_cid_result}" == "0" ]]; then
                 if [[ "action_type" != "" ]]; then
 
@@ -176,8 +166,8 @@ function validate_target_cid()
                     add_log "I" "Succeeded, valid target commit id is older than current, thus it's a DOWNGRADE"
                     action_type="downgrade"
                 fi
-            else 
-                
+            else
+
                 add_log "E" "Failed, commit id ${target_cid} seems to be invalid, exiting"
                 return 1
             fi
@@ -186,7 +176,6 @@ function validate_target_cid()
         fi
     fi
 
-
     # 5. print action info
     add_log "I" "Actual info:"
     add_log "I" "1. current branch: ${current_branch}, current commit id: ${current_cid}"
@@ -194,9 +183,8 @@ function validate_target_cid()
     add_log "I" "3. action_type: ${action_type}"
 }
 
-function update_src_codes()
-{    
- 
+function update_src_codes() {
+
     cd ${MO_UPGRADE_PATH}
 
     # 1. pull : merge codes from local repository to local workdir
@@ -211,28 +199,25 @@ function update_src_codes()
     # 2. checkout to target cid
     if [[ "${is_cid_notlatest_notstable_valid}" == "0"  ]]; then
         add_log "I" "Checking out to target commit id ${target_cid}: git checkout ${target_cid}"
-        git checkout ${target_cid} >/dev/null 2>&1
+        git checkout ${target_cid} > /dev/null 2>&1
     fi
 
 }
 
-function upgrade_build_mo_service()
-{
+function upgrade_build_mo_service() {
     # mo-service
     add_log "I" "Try to build mo-service: make build"
-    if cd ${MO_UPGRADE_PATH}/ && make build ; then
+    if cd ${MO_UPGRADE_PATH}/ && make build; then
         add_log "I" "Build succeeded"
     else
         add_log "E" "Build failed"
         return 1
     fi
 
-
 }
-function upgrade_build_mo_dump()
-{
+function upgrade_build_mo_dump() {
     add_log "I" "Try to build mo-dump: make cgo && make modump"
-#    if cd ${MO_UPGRADE_PATH}/ && make build modump; then
+    #    if cd ${MO_UPGRADE_PATH}/ && make build modump; then
     if cd ${MO_UPGRADE_PATH}/ && make cgo && make modump; then
         add_log "I" "Build succeeded"
     else
@@ -241,9 +226,7 @@ function upgrade_build_mo_dump()
     fi
 }
 
-
-function upgrade_build_all()
-{
+function upgrade_build_all() {
     rc=0
     if [[ "${GOPROXY}" != "" ]]; then
         add_log "I" "GOPROXY is set, setting go proxy to GOPROXY=${GOPROXY}"
@@ -262,40 +245,36 @@ function upgrade_build_all()
 
 }
 
-function upgrade_rollback()
-{
+function upgrade_rollback() {
     add_log "I" "Rolling back ${action_type} actions by moving below folder"
     add_log "I" "${MO_UPGRADE_PATH} -> ${MO_PATH}/matrixone-${action_type}-FAILED-${RUN_TAG}"
-    action_type=`to_upper "${action_type}"`
+    action_type=$(to_upper "${action_type}")
     mv ${MO_UPGRADE_PATH} ${MO_PATH}/matrixone-${action_type}-FAILED-${RUN_TAG}
 }
 
-function upgrade_commit()
-{
+function upgrade_commit() {
     add_log "I" "Committing ${action_type} actions by moving below folders"
-    action_type=`to_upper "${action_type}"`
+    action_type=$(to_upper "${action_type}")
     add_log "I" "1. ${MO_PATH}/matrixone/mo-data -> ${MO_UPGRADE_PATH}/"
     add_log "I" "2. ${MO_PATH}/matrixone -> ${MO_PATH}/matrixone-${action_type}-BACKUP-${RUN_TAG}"
     add_log "I" "3. ${MO_UPGRADE_PATH} -> ${MO_PATH}/matrixone"
     # copy mo logs
-    if [[ -d "${MO_LOG_PATH}" ]] ; then 
+    if [[ -d "${MO_LOG_PATH}" ]]; then
         mv ${MO_LOG_PATH} ${MO_UPGRADE_PATH}/logs
     fi
-    
+
     # move mo-data
     mv ${MO_PATH}/matrixone/mo-data ${MO_UPGRADE_PATH}/
 
     # move original mo folder to backup
     mv ${MO_PATH}/matrixone ${MO_PATH}/matrixone-${action_type}-BACKUP-${RUN_TAG}
-    
+
     # move upgraded mo folder to current mo path
     mv ${MO_UPGRADE_PATH} ${MO_PATH}/matrixone
 
 }
 
-
-function upgrade()
-{
+function upgrade() {
     target_cid=$1
 
     if [[ "${MO_DEPLOY_MODE}" != "git" ]]; then
@@ -306,8 +285,6 @@ function upgrade()
     # 0. initialize global variables
     init_global_vars
 
-
-    
     # 1. check if target_cid is not empty and mo-service not running and mo-watchdog disabled
     if ! check_upgrade_pre_requisites; then
         return 1
@@ -317,7 +294,7 @@ function upgrade()
     if ! copy_mo_path; then
         return 1
     fi
-    
+
     # 3. validate commit id
     if ! validate_target_cid; then
         upgrade_rollback
@@ -342,7 +319,6 @@ function upgrade()
     fi
 
     add_log "I" "All ${action_type} actions succeeded. Please use 'mo_ctl start' or 'mo_ctl restart' to restart your mo-service"
-
 
     return 0
 }

@@ -5,8 +5,7 @@
 ################################################################
 # uninstall
 
-function check_uninstall_pre_requisites()
-{
+function check_uninstall_pre_requisites() {
     rc=0
     add_log "I" "Checking pre-requisites before uninstalling MO"
 
@@ -39,11 +38,9 @@ function check_uninstall_pre_requisites()
     return ${rc}
 }
 
-function uninstall()
-{
+function uninstall() {
 
     if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
-
 
         if ! check_uninstall_pre_requisites; then
             return 1
@@ -59,8 +56,6 @@ function uninstall()
             return 1
         fi
 
-
-
         add_log "I" "Removing image ${MO_CONTAINER_IMAGE}"
         if ! docker rmi ${MO_CONTAINER_IMAGE}; then
             add_log "E" "Failed"
@@ -69,7 +64,6 @@ function uninstall()
         fi
 
         add_log "I" "Uninstall MO succeeded."
-
 
     else
         add_log "W" "You're uninstalling MO from path ${MO_PATH}/matrixone, are you sure? (Yes/No)"

@@ -5,10 +5,8 @@
 ################################################################
 # stop
 
-function stop()
-{
+function stop() {
     force=$1
-
 
     kill_option=""
     docker_option="stop"
@@ -19,7 +17,7 @@ function stop()
     max_times=10
     # get PIDS
     if status; then
-        for ((i=1;i<=${max_times};i++)); do
+        for ((i = 1; i <= ${max_times}; i++)); do
             add_log "I" "Try stop all mo-services found for a maximum of ${max_times} times, try no: $i"
             if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
                 add_log "I" "Stopping mo container: docker ${docker_option} ${MO_CONTAINER_NAME}"
@@ -34,9 +32,9 @@ function stop()
             sleep ${STOP_INTERVAL}
             if ! status; then
                 add_log "I" "Stop succeeded"
-                break;
+                break
             else
-                if [[ "${i}" == "${max_times}" ]] ; then
+                if [[ "${i}" == "${max_times}" ]]; then
                     add_log "E" "Stop failed after a maximum of ${max_times} times"
                     return 1
                 else

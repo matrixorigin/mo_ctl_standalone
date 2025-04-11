@@ -7,7 +7,6 @@
 
 #global vars
 
-
 current_branch=""
 current_tag=""
 current_cid=""
@@ -18,15 +17,12 @@ actual_target=""
 target_cid_full=""
 target_branch=""
 
-
 RUN_TAG=""
 MO_UPGRADE_PATH=""
 #action_type=""
 #declare -A stable_list
 
-
-function upgrade_init_vars()
-{
+function upgrade_init_vars() {
 
     cd ${MO_PATH}/matrixone
     current_cid=$(get_cid less)
@@ -42,10 +38,7 @@ function upgrade_init_vars()
     MO_UPGRADE_PATH="${MO_PATH}/matrixone-UPGRADE-BK-${RUN_TAG}"
 }
 
-
-
-function upgrade_check_pre_requisites()
-{
+function upgrade_check_pre_requisites() {
     rc=0
     if [[ "${target_cid}" == "" ]]; then
         add_log "E" "Please specify a commit id to upgrade"
@@ -68,10 +61,8 @@ function upgrade_check_pre_requisites()
     return ${rc}
 }
 
-
-# Step_2. Validate target commit id 
-function upgrade_valid_target()
-{
+# Step_2. Validate target commit id
+function upgrade_valid_target() {
     target_cid=$1
     add_log "I" "Target: ${target_cid}"
     if [[ "${MO_DEPLOY_MODE}" != "git" ]]; then
@@ -85,7 +76,7 @@ function upgrade_valid_target()
 
     add_log "I" "Current info:"
     add_log "I" "Commit id: ${current_cid}, branch: ${current_branch}, tag: ${current_tag}"
-    
+
     if [[ "${target_cid}" == "latest" ]]; then
         # 1. is current commit a tag?
         if [[ "${current_tag}" != "" ]]; then
@@ -93,13 +84,13 @@ function upgrade_valid_target()
             return 1
         fi
         add_log "D" "Command: git fetch"
-    
+
         # 2. current commit id a branch commit id, so is current commit id the newest?
         git fetch
-        latest_cid=`git rev-parse origin/${current_branch} | head -n 1`
+        latest_cid=$(git rev-parse origin/${current_branch} | head -n 1)
         add_log "I" "Latest commit id on current branch ${current_branch} is ${latest_cid}"
-        if echo "${latest_cid}" | grep "${current_cid}" >/dev/null 2>&1 ; then
-        #if [[ "${latest_cid}" == "${current_cid}" ]]; then
+        if echo "${latest_cid}" | grep "${current_cid}" > /dev/null 2>&1; then
+            #if [[ "${latest_cid}" == "${current_cid}" ]]; then
             add_log "W" "Current commit id is already latest, no need to perform upgrade, exiting"
             return 1
         fi
@@ -110,15 +101,14 @@ function upgrade_valid_target()
 
     else
         # check if target cid is a valid branch, commit id or tag
-        remote_tags=`git tag`
-        remote_branches=`git branch -r | awk -F'origin/' '{print $2}' | grep -v HEAD`
-        
+        remote_tags=$(git tag)
+        remote_branches=$(git branch -r | awk -F'origin/' '{print $2}' | grep -v HEAD)
 
         add_log "D" "List of remote tags:"
         add_log "D" "${remote_tags}" "l"
         add_log "D" "List of remote branches:"
         add_log "D" "${remote_branches}" "l"
-        
+
         target_type="unknown"
         actual_target="${target_cid}"
         # 1. is it a tag?
@@ -126,7 +116,7 @@ function upgrade_valid_target()
             if [[ "${tag}" == "${target_cid}" ]]; then
                 add_log "I" "Tag ${tag} mathces target ${target_cid}"
                 target_type="tag"
-                
+
                 if [[ "${target_cid}" == "${current_tag}" ]]; then
                     add_log "W" "Currently on a tag ${current_tag} which is the same as given target ${target_cid}, no need to perform upgrade, exiting"
                     return 2
@@ -143,11 +133,11 @@ function upgrade_valid_target()
                     target_type="branch"
                     add_log "I" "Branch ${branch} mathces target ${target_cid}"
                     git fetch
-                    latest_cid=`git rev-parse origin/${branch} | head -n 1`
+                    latest_cid=$(git rev-parse origin/${branch} | head -n 1)
                     add_log "I" "Latest commit id on target branch ${branch} is ${latest_cid}"
-                    
-                    if echo "${latest_cid}" | grep "${current_cid}" >/dev/null 2>&1 ; then
-                    #if [[ "${latest_cid}" == "${current_cid}" ]]; then
+
+                    if echo "${latest_cid}" | grep "${current_cid}" > /dev/null 2>&1; then
+                        #if [[ "${latest_cid}" == "${current_cid}" ]]; then
                         add_log "W" "Current commit id is already latest, no need to perform upgrade, exiting"
                         return 2
                     fi
@@ -169,12 +159,11 @@ function upgrade_valid_target()
     return 0
 }
 
-function upgrade_bk_old_mo()
-{
+function upgrade_bk_old_mo() {
     add_log "I" "Back up mo path from ${MO_PATH}/matrixone to ${MO_UPGRADE_PATH}"
     add_log "D" "cmd:  mv ${MO_PATH}/matrixone ${MO_UPGRADE_PATH}"
     if mv ${MO_PATH}/matrixone ${MO_UPGRADE_PATH}; then
-    #if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-data|mo-service|mo-dump" | xargs -I{} cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ >/dev/null 2>&1; then
+        #if ls -a ${MO_PATH}/matrixone/ | grep -vE "logs|^.$|^..$|mo-data|mo-service|mo-dump" | xargs -I{} cp -r ${MO_PATH}/matrixone/{} ${MO_UPGRADE_PATH}/ >/dev/null 2>&1; then
         add_log "I" "Succeeded"
     else
         add_log "E" "Failed, exiting"
@@ -182,8 +171,7 @@ function upgrade_bk_old_mo()
     fi
 }
 
-function upgrade_deploy_new_mo()
-{
+function upgrade_deploy_new_mo() {
 
     add_log "I" "Deploying new mo on target ${target_type} ${actual_target}"
     if ! deploy ${actual_target}; then
@@ -192,10 +180,8 @@ function upgrade_deploy_new_mo()
     fi
 }
 
+function upgrade_copy_conf_and_data() {
 
-function upgrade_copy_conf_and_data()
-{    
- 
     add_log "I" "Backup new mo confs and copy confs from old mo to new mo"
     add_log "D" "cmd:  mv ${MO_PATH}/matrixone/etc ${MO_PATH}/matrixone/etc-default && cp -rp ${MO_UPGRADE_PATH}/etc ${MO_PATH}/matrixone/etc"
     mv ${MO_PATH}/matrixone/etc ${MO_PATH}/matrixone/etc-default && cp -rp ${MO_UPGRADE_PATH}/etc ${MO_PATH}/matrixone/etc
@@ -210,9 +196,7 @@ function upgrade_copy_conf_and_data()
 
 }
 
-
-function upgrade_rollback()
-{
+function upgrade_rollback() {
     add_log "E" "Rolling back upgrade action"
     add_log "D" "cmd:  mv ${MO_UPGRADE_PATH} ${MO_PATH}/matrixone"
     #action_type=`to_upper "${action_type}"`
@@ -220,9 +204,7 @@ function upgrade_rollback()
     mv "${MO_UPGRADE_PATH}" "${MO_PATH}/matrixone"
 }
 
-
-function upgrade_print_report()
-{
+function upgrade_print_report() {
     target_branch=$(get_branch less)
     target_cid_full=$(get_cid)
     add_log "I" "Branch or tag before upgrade: ${current_branch}"
@@ -236,10 +218,7 @@ function upgrade_print_report()
 
 }
 
-
-
-function upgrade()
-{
+function upgrade() {
     target_cid=$1
 
     if [[ "${MO_DEPLOY_MODE}" != "git" ]]; then
@@ -263,7 +242,7 @@ function upgrade()
         add_log "E" "Upgrade failed, exiting"
         return 1
     fi
-    
+
     # 3. backup old mo
     if ! upgrade_bk_old_mo; then
         add_log "E" "Upgrade failed, exiting"
@@ -291,7 +270,5 @@ function upgrade()
 
     add_log "I" "Upgrade succeeded. Please use 'mo_ctl start' or 'mo_ctl restart' to restart your mo-service"
 
-
     return 0
 }
-

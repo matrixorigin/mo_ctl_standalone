@@ -40,8 +40,7 @@ USAGE_RESTORE="restore mo from a data backup"
 USAGE_AUTO_LOG_ROTATE="set up a crontab task to split and compress mo-service log file automatically"
 USAGE_DATAX="run datax jobs or list report"
 
-function help_precheck()
-{
+function help_precheck() {
     option="precheck"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_PRECHECK}"
     echo -n "   Check list : "
@@ -51,9 +50,7 @@ function help_precheck()
     echo ""
 }
 
-
-function help_deploy()
-{
+function help_deploy() {
     option="deploy"
     echo "Usage         : ${TOOL_NAME} ${option} [mo_version] [force] [nobuild] # ${USAGE_DEPLOY}"
     echo "Options    :"
@@ -70,22 +67,17 @@ function help_deploy()
     echo "                ${TOOL_NAME} ${option} main        # deploy development latest version, but don't build mo-service, i.e. only pull git codes"
 }
 
-
-function help_deploy_docker()
-{
+function help_deploy_docker() {
     option="deploy"
     echo "Usage         : ${TOOL_NAME} ${option}  # ${USAGE_DEPLOY}"
 }
 
-function help_status()
-{
+function help_status() {
     option="status"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_STATUS}"
 }
 
-
-function help_start()
-{
+function help_start() {
     option="start"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_START}"
     echo "Note          : when MO_DEPLOY_MODE=git', ${TOOL_NAME} finds mo-service under path MO_PATH/matrixone/ (currently set as ${MO_PATH}/matrixone/)"
@@ -94,8 +86,7 @@ function help_start()
     echo "Examples      : ${TOOL_NAME} ${option}"
 }
 
-function help_stop()
-{
+function help_stop() {
     option="stop"
     echo "Usage         : ${TOOL_NAME} ${option} [force] # ${USAGE_STOP}"
     echo "Options    :"
@@ -107,9 +98,7 @@ function help_stop()
     echo "                ${TOOL_NAME} ${option} force"
 }
 
-
-function help_restart()
-{
+function help_restart() {
     option="restart"
     echo "Usage         : ${TOOL_NAME} ${option} [force] # ${USAGE_RESTART}"
     echo "Note          : ${option} is a combination of 'stop' and 'start', thus will try 'stop' first, then try 'start'"
@@ -117,8 +106,7 @@ function help_restart()
     echo "                ${TOOL_NAME} ${option} force"
 }
 
-function help_connect()
-{
+function help_connect() {
     option="connect"
     echo "Usage         : ${TOOL_NAME} ${option} # ${USAGE_CONNECT}"
     echo "Note          : Please set below confs first"
@@ -133,23 +121,18 @@ function help_connect()
     echo "                ${TOOL_NAME} ${option}"
 }
 
-
-
-function help_pprof()
-{
+function help_pprof() {
     option="pprof"
     echo "Usage          : ${TOOL_NAME} ${option} [item] [duration] # ${USAGE_PPROF}"
     echo "Options        : 1. [item] (optional, default: profile): Specify kind of profile to collect, available: cpu | heap | allocs | goroutine | trace | malloc"
     echo "                 2. [duration] (optional, default: 30): Specify duration in seconds to collect the profile, only valid for 'cpu' and 'trace'"
     echo "Example        : ${TOOL_NAME} ${option}         # collect cpu profile for 30s"
     echo "                 ${TOOL_NAME} ${option} cpu     # same as above"
-    echo "                 ${TOOL_NAME} ${option} cpu 30  # same as above" 
+    echo "                 ${TOOL_NAME} ${option} cpu 30  # same as above"
     echo "                 ${TOOL_NAME} ${option} heap    # collect heap profile"
 }
 
-
-function help_set_conf()
-{
+function help_set_conf() {
     option="set_conf"
     echo "Usage         : ${TOOL_NAME} ${option} [setting] # ${USAGE_SET_CONF}"
     echo "Options       :"
@@ -162,8 +145,7 @@ function help_set_conf()
     echo "                ${TOOL_NAME} ${option} reset                                            # reset all confs to default, note this could be DANGEROUS as all of your current settings will be lost and reset to default values. Use it very carefully!!!"
 }
 
-function help_get_conf()
-{
+function help_get_conf() {
     option="getconf"
     echo "Usage         : ${TOOL_NAME} ${option} [conf_list] # ${USAGE_GET_CONF}"
     echo "Options       :"
@@ -176,8 +158,7 @@ function help_get_conf()
     echo "              : ${TOOL_NAME} ${option}                        # get all configurations"
 }
 
-function help_ddl_convert()
-{
+function help_ddl_convert() {
     option="ddl_convert"
     echo "Usage         : ${TOOL_NAME} ${option} [option]  [src_file] [tgt_file] # ${USAGE_DDL_CONVERT}"
     echo "Options    :"
@@ -187,8 +168,7 @@ function help_ddl_convert()
     echo "Examples      : ${TOOL_NAME} ${option} mysql_to_mo /tmp/mysql.sql /tmp/mo.sql"
 }
 
-function help_watchdog()
-{
+function help_watchdog() {
     option="watchdog"
     echo "Usage           : ${TOOL_NAME} ${option} [option]    # ${USAGE_WATCHDOG}"
     echo "Options         :"
@@ -199,9 +179,7 @@ function help_watchdog()
     echo "                  ${TOOL_NAME} ${option}             # same as ${TOOL_NAME} ${option} status"
 }
 
-
-function help_upgrade()
-{
+function help_upgrade() {
     option="upgrade"
     echo "Usage           : ${TOOL_NAME} ${option} [version]   # ${USAGE_UPGRADE}"
     echo " [version]      : a branch(e.g. 'main'), a commit id (e.g. '38888f7'), or a release version(e.g. '1.2.0')"
@@ -212,9 +190,7 @@ function help_upgrade()
 
 }
 
-
-function help_get_cid()
-{
+function help_get_cid() {
     option="get_cid"
     echo "Usage         : ${TOOL_NAME} ${option} [less] # ${USAGE_GET_CID}"
     echo "  [less]      : (optional) print less info with cid only, otherwise print more info"
@@ -223,9 +199,7 @@ function help_get_cid()
 
 }
 
-
-function help_get_branch()
-{
+function help_get_branch() {
     option="get_branch"
     echo "Usage         : ${TOOL_NAME} ${option} [less] # ${USAGE_GET_BRANCH}"
     echo "  [less]      : (optional) print less info with branch only, otherwise print more info"
@@ -233,16 +207,14 @@ function help_get_branch()
     echo "                ${TOOL_NAME} ${option} less"
 }
 
-function help_uninstall()
-{
+function help_uninstall() {
     option="uninstall"
     echo "Usage           : ${TOOL_NAME} ${option}        # ${USAGE_UNINSTALL}"
     echo "Note            : You will need to input 'Yes/No' to confirm before uninstalling"
 
 }
 
-function help_sql()
-{
+function help_sql() {
     option="sql"
     echo "Usage           : ${TOOL_NAME} ${option} [sql]                 # ${USAGE_SQL}"
     echo "  [sql]         : (required) a string quote by \"\", which could be a raw string of sql statements, a file of statements, or a path with one or more files"
@@ -251,8 +223,7 @@ function help_sql()
     echo "                : ${TOOL_NAME} ${option} /data/                  # execute all sql files with .sql postfix in /data/"
 }
 
-function help_csv_convert()
-{
+function help_csv_convert() {
     option="csv_convert"
     echo "Usage           : ${TOOL_NAME} ${option}                        # ${USAGE_CSV_CONVERT}"
     echo "Note            : Please set below confs first"
@@ -280,14 +251,12 @@ function help_csv_convert()
 
 }
 
-function help_version()
-{
+function help_version() {
     option="version"
     echo "Usage        : ${TOOL_NAME} ${option} # ${USAGE_VERSION}"
 }
 
-function help_bk_notes()
-{
+function help_bk_notes() {
     echo "Note         : Currently only supported on Linux. Please set below confs first"
     echo "               ------------------------- "
     echo "                1. Common settings       "
@@ -346,8 +315,7 @@ function help_bk_notes()
 
 }
 
-function help_auto_backup()
-{
+function help_auto_backup() {
     option="auto_backup"
     echo "Usage           : ${TOOL_NAME} ${option} [option]    # ${USAGE_AUTO_BACKUP}"
     echo " [option]       : available: enable | disable | status"
@@ -359,8 +327,7 @@ function help_auto_backup()
     help_bk_notes
 }
 
-function help_backup()
-{
+function help_backup() {
     option="backup"
     echo "Usage         : ${TOOL_NAME} ${option}             # ${USAGE_BACKUP}"
     echo "              : ${TOOL_NAME} ${option} list        # list backup report in summary"
@@ -368,15 +335,13 @@ function help_backup()
     help_bk_notes
 }
 
-function help_clean_backup()
-{
+function help_clean_backup() {
     option="clean_backup"
     echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_CLEAN_BACKUP}"
     help_bk_notes
 }
 
-function help_restore_notes()
-{
+function help_restore_notes() {
     echo "Note            : Currently only supported on Linux. Please set below confs first"
 
     echo "                  ------------------------- "
@@ -412,16 +377,13 @@ function help_restore_notes()
 
 }
 
-function help_restore()
-{
+function help_restore() {
     option="restore"
     echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_RESTORE}"
     help_restore_notes
 }
 
-
-function help_cl_notes()
-{
+function help_cl_notes() {
     echo "Note            : Currently only supported on Linux. Please set below confs first"
     echo "                  1. CLEAN_LOGS_DAYS_BEFORE (optional, default: 31): clean old system log table data before [x] days. "
     echo "                  2. CLEAN_LOGS_TABLE_LIST (optional, default: statement_info,rawlog,metric): log tables to clean, choose one or multiple(seperated by ',') values from: statement_info | rawlog | metric, e.g. statement_info,rawlog,metric"
@@ -443,15 +405,13 @@ function help_cl_notes()
 
 }
 
-function help_clean_logs()
-{
+function help_clean_logs() {
     option="clean_logs"
     echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_CLEAN_LOGS}"
     help_cl_notes
 }
 
-function help_auto_clean_logs()
-{
+function help_auto_clean_logs() {
     option="auto_clean_logs"
     echo "Usage           : ${TOOL_NAME} ${option} [option]    # ${USAGE_AUTO_CLEAN_LOGS}"
     echo "  [option]      : enable | disable | status(default)"
@@ -459,8 +419,7 @@ function help_auto_clean_logs()
 
 }
 
-function help_build_image()
-{
+function help_build_image() {
     option="build_image"
     echo "Usage           : ${TOOL_NAME} ${option}             # ${USAGE_BUILD_IMAGE}"
     echo "Note            : Please set below configurations first before you run the [enable] option"
@@ -475,8 +434,7 @@ function help_build_image()
     echo "                  ${TOOL_NAME} ${option}"
 }
 
-function help_monitor()
-{
+function help_monitor() {
     option="monitor"
     echo "Usage           : ${TOOL_NAME} ${option} [option_1] [option_2]        # ${USAGE_MONITOR}"
     echo "Options"
@@ -491,8 +449,7 @@ function help_monitor()
     echo "                  ${TOOL_NAME} ${option} stop            # stop monitor system if running"
 }
 
-function help_log_rotate_notes()
-{
+function help_log_rotate_notes() {
     option=$1
     echo "Note            : Currently only supported on Linux. Please set below confs first"
     echo "                  1. MO_LOG_AUTO_SPLIT: [optional], 'daily' (default) | 'size'"
@@ -504,17 +461,14 @@ function help_log_rotate_notes()
     echo "                  3. MO_LOG_RESERVE_NUM: [optional], format: [positive_integer_number], default: 100"
     echo "                     [positive_integer_number]: number of archived log files"
 
-
 }
 
-
-function help_auto_log_rotate()
-{
+function help_auto_log_rotate() {
     option="auto_log_rotate"
     echo "Usage           : ${TOOL_NAME} ${option} [option]            # ${USAGE_AUTO_LOG_ROTATE}"
     echo "Options         : "
     echo "  [option]      : enable | disable | status(default)"
-    
+
     help_log_rotate_notes ${option}
 
     echo "Examples        : "
@@ -534,8 +488,7 @@ function help_auto_log_rotate()
 
 }
 
-function help_datax()
-{
+function help_datax() {
     option="datax"
     echo "Usage           : ${TOOL_NAME} ${option} [option1]               # ${USAGE_DATAX}"
     echo "Options         : [option1]: run|list"
@@ -551,9 +504,7 @@ function help_datax()
     echo "                : ${TOOL_NAME} ${option} list                   # list datax report"
 }
 
-
-function help_1()
-{
+function help_1() {
     echo "Usage               : ${TOOL_NAME} [option_1] [option_2]"
     echo ""
     echo "Options             :"
@@ -593,10 +544,7 @@ function help_1()
     echo "                      ${TOOL_NAME} status help "
 }
 
-
-
-function help_2()
-{
+function help_2() {
     option=$1
     case "${option_1}" in
         precheck)
@@ -693,5 +641,3 @@ function help_2()
             ;;
     esac
 }
-
-

@@ -5,8 +5,7 @@
 ################################################################
 # restart
 
-function restart()
-{
+function restart() {
     force=$1
     stop ${force}
 

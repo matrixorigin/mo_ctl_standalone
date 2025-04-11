@@ -5,8 +5,7 @@
 ################################################################
 # get_cid
 
-function get_cid()
-{
+function get_cid() {
     option=$1
 
     if [[ "${MO_DEPLOY_MODE}" != "git" ]]; then
@@ -23,13 +22,13 @@ function get_cid()
         add_log "E" "Get commit id failed, exiting"
         return 1
     fi
-    
-    # better way to get commit id
-    cid_full=`cd ${MO_PATH}/matrixone && git log -n 1`
-    cid_less=`cd ${MO_PATH}/matrixone && git log -n 1 --format='%H'`
-    cid_less=`echo "${cid_less:0:8}"`
 
-    #deprecated: 
+    # better way to get commit id
+    cid_full=$(cd ${MO_PATH}/matrixone && git log -n 1)
+    cid_less=$(cd ${MO_PATH}/matrixone && git log -n 1 --format='%H')
+    cid_less=$(echo "${cid_less:0:8}")
+
+    #deprecated:
     #cid_full="$(cd ${MO_PATH}/matrixone && git log | head -n 6)"
     #cid_less=`echo ${cid_full} | grep "^commit" | awk '{print $2}'`
     if [[ "${cid_full}" != "" ]]; then

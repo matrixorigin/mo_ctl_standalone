@@ -4,7 +4,7 @@
 # Visit us at https://www.matrixorigin.cn/
 ################################################################
 
-if ! pwd >/dev/null 2>&1; then
+if ! pwd > /dev/null 2>&1; then
     nowtime="$(date '+%Y-%m-%d_%H:%M:%S.%N')"
     nowtime="$(echo "${nowtime}" | cut -b 1-23)"
     echo "${nowtime}    [ERROR]    You're currently on a path that no loner exists, please change to a valid directory and re-execute mo_ctl command"
@@ -85,137 +85,137 @@ function main() {
     fi
 
     case "${option_1}" in
-    "" | "help")
-        help_1
-        ;;
-    "precheck")
-        precheck
-        ;;
-    "deploy")
-        deploy "${option_2}" "${option_3}" "${option_4}"
-        ;;
-    "status")
-        status
-        ;;
-    "start")
-        start
-        ;;
-    "stop")
-        stop "${option_2}"
-        ;;
-    "restart")
-        restart "${option_2}"
-        ;;
-    "connect")
-        connect
-        ;;
-    "get_cid")
-        get_cid "${option_2}"
-        ;;
-    "pprof")
-        pprof "${option_2}" "${option_3}"
-        ;;
-    "set_conf")
-        shift_vars=$(echo "${all_vars#* }")
-        if [[ -s "${option_2}" ]]; then
-            add_log "I" "Option 1 ${option_1} is a file, will set_conf based on it and ignore the rest options"
-            set_conf_by_file "${shift_vars}"
-        else
+        "" | "help")
+            help_1
+            ;;
+        "precheck")
+            precheck
+            ;;
+        "deploy")
+            deploy "${option_2}" "${option_3}" "${option_4}"
+            ;;
+        "status")
+            status
+            ;;
+        "start")
+            start
+            ;;
+        "stop")
+            stop "${option_2}"
+            ;;
+        "restart")
+            restart "${option_2}"
+            ;;
+        "connect")
+            connect
+            ;;
+        "get_cid")
+            get_cid "${option_2}"
+            ;;
+        "pprof")
+            pprof "${option_2}" "${option_3}"
+            ;;
+        "set_conf")
+            shift_vars=$(echo "${all_vars#* }")
+            if [[ -s "${option_2}" ]]; then
+                add_log "I" "Option 1 ${option_1} is a file, will set_conf based on it and ignore the rest options"
+                set_conf_by_file "${shift_vars}"
+            else
+                if [[ "${option_2}" == "" ]]; then
+                    add_log "E" "Set content is empty, please check again"
+                    help_set_conf
+                    return 1
+                fi
+                set_conf "${shift_vars}"
+            fi
+            ;;
+        "get_conf")
+            get_conf "${option_2}" "${option_3}"
+            ;;
+        "ddl_convert")
+            ddl_convert "${option_2}" "${option_3}" "${option_4}"
+            ;;
+        "watchdog")
+            watchdog "${option_2}"
+            ;;
+        "upgrade")
+            upgrade "${option_2}"
+            ;;
+        "get_branch")
+            get_branch "${option_2}"
+            ;;
+        "uninstall")
+            uninstall
+            ;;
+        "sql")
             if [[ "${option_2}" == "" ]]; then
-                add_log "E" "Set content is empty, please check again"
-                help_set_conf
+                add_log "E" "Query is empty, please check again"
+                help_sql
                 return 1
             fi
-            set_conf "${shift_vars}"
-        fi
-        ;;
-    "get_conf")
-        get_conf "${option_2}" "${option_3}"
-        ;;
-    "ddl_convert")
-        ddl_convert "${option_2}" "${option_3}" "${option_4}"
-        ;;
-    "watchdog")
-        watchdog "${option_2}"
-        ;;
-    "upgrade")
-        upgrade "${option_2}"
-        ;;
-    "get_branch")
-        get_branch "${option_2}"
-        ;;
-    "uninstall")
-        uninstall
-        ;;
-    "sql")
-        if [[ "${option_2}" == "" ]]; then
-            add_log "E" "Query is empty, please check again"
-            help_sql
+            #shift_vars=`echo "${all_vars#* }"`
+            shift_vars="${all_vars#* }"
+            sql "${shift_vars}"
+            ;;
+        "csv_convert")
+            csv_convert
+            ;;
+        "version")
+            version
+            ;;
+        "auto_backup")
+            auto_backup "${option_2}" "${option_3}"
+            ;;
+        "backup")
+            if [[ "${option_2}" == "list" ]]; then
+                backup_list "${option_3}"
+            else
+                backup
+            fi
+            ;;
+        "restore")
+            if [[ "${option_2}" == "list" ]]; then
+                restore_list "${option_3}"
+            else
+                restore
+            fi
+            ;;
+        "clean_backup")
+            clean_backup
+            ;;
+        "clean_logs")
+            clean_logs
+            ;;
+        "auto_clean_logs")
+            auto_clean_logs "${option_2}"
+            ;;
+        "build_image")
+            build_image
+            ;;
+        "monitor")
+            monitor "${option_2}" "${option_3}"
+            ;;
+        "basic")
+            "${option_2}" "${option_3}" "${option_4}"
+            ;;
+
+        "auto_log_rotate")
+            auto_log_rotate "${option_2}"
+            ;;
+        "datax")
+            if [[ "${option_2}" == "list" ]]; then
+                datax_report_list
+            else
+                datax
+            fi
+            ;;
+
+        *)
+            add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"
+            help_1
+            cd "${current_path}" || exit
             return 1
-        fi
-        #shift_vars=`echo "${all_vars#* }"`
-        shift_vars="${all_vars#* }"
-        sql "${shift_vars}"
-        ;;
-    "csv_convert")
-        csv_convert
-        ;;
-    "version")
-        version
-        ;;
-    "auto_backup")
-        auto_backup "${option_2}" "${option_3}"
-        ;;
-    "backup")
-        if [[ "${option_2}" == "list" ]]; then
-            backup_list "${option_3}"
-        else
-            backup
-        fi
-        ;;
-    "restore")
-        if [[ "${option_2}" == "list" ]]; then
-            restore_list "${option_3}"
-        else
-            restore
-        fi
-        ;;
-    "clean_backup")
-        clean_backup
-        ;;
-    "clean_logs")
-        clean_logs
-        ;;
-    "auto_clean_logs")
-        auto_clean_logs "${option_2}"
-        ;;
-    "build_image")
-        build_image
-        ;;
-    "monitor")
-        monitor "${option_2}" "${option_3}"
-        ;;
-    "basic")
-        "${option_2}" "${option_3}" "${option_4}"
-        ;;
-
-    "auto_log_rotate")
-        auto_log_rotate "${option_2}"
-        ;;
-    "datax")
-        if [[ "${option_2}" == "list" ]]; then
-            datax_report_list
-        else
-            datax
-        fi
-        ;;
-
-    *)
-        add_log "E" "Invalid option_1: ${option_1}, please refer to usage help info below"
-        help_1
-        cd "${current_path}" || exit
-        return 1
-        ;;
+            ;;
     esac
 
     rc=$?
