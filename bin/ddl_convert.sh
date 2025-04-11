@@ -5,9 +5,7 @@
 ################################################################
 # ddl_convert
 
-
-function ddl_convert ()
-{
+function ddl_convert() {
     option=$1
     src_file=$2
     tgt_file=$3
@@ -31,11 +29,11 @@ function ddl_convert ()
                 fi
             fi
 
-            src_file=`readlink -f ${src_file}`
-            tgt_file=`readlink -f ${tgt_file}`
-           
+            src_file=$(readlink -f ${src_file})
+            tgt_file=$(readlink -f ${tgt_file})
+
             mysql_to_mo ${src_file} ${tgt_file}
-            
+
             ;;
         *)
             add_log "E" "Invaid option: ${option}"

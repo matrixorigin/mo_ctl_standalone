@@ -5,8 +5,7 @@
 ################################################################
 # precheck
 
-function precheck()
-{
+function precheck() {
     rc=0
     list_nok=""
 
@@ -22,9 +21,7 @@ function precheck()
         fi
 
         # 1. check if installed
-        if ! which ${item} >/dev/null 2>&1; then
-
-
+        if ! which ${item} > /dev/null 2>&1; then
 
             add_log "E" "Nok. Please check if it is installed or exists in your \$PATH env"
             list_nok="$item ${list_nok}"
@@ -37,18 +34,18 @@ function precheck()
         # 2. check version
         case ${item} in
             "gcc")
-                os=`what_os`
+                os=$(what_os)
                 if [[ "${os}" == "Mac" ]]; then
-                    version_current=`gcc --version | head -n 1 | awk -F"Apple clang version "  '{print $2}' | awk '{print $1}' | sed 's/[[:space:]]//g'`
+                    version_current=$(gcc --version | head -n 1 | awk -F"Apple clang version " '{print $2}' | awk '{print $1}' | sed 's/[[:space:]]//g')
                     version_required="${CLANG_VERSION}"
                 else
-                    version_current=`gcc --version | head -n 1 | awk -F'[)] ' '{print $2}' | awk '{print $1}'`
+                    version_current=$(gcc --version | head -n 1 | awk -F'[)] ' '{print $2}' | awk '{print $1}')
                     version_required="${GCC_VERSION}"
                 fi
-    
+
                 ;;
             "go")
-                version_current=`go version | head -1 |  awk '{print $3}' | sed "s#go##g"`
+                version_current=$(go version | head -1 | awk '{print $3}' | sed "s#go##g")
                 version_required="${GO_VERSION}"
                 ;;
             *)
@@ -56,10 +53,10 @@ function precheck()
                 ;;
         esac
 
-        add_log "I" "Version check on ${item}. Current: ${version_current}, required: ${version_required}" 
+        add_log "I" "Version check on ${item}. Current: ${version_current}, required: ${version_required}"
 
         if cmp_version ${version_current} ${version_required}; then
-           add_log "I" "Ok. ${item} version is greater than or equal to required"
+            add_log "I" "Ok. ${item} version is greater than or equal to required"
         else
             add_log "W" "Nok. Please upgrade ${item} version to minimum required"
             list_nok="$item ${list_nok}"

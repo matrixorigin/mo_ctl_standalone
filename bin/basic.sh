@@ -9,9 +9,8 @@
 # usage: what_os
 # in: none
 # out: os name, available: Mac | Linux | OtherOS
-function what_os()
-{    
-    system=`uname`
+function what_os() {
+    system=$(uname)
     os=""
     case "${system}" in
         "")
@@ -22,7 +21,7 @@ function what_os()
             ;;
         "Linux")
             os="Linux"
-            ;;            
+            ;;
         *)
             os="OtherOS"
             ;;
@@ -30,27 +29,26 @@ function what_os()
     echo "${os}"
 }
 
-function get_nanosecond()
-{
-    os=`what_os`
+function get_nanosecond() {
+    os=$(what_os)
     if [[ "${os}" == "Mac" ]]; then
         # 1. for Mac
         # format: 1690284688.93481087684631347656
-        if which python3 >/dev/null 2>&1; then
+        if which python3 > /dev/null 2>&1; then
             # in nanosecond
-            nanosec=`python3 -c "import time; print('%.9f' % time.time())"`
-        elif which python >/dev/null 2>&1; then
+            nanosec=$(python3 -c "import time; print('%.9f' % time.time())")
+        elif which python > /dev/null 2>&1; then
             # in nanosecond
-            nanosec=`python -c "import time; print('%.9f' % time.time())"`
+            nanosec=$(python -c "import time; print('%.9f' % time.time())")
         else
             # in second
-            nanosec=`date +%s.0000000000`
+            nanosec=$(date +%s.0000000000)
         fi
     else
         # 2. for Linux
         # format: 1690284688.93481087684631347656
         # in nanosecond
-        nanosec=`date +%s.%N`
+        nanosec=$(date +%s.%N)
     fi
     echo "${nanosec}"
 }
@@ -62,41 +60,38 @@ function get_nanosecond()
 #   [string]: string in alphabet format
 # out:
 #   [string]: upper format of input string, e.g. aBcdEfgHI -> ABCDEFGHI
-function to_upper()
-{
-    echo $(echo $1 | tr '[a-z]' '[A-Z]') 
+function to_upper() {
+    echo $(echo $1 | tr '[a-z]' '[A-Z]')
 }
-
 
 # function: print log with given log level and message
 # usage: add_log [level] [msg] []
 # e.g. : add_log "I" "This is a demo log message"
-# in: 
+# in:
 #    [level]: log level, suggested: DEBUG | INFO | WARN | ERROR
 #    [msg]: log message in one sentence
-# output: 
+# output:
 #    "[current_timestamp]    [level]    [msg]"
 #    e.g.: "20230630_222408    [INFO]    This is a demo log message"
-function add_log()
-{
+function add_log() {
     level=$1
     msg="$2"
     add_line="$3"
 
-    os=`what_os`
+    os=$(what_os)
     if [[ "${os}" == "Mac" ]]; then
         # 1. for Mac
         # format: 2023-07-25 17:39:24.904 UTC+0800
         timezone="UTC+0800"
-        if which python3 >/dev/null 2>&1; then
-            # in millisecond 
-            timestamp_ms=`python3 -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23`
-        elif which python >/dev/null 2>&1; then
-            # in millisecond 
-            timestamp_ms=`python -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23`
+        if which python3 > /dev/null 2>&1; then
+            # in millisecond
+            timestamp_ms=$(python3 -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23)
+        elif which python > /dev/null 2>&1; then
+            # in millisecond
+            timestamp_ms=$(python -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23)
         else
             # in second
-            timestamp_ms=`date '+%Y-%m-%d %H:%M:%S'`
+            timestamp_ms=$(date '+%Y-%m-%d %H:%M:%S')
         fi
         nowtime="${timestamp_ms} ${timezone}"
     else
@@ -104,14 +99,14 @@ function add_log()
         # format: 2023-07-13 15:37:40
         # nowtime=`date '+%F %T'`
         # format: 2023-07-25 17:39:24.904 UTC+0800
-        nowtime="`date '+%Y-%m-%d %H:%M:%S.%N UTC%z'`"
-        timestamp_ms="`echo "${nowtime}" | cut -b 1-23`"
-        timezone="`echo "${nowtime}" | cut -b 31-39`"
+        nowtime="$(date '+%Y-%m-%d %H:%M:%S.%N UTC%z')"
+        timestamp_ms="$(echo "${nowtime}" | cut -b 1-23)"
+        timezone="$(echo "${nowtime}" | cut -b 31-39)"
         nowtime="${timestamp_ms} ${timezone}"
     fi
 
-    level=`to_upper ${level}`
-    display_log_level=`to_upper ${TOOL_LOG_LEVEL}`
+    level=$(to_upper ${level})
+    display_log_level=$(to_upper ${TOOL_LOG_LEVEL})
     if [[ "${display_log_level}" == "" ]]; then
         display_log_level="I"
     fi
@@ -131,9 +126,9 @@ function add_log()
             esac
             ;;
         "I")
-            level="INFO" 
+            level="INFO"
             case "${display_log_level}" in
-                "E"|"W")
+                "E" | "W")
                     return 0
                     ;;
                 *)
@@ -142,9 +137,9 @@ function add_log()
             esac
             ;;
         "D")
-            level="DEBUG" 
+            level="DEBUG"
             case "${display_log_level}" in
-                "E"|"W"|"I")
+                "E" | "W" | "I")
                     return 0
                     ;;
                 *)
@@ -156,18 +151,18 @@ function add_log()
             echo "These are valid log levels: E/e/W/w/I/i/D/d."
             echo "   E/e: ERROR, W/w: WARN, I/i: INFO, D/d: DEBUG"
             exit 1
-        ;;
-    esac 
+            ;;
+    esac
 
     case "${add_line}" in
-        "n" )
+        "n")
             if [ "x$CTL_LOG_FILE" != "x" ]; then
                 echo -n "${nowtime}    [${level}]    ${msg}" 2>&1 | tee -a $CTL_LOG_FILE
             else
                 echo -n "${nowtime}    [${level}]    ${msg}"
             fi
             ;;
-        "l" )
+        "l")
             if [ "x$CTL_LOG_FILE" != "x" ]; then
                 echo "${msg}" 2>&1 | tee -a $CTL_LOG_FILE
             else
@@ -184,16 +179,14 @@ function add_log()
     esac
 }
 
-
-function check_cmd()
-{  
+function check_cmd() {
     cmd="$1"
     if [[ "${cmd}" == "" ]]; then
         add_log "E" "Command is empty, please input a command name"
         return 1
     fi
 
-    if ! command -v ${cmd} >/dev/null 2>&1; then
+    if ! command -v ${cmd} > /dev/null 2>&1; then
         add_log "E" "Command '${cmd}' is not found"
         return 1
     else
@@ -201,8 +194,7 @@ function check_cmd()
     fi
 }
 
-function check_conf_item_not_empty()
-{  
+function check_conf_item_not_empty() {
     conf_item="$1"
 
     if [[ "${conf_item}" == "" ]]; then
@@ -210,8 +202,7 @@ function check_conf_item_not_empty()
         return 1
     fi
 
-
-    conf_value=`eval echo '$'${conf_item}`
+    conf_value=$(eval echo '$'${conf_item})
     if [[ "${conf_value}" == "" ]]; then
         add_log "E" "Conf item ${conf_item} is empty, please set it first"
         return 1
@@ -220,53 +211,44 @@ function check_conf_item_not_empty()
     fi
 }
 
-
-
 # function: compare the version number of 2 given string
 # usage: cmp_version [v1] [v2]
 # e.g. : cmp_version 1.20.1 1.19
-# in: 
+# in:
 #   [v1]: current version
 #   [v2]: required version
-# output: 
+# output:
 #   0: if [v1] ≥ [v2]
 #   1: otherwise
-function cmp_version()
-{ 
-    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"; 
+function cmp_version() {
+    test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1"
 }
 
 # deprecated
-function cmp_version_old()
-{
+function cmp_version_old() {
     version_current=$1
     version_required=$2
-    rc=`awk -v  v1=${version_required} -v v2=${version_current} 'BEGIN{print(v2>=v1)?"0":"1"}'`
+    rc=$(awk -v v1=${version_required} -v v2=${version_current} 'BEGIN{print(v2>=v1)?"0":"1"}')
     return $rc
 }
 
-
-function pos_int_range()
-# function: check if a given string is a valid positive integer and is not larger than the second given number
-# usage: pos_int_range [num1] [num2]
-# e.g. : pos_int_range 10 100
-# in:
-#   [num1]: number to be judged
-#   [num2]: maximum number of range
-# out:
-#   0: if 0 < [num1] ≤ [num2]
-#   1: otherwise
-{
+function pos_int_range() { # function: check if a given string is a valid positive integer and is not larger than the second given number
+    # usage: pos_int_range [num1] [num2]
+    # e.g. : pos_int_range 10 100
+    # in:
+    #   [num1]: number to be judged
+    #   [num2]: maximum number of range
+    # out:
+    #   0: if 0 < [num1] ≤ [num2]
+    #   1: otherwise
     num1=$1
     num2=$2
-    if [[ ${num1} -gt 0 ]] 2>/dev/null && [[ ${num1} -le ${num2} ]]  2>/dev/null
-    then
+    if [[ ${num1} -gt 0 ]] 2> /dev/null && [[ ${num1} -le ${num2} ]] 2> /dev/null; then
         return 0
     else
         return 1
     fi
 }
-
 
 # function: convert an input string to lower format
 # usage: to_lower [string]
@@ -275,24 +257,22 @@ function pos_int_range()
 #   [string]: string in alphabet format
 # out:
 #   [string]: lower format of input string, e.g. aBcdEfgHI -> abcdefghi
-function to_lower()
-{
-    echo $(echo $1 | tr '[A-Z]' '[a-z]') 
+function to_lower() {
+    echo $(echo $1 | tr '[A-Z]' '[a-z]')
 }
 
 # function: return the round up value of quotient of the 2 given positive integer number
 # tmp = num1 / num2
 # return : floor(tmp)
 # e.g. 6/4=1.5, return 2; 6/3=2, return 2
-function floor_quotient()
-{
+function floor_quotient() {
     n1=$1
     n2=$2
-    if [[ ${n1} -gt 0 ]] 2>/dev/null && [[ ${n2} -gt 0 ]] 2>/dev/null; then
-        quotient=`expr ${n1} / ${n2}`
-        remainder=`expr ${n1} % ${n2}`
+    if [[ ${n1} -gt 0 ]] 2> /dev/null && [[ ${n2} -gt 0 ]] 2> /dev/null; then
+        quotient=$(expr ${n1} / ${n2})
+        remainder=$(expr ${n1} % ${n2})
         if [[ ${remainder} -ne 0 ]]; then
-            quotient=`expr ${quotient} + 1`
+            quotient=$(expr ${quotient} + 1)
         fi
 
         echo "${quotient}"
@@ -302,7 +282,6 @@ function floor_quotient()
     fi
 }
 
-
 # function: get time cost between start time and end time
 # usage: get_timing [start_time] [end_time]
 # e.g. : get_timing "1689217282.184130282" "1689217289.414088786"
@@ -311,15 +290,14 @@ function floor_quotient()
 #   [end_time]: end time in format 'date +%s.%N', such as: 1689217289.414088786
 # out:
 #   [time_cost]: time cost between start time and end time, unit: ms, such as 7230
-function time_cost_ms()
-{
+function time_cost_ms() {
     # note:
     # date +'%s * 1000 + 10#%-N / 1000000' with gnu date (such as liunx)
     # date +'%s * 1000 + %-N / 1000000' with not gnu date (such as mac)
 
     start=$1
     end=$2
-  
+
     start_s=$(echo $start | awk -F. '{print $1}')
     start_ns=$(echo $start | awk -F. '{print $2}')
     end_s=$(echo $end | awk -F. '{print $1}')
@@ -327,24 +305,23 @@ function time_cost_ms()
 
     # deprecated: it depends on bc
     # cost=`expr $time_micro/1000 | bc`
-    os=`what_os`
+    os=$(what_os)
     #if [[ "${os}" == "Mac" ]]; then
     #    cost=$(( ( $end_s - $start_s ) * 1000 + ( $end_ns / 1000000 - $start_ns / 1000000 ) ))
     #else
     #    cost=$(expr \( $end_s - $start_s \) \* 1000 + \( $end_ns \/ 1000000 - $start_ns \/ 1000000 \) )
     #fi
     if [ "x$start_ns" = "x" -o "x$end_ns" = "x" ]; then
-        cost=$(expr \( $end_s - $start_s \) \* 1000 )
+        cost=$(expr \( $end_s - $start_s \) \* 1000)
     else
-        cost=$(expr \( $end_s - $start_s \) \* 1000 + \( $end_ns \/ 1000000 - $start_ns \/ 1000000 \) )
+        cost=$(expr \( $end_s - $start_s \) \* 1000 + \( $end_ns \/ 1000000 - $start_ns \/ 1000000 \))
     fi
 
     echo "${cost}"
 }
 
 # function: get latest commit id of a given release version
-function get_stable_cid()
-{
+function get_stable_cid() {
     cid="$1"
     case "${cid}" in
         "1.0.0-rc1")
@@ -373,46 +350,43 @@ function get_stable_cid()
             ;;
         "0.1.0")
             echo "19cc0453b573e23ae643bea492bc43c5df4758db"
-            ;;                                                                    
+            ;;
         *)
             echo "${cid}"
             ;;
     esac
-    
+
 }
 
 # function: get cpu cores of current machine
-function get_cpu_cores()
-{
-    os=`what_os`
+function get_cpu_cores() {
+    os=$(what_os)
     cpu_cores=""
     if [[ "${os}" == "Mac" ]]; then
-        cpu_cores=`sysctl -n machdep.cpu.core_count`
+        cpu_cores=$(sysctl -n machdep.cpu.core_count)
     else
-        cpu_cores=`cat /proc/cpuinfo | grep "processor" | wc -l`
+        cpu_cores=$(cat /proc/cpuinfo | grep "processor" | wc -l)
     fi
     echo "${cpu_cores}"
 }
 
-# function: get memory size in megabytes of current machine 
-function get_mem_mb()
-{
-    os=`what_os`
+# function: get memory size in megabytes of current machine
+function get_mem_mb() {
+    os=$(what_os)
     total_mem=""
 
     if [[ "${os}" == "Mac" ]]; then
-        total_mem_bytes=`sysctl hw.memsize | awk -F ":" '{print $2}' | sed 's/ //g'`
-        total_mem=`expr $total_mem_bytes / 1024 / 1024`
+        total_mem_bytes=$(sysctl hw.memsize | awk -F ":" '{print $2}' | sed 's/ //g')
+        total_mem=$(expr $total_mem_bytes / 1024 / 1024)
     else
-        total_mem=`free -m | awk 'NR==2{print $2}'`
+        total_mem=$(free -m | awk 'NR==2{print $2}')
     fi
 
     echo "${total_mem}"
 }
 
 # function: check if cron is enabled
-function check_cron_service()
-{
+function check_cron_service() {
     if [[ "${OS}" == "Mac" ]]; then
         # 1. Mac
         add_log "D" "Get status of service cron"
@@ -426,7 +400,7 @@ function check_cron_service()
     else
         # 2. Linux
         add_log "D" "Get status of service cron"
-        if systemctl status cron >/dev/null 2>&1 || service cron status >/dev/null 2>&1 || systemctl status crond >/dev/null 2>&1 || service crond status >/dev/null 2>&1; then
+        if systemctl status cron > /dev/null 2>&1 || service cron status > /dev/null 2>&1 || systemctl status crond > /dev/null 2>&1 || service crond status > /dev/null 2>&1; then
             add_log "D" "Succeeded. Service cron seems to be running."
         else
             add_log "E" "Failed. Please check again via 'systemctl status crond' or 'systemctl status cron' to make sure it's running. Or try to restart it via 'systemctl restart cron'."
@@ -436,22 +410,19 @@ function check_cron_service()
 }
 
 # function: get local timezone setting
-function get_tz()
-{
+function get_tz() {
     echo "todo"
 }
 
 # function: check if cron is enabled
-function basic()
-{
+function basic() {
     func_name=$1
     option_1=$2
     option_2=$3
     ${func_name} ${option_1} ${option_2}
 }
 
-function read_user_confirm()
-{
+function read_user_confirm() {
     user_confirm=""
     read -t 30 user_confirm
     if [[ "$(to_lower ${user_confirm})" != "yes" ]]; then

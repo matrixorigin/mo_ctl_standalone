@@ -17,9 +17,7 @@ WD_CRON_PLIST_NAME="com.matrixorigin.mo.watchdog"
 WD_CRON_PLIST_FILE="${WORK_DIR}/bin/mo_watchdog.plist"
 OS=""
 
-
-function watchdog_status()
-{
+function watchdog_status() {
 
     if ! check_cron_service; then
         return 1
@@ -40,10 +38,10 @@ function watchdog_status()
         # 2. Linux
         if [[ -f ${WD_CRON_PATH}/${WD_CRON_FILE_NAME} ]]; then
             add_log "D" "Cron file ${WD_CRON_PATH}/${WD_CRON_FILE_NAME} already exists, trying to get content: "
-            content=`cat ${WD_CRON_PATH}/${WD_CRON_FILE_NAME}`
+            content=$(cat ${WD_CRON_PATH}/${WD_CRON_FILE_NAME})
             add_log "D" "${content}"
-            if [[ "${content}" == "" ]];then
-                add_log "E" "Content seems to be empty, something might be wrong when enabling ${wd_name}." 
+            if [[ "${content}" == "" ]]; then
+                add_log "E" "Content seems to be empty, something might be wrong when enabling ${wd_name}."
                 add_log "D" "The correct content should be: ${WD_CRON_CONTENT}"
                 add_log "I" "${wd_name} status：disabled"
                 return 1
@@ -56,15 +54,14 @@ function watchdog_status()
     fi
 }
 
-function watchdog_enable()
-{
+function watchdog_enable() {
     if ! watchdog_status; then
         add_log "D" "Creating log folder: mkdir -p ${LOG_DIR}/${wd_name}/"
         mkdir -p ${LOG_DIR}/${wd_name}/
 
         if [[ "${OS}" == "Mac" ]]; then
             # 1. Mac
-            current_user=`whoami`
+            current_user=$(whoami)
             place_holder="PLACEHOLDER"
             add_log "I" "Replacing user in ${WD_CRON_PLIST_FILE}: sed -i \"\" \"s#${place_holder}#${current_user}#g\" ${WD_CRON_PLIST_FILE}"
             if sed -i "" "s#${place_holder}#${current_user}#g" ${WD_CRON_PLIST_FILE}; then
@@ -80,14 +77,14 @@ function watchdog_enable()
                 add_log "E" "Failed"
                 return 1
             fi
-        else    
+        else
             # 2. Linux
             add_log "I" "Creating cron file ${WD_CRON_PATH}/${WD_CRON_FILE_NAME}"
             add_log "I" "Content: ${WD_CRON_CONTENT}"
 
-            if sudo touch ${WD_CRON_PATH}/${WD_CRON_FILE_NAME} && sudo chown ${WD_CRON_USER} ${WD_CRON_PATH}/${WD_CRON_FILE_NAME} && sudo echo "${WD_CRON_CONTENT}"> ${WD_CRON_PATH}/${WD_CRON_FILE_NAME} ; then
+            if sudo touch ${WD_CRON_PATH}/${WD_CRON_FILE_NAME} && sudo chown ${WD_CRON_USER} ${WD_CRON_PATH}/${WD_CRON_FILE_NAME} && sudo echo "${WD_CRON_CONTENT}" > ${WD_CRON_PATH}/${WD_CRON_FILE_NAME}; then
                 add_log "I" "Succeeded"
-                sudo chown root:root ${WD_CRON_PATH}/${WD_CRON_FILE_NAME} 
+                sudo chown root:root ${WD_CRON_PATH}/${WD_CRON_FILE_NAME}
             else
                 add_log "E" "Failed"
                 return 1
@@ -102,10 +99,9 @@ function watchdog_enable()
     fi
 }
 
-function watchdog_disable()
-{
+function watchdog_disable() {
     if watchdog_status; then
-        if [[ "${OS}" == "Mac" ]]; then        
+        if [[ "${OS}" == "Mac" ]]; then
             # 1. Mac
             add_log "I" "Disabling ${wd_name}: launchctl unload -w ${WD_CRON_PLIST_FILE}"
             if launchctl unload -w ${WD_CRON_PLIST_FILE}; then
@@ -114,7 +110,7 @@ function watchdog_disable()
                 add_log "E" "Failed"
                 return 1
             fi
-            current_user=`whoami`
+            current_user=$(whoami)
             place_holder="PLACEHOLDER"
             add_log "I" "Replacing user in ${WD_CRON_PLIST_FILE}: sed -i \"\" \"s#${current_user}#${place_holder}#g\" ${WD_CRON_PLIST_FILE}"
             if sed -i "" "s#${current_user}#${place_holder}#g" ${WD_CRON_PLIST_FILE}; then
@@ -141,14 +137,11 @@ function watchdog_disable()
     fi
 }
 
-
-
-function watchdog()
-{
+function watchdog() {
     option=$1
 
-    OS=`what_os`
-    WD_CRON_USER=`whoami`
+    OS=$(what_os)
+    WD_CRON_USER=$(whoami)
 
     date_expr="\$(date '+\\%Y\\%m\\%d_\\%H\\%M\\%S')"
     #WD_CRON_SCRIPT="`cat ${WORK_DIR}/bin/${WD_CRON_FILE_NAME}.sh`"

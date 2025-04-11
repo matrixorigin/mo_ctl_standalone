@@ -13,8 +13,7 @@ OS=""
 RUN_TAG=""
 TMP_DIR=""
 
-function csv_convert_precheck()
-{
+function csv_convert_precheck() {
     add_log "I" "Reading conf settings: "
     get_conf | grep CSV
 
@@ -38,14 +37,14 @@ function csv_convert_precheck()
 
     # 4. check convert type
     case "${CSV_CONVERT_TYPE}" in
-        "1"|"2"|"3")
+        "1" | "2" | "3")
             :
             ;;
         *)
             add_log "E" "Conf CSV_CONVERT_TYPE: ${CSV_CONVERT_TYPE} is not in valid range: 1|2|3"
             return 1
-        ;;
-    esac 
+            ;;
+    esac
 
     # 5. check meta data info
     if [ "${CSV_CONVERT_META_DB}" == "" ]; then
@@ -60,13 +59,12 @@ function csv_convert_precheck()
 
 }
 
-function csv_convert_prep()
-{
+function csv_convert_prep() {
 
     CONVERT_TYPE=$1
 
     # 1. generate target file
-    FILE_NAME=`basename ${CSV_CONVERT_SRC_FILE} | awk -F"." '{print $1}'`
+    FILE_NAME=$(basename ${CSV_CONVERT_SRC_FILE} | awk -F"." '{print $1}')
 
     if [[ "${CSV_CONVERT_TN_TYPE}" == "2" ]]; then
         TN_TYPE="tn-single"
@@ -82,7 +80,7 @@ function csv_convert_prep()
         add_log "E" "Failed to generate target file, please check if you have enough permissions under target directory"
         return 1
     fi
-    
+
     if [[ "${CSV_CONVERT_TN_TYPE}" == "2" ]]; then
         echo "begin;" > ${TGT_FILE}
     else
@@ -91,12 +89,11 @@ function csv_convert_prep()
 
     # 2. count number of lines in source file
     add_log "I" "Counting number of lines in source file: ${CSV_CONVERT_SRC_FILE}"
-    NUM_SRC_FILE=`wc -l ${CSV_CONVERT_SRC_FILE} | awk '{print $1}'`
+    NUM_SRC_FILE=$(wc -l ${CSV_CONVERT_SRC_FILE} | awk '{print $1}')
     add_log "I" "Number of lines: ${NUM_SRC_FILE}"
 
     # 3. calculate number of loops
-    LOOP_COUNT=`floor_quotient ${NUM_SRC_FILE} ${CSV_CONVERT_BATCH_SIZE}`
-
+    LOOP_COUNT=$(floor_quotient ${NUM_SRC_FILE} ${CSV_CONVERT_BATCH_SIZE})
 
     # 4. In case of parallel mode, create tmp fifo file and write some contents
     # tmpfifo file
@@ -104,9 +101,9 @@ function csv_convert_prep()
         add_log "D" "Creating tmp fifo: mkfifo ${CSV_CONVERT_TMP_DIR}/tmpfifo"
         mkfifo ${CSV_CONVERT_TMP_DIR}/tmpfifo
     fi
-    exec 9<>${CSV_CONVERT_TMP_DIR}/tmpfifo
-    
-    cpu_cores=`get_cpu_cores`
+    exec 9<> ${CSV_CONVERT_TMP_DIR}/tmpfifo
+
+    cpu_cores=$(get_cpu_cores)
 
     # thread numbers to run in parallel, 3/4 of total cpu cores
     let THREAD_NUM=${cpu_cores}*3/4
@@ -116,9 +113,9 @@ function csv_convert_prep()
     fi
 
     # write some \n into &9, where one \n represents one thread
-    for ((i=0;i<${THREAD_NUM};i++));do
+    for ((i = 0; i < ${THREAD_NUM}; i++)); do
         echo -ne "\n" 1>&9
-    done 
+    done
 
     RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
     TMP_DIR="${CSV_CONVERT_TMP_DIR}/${RUN_TAG}"
@@ -126,11 +123,9 @@ function csv_convert_prep()
 
 }
 
-
-function csv_convert_parallel_merge_and_clean()
-{
+function csv_convert_parallel_merge_and_clean() {
     add_log "D" "Merging ${LOOP_COUNT} number of tmp files under ${TMP_DIR} to ${TGT_FILE}"
-    for((i=0; i < ${LOOP_COUNT}; i++)); do
+    for ((i = 0; i < ${LOOP_COUNT}; i++)); do
         # merge all tmp files and remove them
         sql_tmp_file="${TMP_DIR}/${FILE_NAME}_tmp_${i}.sql"
         cat "${sql_tmp_file}" >> "${TGT_FILE}"
@@ -142,7 +137,6 @@ function csv_convert_parallel_merge_and_clean()
     rmdir ${TMP_DIR}
 }
 
-
 # convert csv file to batch insert format
 # 1) source file:
 # 1,Aron,99.8
@@ -152,13 +146,11 @@ function csv_convert_parallel_merge_and_clean()
 # insert into school.student (id,name,grade) values ("1","Aron","99.5");
 # insert into school.student (id,name,grade) values ("2","Betty","88.8");
 # insert into school.student (id,name,grade) values ("3","Cindy","100.0");
-function csv_convert_insert_parallel()
-{
-
+function csv_convert_insert_parallel() {
 
     add_log "I" "Convert csv file to \"insert into db.table(col1,col2,...,coln) values (val1,val2,...,valn)\" sql file"
 
-    for((i=0; i < ${LOOP_COUNT}; i++));do
+    for ((i = 0; i < ${LOOP_COUNT}; i++)); do
 
         add_log "D" "Loop number: ${i}"
 
@@ -172,7 +164,6 @@ function csv_convert_insert_parallel()
 
             # seperate the csv file into ${LOOP_COUNT} tmp files of ${CSV_CONVERT_BATCH_SIZE} lines
             sed -n "${start_line}, ${end_line}p" "${CSV_CONVERT_SRC_FILE}" > ${sql_tmp_file}
-            
 
             if [ "${CSV_CONVERT_INSERT_ADD_QUOTE}" == "yes" ]; then
 
@@ -181,15 +172,15 @@ function csv_convert_insert_parallel()
                     # replace , with ","
                     # this line will work on MacOS: sed -i '' 's/,/","/g' ${sql_tmp_file}
                     sed -i 's/,/","/g' ${sql_tmp_file}
-                
+
                     # replace \n with "),("
                     sed -i ':a;N;$!ba;s/\n/\"),(\"/g' "${sql_tmp_file}"
-                  
+
                     # add "); to the end
                     echo "\");" >> "${sql_tmp_file}"
 
                     # add insert ddl to the head
-                    if [[ "${CSV_CONVERT_META_COLUMN_LIST}" != "" ]]; then 
+                    if [[ "${CSV_CONVERT_META_COLUMN_LIST}" != "" ]]; then
                         sed -i "1i\insert into ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} (${CSV_CONVERT_META_COLUMN_LIST}) values (\"" "${sql_tmp_file}"
                     else
                         sed -i "1i\insert into ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} values (\"" "${sql_tmp_file}"
@@ -199,15 +190,15 @@ function csv_convert_insert_parallel()
                     # replace , with ","
                     # this line will work on MacOS: sed -i '' 's/,/","/g' ${sql_tmp_file}
                     sed -i '' 's/,/","/g' ${sql_tmp_file}
-                
+
                     # replace \n with "),("
                     sed -i '' ':a;N;$!ba;s/\n/\"),(\"/g' "${sql_tmp_file}"
-                  
+
                     # add "); to the end
                     echo "\");" >> "${sql_tmp_file}"
 
                     # add insert ddl to the head
-                    if [[ "${CSV_CONVERT_META_COLUMN_LIST}" != "" ]]; then 
+                    if [[ "${CSV_CONVERT_META_COLUMN_LIST}" != "" ]]; then
                         sed -i "" "1i\insert into ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} (${CSV_CONVERT_META_COLUMN_LIST}) values (\"" "${sql_tmp_file}"
                     else
                         sed -i "" "1i\insert into ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} values (\"" "${sql_tmp_file}"
@@ -219,24 +210,22 @@ function csv_convert_insert_parallel()
 
                 # replace \n with ),(
                 sed -i ':a;N;$!ba;s/\n/),(/g' "${sql_tmp_file}"
-                
+
                 # add "); to the end
                 echo ");" >> "${sql_tmp_file}"
-               
+
                 # add insert ddl to the head
                 sed -i "1i\insert into ${CSV_CONVERT_META_DB}.${CSV_CONVERT_META_TABLE} (${CSV_CONVERT_META_COLUMN_LIST}) values (" "${sql_tmp_file}"
-      
+
             fi
 
             # no \n
             sed -i ':a;N;$!ba;s/\n//g' "${sql_tmp_file}"
-            
+
             # repalce NaN with 'NaN' : nan -> "nan"
             sed -i 's|(nan|(\"nan\"|g' "${sql_tmp_file}"
             sed -i 's|,nan,|\",nan,\"|g' "${sql_tmp_file}"
             sed -i 's|nan)|\"nan\")|g' "${sql_tmp_file}"
-
-
 
             # write a \n into tmpfifo
             echo -ne "\n" 1>&9
@@ -252,31 +241,26 @@ function csv_convert_insert_parallel()
 
 }
 
-
-
-
 # convert to batch load
-# line_mode=single: 
+# line_mode=single:
 #     load data inline format='csv', data='1\n2\n' into table db_1.tb_1;
 # line_mode=multi:
 #     load data  inline format='csv', data=$XXX$
 #     1,2,3
 #     11,22,33
 #     111,222,333
-#     $XXX$ 
+#     $XXX$
 #     into table db_1.tb_1;
-function csv_convert_load_serial()
-{
+function csv_convert_load_serial() {
     # multi or single
     line_mode="$1"
 
     add_log "I" "Convert csv file to \"load data inline format='csv' (multiple lines) \" sql file"
 
-    for ((i=0;i<${LOOP_COUNT};i++)); do
+    for ((i = 0; i < ${LOOP_COUNT}; i++)); do
         add_log "D" "Loop number: ${i}"
         let start_line=1+${CSV_CONVERT_BATCH_SIZE}*${i}
         let end_line=${start_line}+${CSV_CONVERT_BATCH_SIZE}-1
-
 
         if [[ "${line_mode}" == "single" ]]; then
             echo -n "load data inline format='csv', data='" >> ${TGT_FILE}
@@ -303,12 +287,10 @@ function csv_convert_load_serial()
 
 }
 
-function csv_convert_load_parallel()
-{
+function csv_convert_load_parallel() {
 
     # multi or single
     line_mode="$1"
-
 
     add_log "I" "Convert csv file to \"load data inline format='csv' (multiple lines) \" sql file"
 
@@ -318,7 +300,7 @@ function csv_convert_load_parallel()
         fileds_termiated_by="fields terminated by '${CSV_FIELDS_TERMINATED_BY}'"
     fi
 
-    for((i=0; i < ${LOOP_COUNT}; i++));do
+    for ((i = 0; i < ${LOOP_COUNT}; i++)); do
 
         add_log "D" "Loop number: ${i}"
 
@@ -332,7 +314,7 @@ function csv_convert_load_parallel()
 
             # seperate the csv file into ${LOOP_COUNT} tmp files of ${CSV_CONVERT_BATCH_SIZE} lines
             sed -n "${start_line}, ${end_line}p" "${CSV_CONVERT_SRC_FILE}" > ${sql_tmp_file}
-            
+
             # sed to replace/add the content of tmp files
             # format:
             # 1) single line
@@ -369,7 +351,7 @@ function csv_convert_load_parallel()
             # 1,2,3
             # 11,22,33
             # 111,222,333
-            # $XXX$ 
+            # $XXX$
             # into table db_1.tb_1;
             else
                 if [[ "${OS}" == "Linux" ]]; then
@@ -400,9 +382,7 @@ function csv_convert_load_parallel()
 
 }
 
-
-function csv_convert()
-{
+function csv_convert() {
 
     add_log "I" "Checking pre-requisites..."
     if ! csv_convert_precheck; then
@@ -417,8 +397,8 @@ function csv_convert()
 
     # run in parallel or serial
     run_mode="parallel"
-    
-    OS=`what_os`
+
+    OS=$(what_os)
 
     # what type is it
     case "${CSV_CONVERT_TYPE}" in
@@ -427,7 +407,7 @@ function csv_convert()
             if ! csv_convert_prep ${convert_type}; then
                 return 1
             fi
-            
+
             if ! csv_convert_insert_${run_mode}; then
                 return 1
             fi
@@ -450,24 +430,21 @@ function csv_convert()
             if ! csv_convert_prep ${convert_type}; then
                 return 1
             fi
-            
+
             if ! csv_convert_load_${run_mode} "${line_mode}"; then
                 return 1
             fi
             ;;
         *)
             return 1
-        ;;
+            ;;
     esac
-
 
     # what transcation type is it
     if [[ "${CSV_CONVERT_TN_TYPE}" == "2" ]]; then
         echo "commit;" >> ${TGT_FILE}
     fi
 
-
     add_log "I" "Conversion ends, please check file: ${TGT_FILE}"
-
 
 }

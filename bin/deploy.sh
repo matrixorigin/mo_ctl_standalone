@@ -5,8 +5,7 @@
 ################################################################
 # deploy
 
-function git_clone()
-{
+function git_clone() {
     rc=1
     # 1. git clone
 
@@ -15,8 +14,7 @@ function git_clone()
 
     try_times=10
 
-
-    if [[ -d "${MO_PATH}/matrixone/" ]] && [[ "`ls ${MO_PATH}/matrixone/ | wc -l |sed 's/[[:space:]]//g'`" != "0" ]]; then
+    if [[ -d "${MO_PATH}/matrixone/" ]] && [[ "$(ls ${MO_PATH}/matrixone/ | wc -l | sed 's/[[:space:]]//g')" != "0" ]]; then
         if [[ "${force}" != "force" ]]; then
             add_log "E" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, please add flag \"force\" and try again, or remove it manually, exiting"
             return 1
@@ -24,17 +22,15 @@ function git_clone()
             add_log "W" "MO_PATH ${MO_PATH}/matrixone/ already exists and not empty, please confirm if you really want to overwrite it(Yes/No): "
             read_user_confirm
         fi
-    fi 
-
-    if [[ "${MO_PATH}" != "" ]] ; then
-        cd ${MO_PATH} >/dev/null 2>&1 && rm -rf ./matrixone/ >/dev/null 2>&1
     fi
 
-
+    if [[ "${MO_PATH}" != "" ]]; then
+        cd ${MO_PATH} > /dev/null 2>&1 && rm -rf ./matrixone/ > /dev/null 2>&1
+    fi
 
     mkdir -p ${MO_PATH}
     add_log "I" "Deploying mo on path ${MO_PATH}"
-    for ((i=1;i<=${try_times};i++));do
+    for ((i = 1; i <= ${try_times}; i++)); do
         add_log "I" "Try number: $i"
         if [[ "${MO_GIT_URL}" == "" ]]; then
             add_log "E" "MO_GIT_URL is not set, please set it first, exiting"
@@ -49,8 +45,8 @@ function git_clone()
                 add_log "I" "mo_version is set to main, skip checkout"
                 rc=0
             else
-                remote_tags=`git tag`
-                remote_branches=`git branch -r | awk -F'origin/' '{print $2}' | grep -v HEAD`
+                remote_tags=$(git tag)
+                remote_branches=$(git branch -r | awk -F'origin/' '{print $2}' | grep -v HEAD)
                 add_log "I" "Trying to checkout to ${mo_version}"
                 add_log "D" "List of remote tags:"
                 add_log "D" "${remote_tags}" "l"
@@ -59,7 +55,7 @@ function git_clone()
                 # set default version, use latest tag
                 if [[ ${mo_version} == "" ]]; then
                     add_log "I" "mo_version is empty, trying to find the tag for latest release"
-                    mo_version=`for tags in ${remote_tags} ; do echo $tags; done |sort -r | head -1`
+                    mo_version=$(for tags in ${remote_tags}; do echo $tags; done | sort -r | head -1)
                     mo_v_type="tag"
                 else
                     mo_v_type="unknown"
@@ -97,42 +93,37 @@ function git_clone()
                 if ! git checkout ${mo_version}; then
                     add_log "E" "Check out to ${mo_version} failed, please make sure it's a valid ${mo_v_type}, exiting"
                     rc=1
-                    break;
+                    break
                 fi
             fi
             # git clone and checkout all ok, breaking the loop
             rc=0
-            break;
+            break
         fi
 
     done
 
-    if [[ "${rc}" == "1" ]] ;then
+    if [[ "${rc}" == "1" ]]; then
         add_log "E" "All tries on git clone or a checkout have failed. Exiting"
     fi
 
     return ${rc}
 
-
 }
 
-
-function build_mo_service()
-{
+function build_mo_service() {
     # mo-service
     add_log "I" "Try to build mo-service: make build"
-    if cd ${MO_PATH}/matrixone/ && GOTOOLCHAIN="${MO_MAKE_BUILD_GOTOOLCHAIN}" make build ; then
+    if cd ${MO_PATH}/matrixone/ && GOTOOLCHAIN="${MO_MAKE_BUILD_GOTOOLCHAIN}" make build; then
         add_log "I" "Build succeeded"
     else
         add_log "E" "Build failed"
         return 1
     fi
 
-
 }
 
-function build_mo_dump()
-{
+function build_mo_dump() {
     add_log "I" "Try to build mo-dump: make cgo && make modump"
     #if cd ${MO_PATH}/matrixone/ && make build modump; then
     if cd ${MO_PATH}/matrixone/ && make cgo && make modump; then
@@ -143,9 +134,7 @@ function build_mo_dump()
     fi
 }
 
-
-function build_all()
-{
+function build_all() {
     force=$1
 
     if [[ "${GOPROXY}" != "" ]]; then
@@ -171,8 +160,7 @@ function build_all()
     fi
 }
 
-function replace_mo_confs()
-{
+function replace_mo_confs() {
     add_log "I" "Setting mo conf file"
     CONF_FILE_NAME_LIST=("cn.toml" "tn.toml" "log.toml")
 
@@ -194,21 +182,20 @@ function replace_mo_confs()
 
 }
 
-function deploy_docker()
-{
+function deploy_docker() {
     mo_version=$1
 
     add_log "I" "MO deploy mode is set to docker, checking docker status: systemctl status docker && systemctl status dockerd"
-    os=`what_os`
+    os=$(what_os)
     if [[ "${os}" == "Linux" ]]; then
-        if systemctl status docker >/dev/null 2>&1 || systemctl status dockerd >/dev/null 2>&1 ; then
+        if systemctl status docker > /dev/null 2>&1 || systemctl status dockerd > /dev/null 2>&1; then
             add_log "I" "Docker or dockerd seems to be running normally"
         else
             add_log "E" "It seems docker is not running normally, please try restart it via 'systemctl restart docker'"
             return 1
         fi
     else
-        if ! docker info >/dev/null 2>&1; then
+        if ! docker info > /dev/null 2>&1; then
             add_log "E" "It seems docker is not running normally, please try restart it via 'open -a Docker'"
             return 1
         fi
@@ -230,7 +217,7 @@ function deploy_docker()
     if [[ "${MO_CONTAINER_IMAGE}" == "" ]]; then
         add_log "E" "conf MO_CONTAINER_IMAGE is empty, please set it first"
     fi
-    
+
     # 2024/4/2: deprecated as we don't pull image manually
     #add_log "I" "Pulling image ${MO_CONTAINER_IMAGE}"
     #if ! docker pull ${MO_CONTAINER_IMAGE}; then
@@ -247,12 +234,10 @@ function deploy_docker()
 # 3. mo_ctl deploy nobuild
 # 4. mo_ctl deploy force nobuild
 
-
 # 5. mo_ctl deploy v1.1.3: deploy a stable version(tag)
 # 6. mo_ctl deploy v1.1.3 force
 # 7. mo_ctl deploy v1.1.3 nobuild
 # 8. mo_ctl deploy v1.1.3 force nobuild
-
 
 # 9. mo_ctl deploy main: deploy main branch latest version
 # 10. mo_ctl deploy main force
@@ -264,8 +249,7 @@ function deploy_docker()
 # 13. mo_ctl deploy xxxxxx nobuild
 # 14. mo_ctl deploy xxxxxx force nobuild
 
-function deploy()
-{
+function deploy() {
 
     var_1="$1"
     var_2="$2"
@@ -301,7 +285,6 @@ function deploy()
             # 7. mo_ctl deploy v1.1.3 nobuild
             # 8. mo_ctl deploy v1.1.3 force nobuild
 
-
             # 9. mo_ctl deploy main: deploy main branch latest version
             # 10. mo_ctl deploy main force
             # 11. mo_ctl deploy main nobuild
@@ -322,7 +305,7 @@ function deploy()
             ;;
     esac
 
-    add_log "D" "mo_version: ${mo_version}, force: ${force}, nobuild: ${nobuild}" 
+    add_log "D" "mo_version: ${mo_version}, force: ${force}, nobuild: ${nobuild}"
 
     get_conf MO_DEPLOY_MODE
 

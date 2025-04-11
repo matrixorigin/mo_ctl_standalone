@@ -4,7 +4,6 @@
 ################################################################
 ###### configurations ######
 
-
 ###########################################
 # set below confs on demand
 ###########################################
@@ -22,11 +21,9 @@ MO_LOG_PATH="${MO_PATH}/matrixone/logs"
 
 # mo-service log file prefix
 # enum: yes(default)|no , where,
-# 'yes': meaning automatically creating timestamp as log file name postfix, e.g. stdout-20240929_110548.log. Everytime when mo-service is started or restarted, 2 new log files will be created and log content will be written.  
+# 'yes': meaning automatically creating timestamp as log file name postfix, e.g. stdout-20240929_110548.log. Everytime when mo-service is started or restarted, 2 new log files will be created and log content will be written.
 # 'no': meaning no postfix will be added to the log file name, e.g. stdout.log. Everytime when mo-service is started or restarted, the log content will be appended to the log files used last time and before.
-MO_LOG_POSTFIX="no"  
-
-
+MO_LOG_POSTFIX="no"
 
 # conf file source folder
 MO_CONF_SRC_PATH=""
@@ -41,7 +38,7 @@ MO_HOST="127.0.0.1"
 MO_PORT="6001"
 # username to connect to mo, by default: root
 MO_USER="root"
-# password of the user to connect to mo, please use your own password 
+# password of the user to connect to mo, please use your own password
 MO_PW="111"
 # mo deploy mode: docker | git | binary, default: git
 MO_DEPLOY_MODE="git"
@@ -78,13 +75,12 @@ MO_CONTAINER_LIMIT_CPU=""
 MO_CONTAINER_EXTRA_MOUNT_OPTION=""
 # replace below image repo with ccr.ccs.tencentyun.com/mo-infra? option: yes | no
 # images: golang:1.22.3-bookworm , ubuntu:22.04
-MO_CONTAINER_DEPIMAGE_REPLACE_REPO="yes" 
+MO_CONTAINER_DEPIMAGE_REPLACE_REPO="yes"
 # timezone, choose from: default(usually UTC) | host (same as host local time)
 MO_CONTAINER_TIMEZONE="default"
 
-
 ###########################################
-# no need to set below conf for most cases 
+# no need to set below conf for most cases
 ###########################################
 
 # for precheck
@@ -127,15 +123,14 @@ GO_MEM_LIMIT_RATIO=90
 # time interval (in seconds) of auto profile collecting. Empty by default, meaning will not turn on auto profile collecting
 PPROF_INTERVAL=""
 # use nohup or -daemon(default) to start mo-service? choose from: nohup | daemon
-DAEMON_METHOD="daemon" 
-
+DAEMON_METHOD="daemon"
 
 # for restart
 # interval between stop and start, unit: seconds
 RESTART_INTERVAL="2"
 
 # for pprof
-# output path of pprof results 
+# output path of pprof results
 PPROF_OUT_PATH="/tmp/pprof-test/"
 # duration to collect pprof profile, unit: seconds
 PPROF_PROFILE_DURATION="30"
@@ -152,12 +147,12 @@ CSV_CONVERT_TGT_DIR="/tmp/"
 # convert type: 1|2|3
 # 1: insert into values
 # 2: load data inline format='csv', data='1\n2\n' into table db_1.tb_1;
-# 3: 
+# 3:
 # load data  inline format='csv', data=$XXX$
 # 1,2,3
 # 11,22,33
 # 111,222,333
-# $XXX$ 
+# $XXX$
 # into table db_1.tb_1;
 CSV_CONVERT_TYPE=3
 # metadata info, containing below info and in below format:
@@ -228,7 +223,7 @@ BACKUP_PHYSICAL_TYPE="filesystem"
 BACKUP_MOBR_META_PATH="${TOOL_LOG_PATH}/mo_br.meta"
 # backup physical method: full(default)|incremental
 BACKUP_PHYSICAL_METHOD="full"
-# backup physical base backup id, only valid when BACKUP_PHYSICAL_METHOD='incremental' 
+# backup physical base backup id, only valid when BACKUP_PHYSICAL_METHOD='incremental'
 BACKUP_PHYSICAL_BASE_BKID=""
 # if yes, will automatically set BACKUP_PHYSICAL_BASE_BKID to last sucess backup id: yes(default)|no
 BACKUP_AUTO_SET_LAST_BKID="yes"
@@ -270,7 +265,6 @@ BACKUP_LOGICAL_NETBUFLEN="1048576"
 # backup logical dataset name: (optional) the dataset name of the backup database
 BACKUP_LOGICAL_DS=""
 
-
 # for restore
 
 # restore type: physical | logical
@@ -297,7 +291,6 @@ RESTORE_S3_COMPRESSION=""
 RESTORE_S3_ROLE_ARN=""
 RESTORE_S3_IS_MINIO="no"
 
-
 # 2. logical restore
 # restore target db, e.g. db1. only one db is supported
 RESTORE_LOGICAL_DB=""
@@ -305,9 +298,6 @@ RESTORE_LOGICAL_DB=""
 RESTORE_LOGICAL_SRC=""
 # restore data type: csv | insert | ddl
 RESTORE_LOGICAL_TYPE="ddl"
-
-
-
 
 # for auto clean sysdb logs
 # clean old sysdb logs before [x] (default: 31) days
@@ -331,7 +321,6 @@ MO_LOG_MAX_SIZE="1024M"
 # only takes effect when MO_LOG_AUTO_SPLIT is set to 'size' or 'daily', where:
 # ${NUM}: number of archived log files , e.g. 100
 MO_LOG_RESERVE_NUM="10000"
-
 
 # for build image
 MO_BUILD_IMAGE_PATH="/tmp/"

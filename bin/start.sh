@@ -5,33 +5,32 @@
 ################################################################
 # start
 
-function start()
-{
+function start() {
     if status; then
         add_log "I" "No need to start mo-service"
         add_log "I" "Start succeeded"
         return 0
     fi
 
-    total_mem=`get_mem_mb`
+    total_mem=$(get_mem_mb)
 
     add_log "D" "Check total memory on current machine, command: free -m | awk 'NR==2{print $2}', result(Mi): ${total_mem}"
     docker_mem_limit="${MO_CONTAINER_LIMIT_MEMORY}"
     go_mem_limit=""
-    
+
     get_conf MO_DEPLOY_MODE
 
     if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
 
-        dp_info=`docker ps -a --filter "name=${MO_CONTAINER_NAME}"`
-        dp_name=`docker ps -a --filter "name=${MO_CONTAINER_NAME}" --format "table {{.Names}}" | tail -n 1`
+        dp_info=$(docker ps -a --filter "name=${MO_CONTAINER_NAME}")
+        dp_name=$(docker ps -a --filter "name=${MO_CONTAINER_NAME}" --format "table {{.Names}}" | tail -n 1)
         if [[ "${dp_name}" == "${MO_CONTAINER_NAME}" ]]; then
             add_log "I" "Container named ${MO_CONTAINER_NAME} found. Start mo container: docker start ${MO_CONTAINER_NAME}"
             docker start ${MO_CONTAINER_NAME}
         else
             # initial start
-            docker_server_ver=`docker version --format='{{.Server.Version}}'`
-            
+            docker_server_ver=$(docker version --format='{{.Server.Version}}')
+
             # host data path
             mkdir -p ${MO_CONTAINER_DATA_HOST_PATH}
 
@@ -40,7 +39,7 @@ function start()
             else
                 cmd_params="-d  -v ${MO_CONTAINER_DATA_HOST_PATH}:/mo-data:rw -p ${MO_DEBUG_PORT}:${MO_CONTAINER_DEBUG_PORT} -p ${MO_PORT}:${MO_CONTAINER_PORT} --name ${MO_CONTAINER_NAME}"
             fi
-            
+
             docker_init_cmd="docker run"
 
             # memory limit
@@ -71,7 +70,7 @@ function start()
 
             # cpu limit
             if [[ "${MO_CONTAINER_LIMIT_CPU}" != "" ]]; then
-                total_cpu_cores=`get_cpu_cores`
+                total_cpu_cores=$(get_cpu_cores)
                 add_log "D" "Conf MO_CONTAINER_LIMIT_CPU is set as ${MO_CONTAINER_LIMIT_CPU}, total cpu cores: ${total_cpu_cores}"
                 if pos_int_range ${MO_CONTAINER_LIMIT_CPU} ${total_cpu_cores}; then
                     add_log "D" "Start command will add: --cpus=${MO_CONTAINER_LIMIT_CPU}"
@@ -82,7 +81,7 @@ function start()
             fi
 
             # auto restart
-            auto_restart=`to_lower "${MO_CONTAINER_AUTO_RESTART}"`
+            auto_restart=$(to_lower "${MO_CONTAINER_AUTO_RESTART}")
             if [[ "${auto_restart}" == "yes" ]]; then
                 add_log "D" "Start command will add: --restart=always"
                 cmd_params="${cmd_params} --restart=always"
@@ -90,14 +89,13 @@ function start()
 
             # get hostname
             add_log "D" "Get hostname conf MO_CONTAINER_HOSTNAME: ${MO_CONTAINER_HOSTNAME}"
-            if [[ "${MO_CONTAINER_HOSTNAME}" == "" ]]; then 
-                real_hostname=`hostname`
+            if [[ "${MO_CONTAINER_HOSTNAME}" == "" ]]; then
+                real_hostname=$(hostname)
                 add_log "W" "Failed to get hostname, will use default value: MO_CONTAINER_HOSTNAME=${real_hostname}"
                 MO_CONTAINER_HOSTNAME="${real_hostname}"
             fi
 
             cmd_params="${cmd_params} --hostname ${MO_CONTAINER_HOSTNAME}"
-            
 
             # if docker_server_ver ≥ DOCKER_SERVER_VERSION, don't use privileged
             if ! cmp_version "${docker_server_ver}" "${DOCKER_SERVER_VERSION}"; then
@@ -119,8 +117,6 @@ function start()
                 pprof_option="-profile-interval ${PPROF_INTERVAL}s"
             fi
 
-
-
             # if conf path exists
             if [[ -d ${MO_CONTAINER_CONF_HOST_PATH} ]]; then
                 docker_init_cmd="docker run ${cmd_params} -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc/launch:rw --entrypoint /mo-service ${MO_CONTAINER_IMAGE} ${debug_option} ${pprof_option} -launch ${MO_CONTAINER_CONF_CON_FILE}"
@@ -130,10 +126,7 @@ function start()
 
             fi
 
-
-
             #docker_init_cmd="${docker_init_cmd} --hostname ${MO_CONTAINER_HOSTNAME}  -v ${MO_CONTAINER_DATA_HOST_PATH}:/mo-data:rw -v ${MO_CONTAINER_CONF_HOST_PATH}:/etc:rw --entrypoint /mo-service ${MO_CONTAINER_IMAGE} -launch ${MO_CONTAINER_CONF_CON_FILE}"
-
 
             add_log "I" "Initial start mo container: ${docker_init_cmd}"
             ${docker_init_cmd}
@@ -141,7 +134,7 @@ function start()
     else
         mkdir -p ${MO_LOG_PATH}
         RUN_TAG="$(date "+%Y%m%d_%H%M%S")"
-        
+
         if [[ "${total_mem}" != "" ]]; then
             let go_mem_limit=total_mem*${GO_MEM_LIMIT_RATIO}/100
             add_log "I" "GO memory limit(Mi): ${go_mem_limit}"
@@ -166,27 +159,26 @@ function start()
             pprof_option="-profile-interval ${PPROF_INTERVAL}s"
         fi
 
-
         if [[ "${go_mem_limit}" == "" ]]; then
             add_log "W" "GO memory limit seems to be empty, thus will not set this limit"
             if [[ "${DAEMON_METHOD}" == "nohup" ]]; then
                 add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && nohup ${mo_actual_path}/mo-service ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log &"
-                cd ${mo_actual_path}/ && nohup ${mo_actual_path}/mo-service ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log &
+                cd ${mo_actual_path}/ && nohup ${mo_actual_path}/mo-service ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} > ${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2> ${MO_LOG_PATH}/stderr-${RUN_TAG}.log &
             else
                 add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
-                cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+                cd ${mo_actual_path}/ && ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} > ${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2> ${MO_LOG_PATH}/stderr-${RUN_TAG}.log
             fi
         else
             add_log "D" "Start command will add GOMEMLIMIT=${go_mem_limit}MiB"
             if [[ "${DAEMON_METHOD}" == "nohup" ]]; then
                 add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB nohup ${mo_actual_path}/mo-service  ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log &"
-                cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB nohup ${mo_actual_path}/mo-service ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log &
+                cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB nohup ${mo_actual_path}/mo-service ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} > ${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2> ${MO_LOG_PATH}/stderr-${RUN_TAG}.log &
             else
                 add_log "I" "Starting mo-service: cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log"
-                cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} >${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2>${MO_LOG_PATH}/stderr-${RUN_TAG}.log
+                cd ${mo_actual_path}/ && GOMEMLIMIT=${go_mem_limit}MiB ${mo_actual_path}/mo-service -daemon ${debug_option} ${pprof_option} -launch ${MO_CONF_FILE} > ${MO_LOG_PATH}/stdout-${RUN_TAG}.log 2> ${MO_LOG_PATH}/stderr-${RUN_TAG}.log
             fi
         fi
-        
+
         add_log "I" "Wait for ${START_INTERVAL} seconds"
         sleep ${START_INTERVAL}
         if status; then

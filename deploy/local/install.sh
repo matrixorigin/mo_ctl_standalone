@@ -16,18 +16,18 @@ function what_os() {
     system=$(uname)
     os=""
     case "${system}" in
-    "")
-        return 1
-        ;;
-    "Darwin")
-        os="Mac"
-        ;;
-    "Linux")
-        os="Linux"
-        ;;
-    *)
-        os="OtherOS"
-        ;;
+        "")
+            return 1
+            ;;
+        "Darwin")
+            os="Mac"
+            ;;
+        "Linux")
+            os="Linux"
+            ;;
+        *)
+            os="OtherOS"
+            ;;
     esac
     echo "${os}"
 }
@@ -42,10 +42,10 @@ function add_log() {
         # 1. for Mac
         # format: 2023-07-25 17:39:24.904 UTC+0800
         timezone="UTC+0800"
-        if which python3 >/dev/null 2>&1; then
+        if which python3 > /dev/null 2>&1; then
             # in millisecond
             timestamp_ms=$(python3 -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23)
-        elif which python >/dev/null 2>&1; then
+        elif which python > /dev/null 2>&1; then
             # in millisecond
             timestamp_ms=$(python -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23)
         else
@@ -70,59 +70,59 @@ function add_log() {
         display_log_level="I"
     fi
     case "${level}" in
-    "E")
-        level="ERROR"
-        ;;
-    "W")
-        level="WARN"
-        case "${display_log_level}" in
         "E")
-            return 0
+            level="ERROR"
+            ;;
+        "W")
+            level="WARN"
+            case "${display_log_level}" in
+                "E")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
+            ;;
+        "I")
+            level="INFO"
+            case "${display_log_level}" in
+                "E" | "W")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
+            ;;
+        "D")
+            level="DEBUG"
+            case "${display_log_level}" in
+                "E" | "W" | "I")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
             ;;
         *)
-            :
+            echo "These are valid log levels: E/e/W/w/I/i/D/d."
+            echo "   E/e: ERROR, W/w: WARN, I/i: INFO, D/d: DEBUG"
+            exit 1
             ;;
-        esac
-        ;;
-    "I")
-        level="INFO"
-        case "${display_log_level}" in
-        "E" | "W")
-            return 0
-            ;;
-        *)
-            :
-            ;;
-        esac
-        ;;
-    "D")
-        level="DEBUG"
-        case "${display_log_level}" in
-        "E" | "W" | "I")
-            return 0
-            ;;
-        *)
-            :
-            ;;
-        esac
-        ;;
-    *)
-        echo "These are valid log levels: E/e/W/w/I/i/D/d."
-        echo "   E/e: ERROR, W/w: WARN, I/i: INFO, D/d: DEBUG"
-        exit 1
-        ;;
     esac
 
     case "${add_line}" in
-    "n")
-        echo -n "${nowtime}    [${level}]    ${msg}"
-        ;;
-    "l")
-        echo "${msg}"
-        ;;
-    *)
-        echo "${nowtime}    [${level}]    ${msg}"
-        ;;
+        "n")
+            echo -n "${nowtime}    [${level}]    ${msg}"
+            ;;
+        "l")
+            echo "${msg}"
+            ;;
+        *)
+            echo "${nowtime}    [${level}]    ${msg}"
+            ;;
     esac
 }
 function usage() {
@@ -235,7 +235,7 @@ function install() {
     add_log "D" "cmd: sudo mkdir -p ${mo_ctl_global_path}/ && sudo touch ${mo_ctl_global_path}/mo_ctl && sudo chown ${os_user} ${mo_ctl_global_path}/mo_ctl && echo "bash +x ${mo_ctl_local_path}/mo_ctl.sh \"\$*\"" > ${mo_ctl_global_path}/mo_ctl && chmod +x ${mo_ctl_global_path}/mo_ctl"
     add_log "I" "If you're running on MacOS, we need your confirmation with password to run sudo commands"
 
-    if sudo mkdir -p ${mo_ctl_global_path}/ && sudo touch ${mo_ctl_global_path}/mo_ctl && sudo chown ${os_user} ${mo_ctl_global_path}/mo_ctl && echo "bash +x ${mo_ctl_local_path}/mo_ctl.sh \"\$*\"" >${mo_ctl_global_path}/mo_ctl && chmod +x ${mo_ctl_global_path}/mo_ctl; then
+    if sudo mkdir -p ${mo_ctl_global_path}/ && sudo touch ${mo_ctl_global_path}/mo_ctl && sudo chown ${os_user} ${mo_ctl_global_path}/mo_ctl && echo "bash +x ${mo_ctl_local_path}/mo_ctl.sh \"\$*\"" > ${mo_ctl_global_path}/mo_ctl && chmod +x ${mo_ctl_global_path}/mo_ctl; then
         add_log "I" "Succeeded"
     else
         add_log "E" "Failed"
@@ -268,15 +268,15 @@ function install() {
 function main() {
     option=$1
     case "${option}" in
-    "")
-        download && install "${DOWNLOAD_FILE_RENAME}"
-        ;;
-    "help")
-        usage
-        ;;
-    *)
-        install ${option}
-        ;;
+        "")
+            download && install "${DOWNLOAD_FILE_RENAME}"
+            ;;
+        "help")
+            usage
+            ;;
+        *)
+            install ${option}
+            ;;
     esac
 }
 
