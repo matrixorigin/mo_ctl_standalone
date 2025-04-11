@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+ROOT_DIR = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 .PHONY: shfmt
 shfmt:
-	@shfmt -ci -kp -sr -bn -i 4 -w -l ./
+	@cd $(ROOT_DIR) && shfmt -ci -kp -sr -bn -i 4 -w -l ./
 
 .PHONY: shfmt-install
 shfmt-install:
