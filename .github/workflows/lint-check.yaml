@@ -25,7 +25,7 @@ jobs:
             echo "--------------------------------------------------"
             echo "$changes"
             echo "--------------------------------------------------"
-            # exit 1
+            exit 1
           else
             echo "Lint check passed"
           fi
