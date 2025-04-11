@@ -13,18 +13,18 @@ function what_os() {
     system=$(uname)
     os=""
     case "${system}" in
-    "")
-        return 1
-        ;;
-    "Darwin")
-        os="Mac"
-        ;;
-    "Linux")
-        os="Linux"
-        ;;
-    *)
-        os="OtherOS"
-        ;;
+        "")
+            return 1
+            ;;
+        "Darwin")
+            os="Mac"
+            ;;
+        "Linux")
+            os="Linux"
+            ;;
+        *)
+            os="OtherOS"
+            ;;
     esac
     echo "${os}"
 }
@@ -34,10 +34,10 @@ function get_nanosecond() {
     if [[ "${os}" == "Mac" ]]; then
         # 1. for Mac
         # format: 1690284688.93481087684631347656
-        if which python3 >/dev/null 2>&1; then
+        if which python3 > /dev/null 2>&1; then
             # in nanosecond
             nanosec=$(python3 -c "import time; print('%.9f' % time.time())")
-        elif which python >/dev/null 2>&1; then
+        elif which python > /dev/null 2>&1; then
             # in nanosecond
             nanosec=$(python -c "import time; print('%.9f' % time.time())")
         else
@@ -83,10 +83,10 @@ function add_log() {
         # 1. for Mac
         # format: 2023-07-25 17:39:24.904 UTC+0800
         timezone="UTC+0800"
-        if which python3 >/dev/null 2>&1; then
+        if which python3 > /dev/null 2>&1; then
             # in millisecond
             timestamp_ms=$(python3 -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23)
-        elif which python >/dev/null 2>&1; then
+        elif which python > /dev/null 2>&1; then
             # in millisecond
             timestamp_ms=$(python -c "import datetime; print(datetime.datetime.now(datetime.timezone(datetime.timedelta(hours = 8))).strftime('%Y-%m-%d %H:%M:%S.%f'))" | cut -b 1-23)
         else
@@ -111,71 +111,71 @@ function add_log() {
         display_log_level="I"
     fi
     case "${level}" in
-    "E")
-        level="ERROR"
-        ;;
-    "W")
-        level="WARN"
-        case "${display_log_level}" in
         "E")
-            return 0
+            level="ERROR"
+            ;;
+        "W")
+            level="WARN"
+            case "${display_log_level}" in
+                "E")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
+            ;;
+        "I")
+            level="INFO"
+            case "${display_log_level}" in
+                "E" | "W")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
+            ;;
+        "D")
+            level="DEBUG"
+            case "${display_log_level}" in
+                "E" | "W" | "I")
+                    return 0
+                    ;;
+                *)
+                    :
+                    ;;
+            esac
             ;;
         *)
-            :
+            echo "These are valid log levels: E/e/W/w/I/i/D/d."
+            echo "   E/e: ERROR, W/w: WARN, I/i: INFO, D/d: DEBUG"
+            exit 1
             ;;
-        esac
-        ;;
-    "I")
-        level="INFO"
-        case "${display_log_level}" in
-        "E" | "W")
-            return 0
-            ;;
-        *)
-            :
-            ;;
-        esac
-        ;;
-    "D")
-        level="DEBUG"
-        case "${display_log_level}" in
-        "E" | "W" | "I")
-            return 0
-            ;;
-        *)
-            :
-            ;;
-        esac
-        ;;
-    *)
-        echo "These are valid log levels: E/e/W/w/I/i/D/d."
-        echo "   E/e: ERROR, W/w: WARN, I/i: INFO, D/d: DEBUG"
-        exit 1
-        ;;
     esac
 
     case "${add_line}" in
-    "n")
-        if [ "x$CTL_LOG_FILE" != "x" ]; then
-            echo -n "${nowtime}    [${level}]    ${msg}" 2>&1 | tee -a $CTL_LOG_FILE
-        else
-            echo -n "${nowtime}    [${level}]    ${msg}"
-        fi
-        ;;
-    "l")
-        if [ "x$CTL_LOG_FILE" != "x" ]; then
-            echo "${msg}" 2>&1 | tee -a $CTL_LOG_FILE
-        else
-            echo "${msg}"
-        fi
-        ;;
-    *)
-        if [ "x$CTL_LOG_FILE" != "x" ]; then
-            echo "${nowtime}    [${level}]    ${msg}" 2>&1 | tee -a $CTL_LOG_FILE
-        else
-            echo "${nowtime}    [${level}]    ${msg}"
-        fi
-        ;;
+        "n")
+            if [ "x$CTL_LOG_FILE" != "x" ]; then
+                echo -n "${nowtime}    [${level}]    ${msg}" 2>&1 | tee -a $CTL_LOG_FILE
+            else
+                echo -n "${nowtime}    [${level}]    ${msg}"
+            fi
+            ;;
+        "l")
+            if [ "x$CTL_LOG_FILE" != "x" ]; then
+                echo "${msg}" 2>&1 | tee -a $CTL_LOG_FILE
+            else
+                echo "${msg}"
+            fi
+            ;;
+        *)
+            if [ "x$CTL_LOG_FILE" != "x" ]; then
+                echo "${nowtime}    [${level}]    ${msg}" 2>&1 | tee -a $CTL_LOG_FILE
+            else
+                echo "${nowtime}    [${level}]    ${msg}"
+            fi
+            ;;
     esac
 }
 
@@ -186,7 +186,7 @@ function check_cmd() {
         return 1
     fi
 
-    if ! command -v ${cmd} >/dev/null 2>&1; then
+    if ! command -v ${cmd} > /dev/null 2>&1; then
         add_log "E" "Command '${cmd}' is not found"
         return 1
     else
@@ -244,7 +244,7 @@ function pos_int_range() {
     #   1: otherwise
     num1=$1
     num2=$2
-    if [[ ${num1} -gt 0 ]] 2>/dev/null && [[ ${num1} -le ${num2} ]] 2>/dev/null; then
+    if [[ ${num1} -gt 0 ]] 2> /dev/null && [[ ${num1} -le ${num2} ]] 2> /dev/null; then
         return 0
     else
         return 1
@@ -269,7 +269,7 @@ function to_lower() {
 function floor_quotient() {
     n1=$1
     n2=$2
-    if [[ ${n1} -gt 0 ]] 2>/dev/null && [[ ${n2} -gt 0 ]] 2>/dev/null; then
+    if [[ ${n1} -gt 0 ]] 2> /dev/null && [[ ${n2} -gt 0 ]] 2> /dev/null; then
         quotient=$(expr ${n1} / ${n2})
         remainder=$(expr ${n1} % ${n2})
         if [[ ${remainder} -ne 0 ]]; then
@@ -325,36 +325,36 @@ function time_cost_ms() {
 function get_stable_cid() {
     cid="$1"
     case "${cid}" in
-    "1.0.0-rc1")
-        echo "6c08c6a45191d63f9f89e5bfef5ff37194713b5f"
-        ;;
-    "0.8.0")
-        echo "daf86797160585d24c158e4ee220964264616505"
-        ;;
-    "0.7.0")
-        echo "6d4bd173514990032372310f7b3d9d803781074a"
-        ;;
-    "0.6.0")
-        echo "c3262c1b58d030b00534283b9bd22cc83c888a2a"
-        ;;
-    "0.5.1")
-        echo "c9491645c681c9e239817a6fa71fb71df25003e2"
-        ;;
-    "0.4.0")
-        echo "aefc440bf6d6c2a5e96ba411fb0c98ae0b8bd657"
-        ;;
-    "0.3.0")
-        echo "56fcd3ff8e4aa3b5a8b9d08c420fa90f7462c579"
-        ;;
-    "0.2.0")
-        echo "c22aa58f948cef7e59acef1ebabb8f8dfd4154cd"
-        ;;
-    "0.1.0")
-        echo "19cc0453b573e23ae643bea492bc43c5df4758db"
-        ;;
-    *)
-        echo "${cid}"
-        ;;
+        "1.0.0-rc1")
+            echo "6c08c6a45191d63f9f89e5bfef5ff37194713b5f"
+            ;;
+        "0.8.0")
+            echo "daf86797160585d24c158e4ee220964264616505"
+            ;;
+        "0.7.0")
+            echo "6d4bd173514990032372310f7b3d9d803781074a"
+            ;;
+        "0.6.0")
+            echo "c3262c1b58d030b00534283b9bd22cc83c888a2a"
+            ;;
+        "0.5.1")
+            echo "c9491645c681c9e239817a6fa71fb71df25003e2"
+            ;;
+        "0.4.0")
+            echo "aefc440bf6d6c2a5e96ba411fb0c98ae0b8bd657"
+            ;;
+        "0.3.0")
+            echo "56fcd3ff8e4aa3b5a8b9d08c420fa90f7462c579"
+            ;;
+        "0.2.0")
+            echo "c22aa58f948cef7e59acef1ebabb8f8dfd4154cd"
+            ;;
+        "0.1.0")
+            echo "19cc0453b573e23ae643bea492bc43c5df4758db"
+            ;;
+        *)
+            echo "${cid}"
+            ;;
     esac
 
 }
@@ -401,7 +401,7 @@ function check_cron_service() {
     else
         # 2. Linux
         add_log "D" "Get status of service cron"
-        if systemctl status cron >/dev/null 2>&1 || service cron status >/dev/null 2>&1 || systemctl status crond >/dev/null 2>&1 || service crond status >/dev/null 2>&1; then
+        if systemctl status cron > /dev/null 2>&1 || service cron status > /dev/null 2>&1 || systemctl status crond > /dev/null 2>&1 || service crond status > /dev/null 2>&1; then
             add_log "D" "Succeeded. Service cron seems to be running."
         else
             add_log "E" "Failed. Please check again via 'systemctl status crond' or 'systemctl status cron' to make sure it's running. Or try to restart it via 'systemctl restart cron'."
