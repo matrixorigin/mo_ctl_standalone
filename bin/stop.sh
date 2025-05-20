@@ -7,6 +7,8 @@
 
 function stop() {
     force=$1
+    get_conf MO_DEPLOY_MODE
+    get_conf DAEMON_METHOD
 
     kill_option=""
     docker_option="stop"
@@ -23,10 +25,21 @@ function stop() {
                 add_log "I" "Stopping mo container: docker ${docker_option} ${MO_CONTAINER_NAME}"
                 docker ${docker_option} "${MO_CONTAINER_NAME}"
             else
-                for pid in ${PIDS}; do
-                    add_log "I" "Stopping mo-service with pid ${pid} with command: kill ${kill_option} ${pid}"
-                    kill ${kill_option} ${pid}
-                done
+                if [[ "${DAEMON_METHOD}" == "systemd" ]]; then
+                    add_log "I" "Stopping matrixone service via systemd"
+                    sudo systemctl stop matrixone.service
+                    if [[ $? -eq 0 ]]; then
+                        add_log "I" "Stop succeeded"
+                    else
+                        add_log "E" "Stop failed"
+                        return 1
+                    fi
+                else
+                    for pid in ${PIDS}; do
+                        add_log "I" "Stopping mo-service with pid ${pid} with command: kill ${kill_option} ${pid}"
+                        kill ${kill_option} ${pid}
+                    done
+                fi
             fi
             add_log "I" "Wait for ${STOP_INTERVAL} seconds"
             sleep ${STOP_INTERVAL}

@@ -38,10 +38,32 @@ function check_uninstall_pre_requisites() {
     return ${rc}
 }
 
+function remove_cron_files() {
+    add_log "I" "Removing cron task files"
+    sudo rm -f /etc/cron.d/mo_backup
+    sudo rm -f /etc/cron.d/mo_clean_old_backup
+    sudo rm -f /etc/cron.d/mo_clean_logs
+    sudo rm -f /etc/cron.d/mo_watchdog
+}
+
+function remove_matrixone_files() {
+    if [[ -d "${MO_PATH}/matrixone" ]]; then
+        if cd ${MO_PATH} && rm -rf ./matrixone/; then
+            add_log "I" "Uninstall MO succeeded."
+        else
+            add_log "E" "Uninstall MO failed."
+            return 1
+        fi
+    else
+        add_log "I" "${MO_PATH}/matrixone does not exist, thus no need to uninstall"
+    fi
+}
+
 function uninstall() {
+    get_conf MO_DEPLOY_MODE
+    get_conf DAEMON_METHOD
 
     if [[ "${MO_DEPLOY_MODE}" == "docker" ]]; then
-
         if ! check_uninstall_pre_requisites; then
             return 1
         fi
@@ -64,7 +86,6 @@ function uninstall() {
         fi
 
         add_log "I" "Uninstall MO succeeded."
-
     else
         add_log "W" "You're uninstalling MO from path ${MO_PATH}/matrixone, are you sure? (Yes/No)"
         read_user_confirm
@@ -73,16 +94,16 @@ function uninstall() {
             return 1
         fi
 
-        if [[ -d "${MO_PATH}/matrixone" ]]; then
-            if cd ${MO_PATH} && rm -rf ./matrixone/; then
-                add_log "I" "Uninstall MO succeeded."
-            else
-                add_log "E" "Uninstall MO failed."
-                return 1
-            fi
-        else
-            add_log "I" "${MO_PATH}/matrixone does not exist, thus no need to uninstall"
+        if [[ "${DAEMON_METHOD}" == "systemd" ]]; then
+            add_log "I" "Stopping and disabling matrixone service via systemd"
+            sudo systemctl stop matrixone.service
+            sudo systemctl disable matrixone.service
+            add_log "I" "Removing systemd service file"
+            sudo rm -f /etc/systemd/system/matrixone.service
+            sudo systemctl daemon-reload
         fi
 
+        remove_cron_files
+        remove_matrixone_files
     fi
 }

@@ -122,8 +122,8 @@ MO_CONF_FILE="${MO_PATH}/matrixone/etc/launch/launch.toml"
 GO_MEM_LIMIT_RATIO=90
 # time interval (in seconds) of auto profile collecting. Empty by default, meaning will not turn on auto profile collecting
 PPROF_INTERVAL=""
-# use nohup or -daemon(default) to start mo-service? choose from: nohup | daemon
-DAEMON_METHOD="daemon"
+# use systemd, nohup or daemon to start mo-service? choose from: systemd | nohup | daemon
+DAEMON_METHOD="systemd"
 
 # for restart
 # interval between stop and start, unit: seconds
