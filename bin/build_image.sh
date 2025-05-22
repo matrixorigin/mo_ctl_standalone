@@ -58,6 +58,9 @@ function build_image() {
             add_log "D" "sed -i 's#FROM golang:1.23.0-bookworm#FROM ccr.ccs.tencentyun.com/mo-infra/golang:1.23.0-bookworm#g' optools/images/Dockerfile"
             sed -i 's#FROM golang:1.23.0-bookworm#FROM ccr.ccs.tencentyun.com/mo-infra/golang:1.23.0-bookworm#g' optools/images/Dockerfile
 
+            # adjust for go 1.24
+            sed -i 's#FROM matrixorigin/golang:1.24-ubuntu22#FROM ccr.ccs.tencentyun.com/mo-infra/golang:1.24-ubuntu22#g' optools/images/Dockerfile
+
         fi
 
     add_log "D" "Cmd: docker build -f optools/images/Dockerfile -t ${image_name}:${branch}_${commitid_less} . --build-arg GOPROXY=\"${GOPROXY}\""
