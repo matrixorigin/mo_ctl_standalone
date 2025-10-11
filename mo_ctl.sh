@@ -78,10 +78,10 @@ function main() {
         CTL_LOG_FILE=$CTL_LOG_DIR/$(date '+%Y%m%d_%H%M%S')-$(hostname).log
     fi
     if [ -z "$BACKUP_S3_ID" ] && [ -n "$AWS_ACCESS_KEY_ID" ]; then
-        eval "BACKUP_S3_ID=$AWS_ACCESS_KEY_ID"
+        BACKUP_S3_ID="$AWS_ACCESS_KEY_ID"
     fi
     if [ -z "$BACKUP_S3_KEY" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
-        eval "BACKUP_S3_KEY=$AWS_SECRET_ACCESS_KEY"
+        BACKUP_S3_KEY="$AWS_SECRET_ACCESS_KEY"
     fi
 
     case "${option_1}" in
