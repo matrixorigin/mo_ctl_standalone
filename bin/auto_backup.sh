@@ -403,10 +403,20 @@ function backup() {
                         role_arn_option="--role_arn ${BACKUP_S3_ROLE_ARN}"
                     fi
 
-                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --parallelism \"${BACKUP_PHYSICAL_PARALLEL_NUM}\" --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"s3\" --endpoint \"${BACKUP_S3_ENDPOINT}\" --access_key_id \"${BACKUP_S3_ID}\" --secret_access_key \"${BACKUP_S3_KEY}\" --bucket \"${BACKUP_S3_BUCKET}\" --filepath \"${backup_outpath}\" --region \"${BACKUP_S3_REGION}\" --compression \"${BACKUP_S3_COMPRESSION}\" \"${role_arn_option}\" \"${minio_option}\" ${delta_option}"
+                    cert_files_option=()
+                    if [[ "${BACKUP_S3_CERT_FILES}" != "" ]]; then
+                        cert_files_option=(--cert_files "${BACKUP_S3_CERT_FILES}")
+                    fi
+
+                    insecure_skip_verify_option=()
+                    if [[ "${BACKUP_S3_INSECURE_SKIP_VERIFY}" == "yes" ]]; then
+                        insecure_skip_verify_option=(--insecure_skip_verify)
+                    fi
+
+                    add_log "D" "Backup command: cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --parallelism \"${BACKUP_PHYSICAL_PARALLEL_NUM}\" --host \"${MO_HOST}\" --port \"${MO_PORT}\" --user \"${MO_USER}\" --password \"${MO_PW}\" --backup_dir \"s3\" --endpoint \"${BACKUP_S3_ENDPOINT}\" --access_key_id \"${BACKUP_S3_ID}\" --secret_access_key \"${BACKUP_S3_KEY}\" --bucket \"${BACKUP_S3_BUCKET}\" --filepath \"${backup_outpath}\" --region \"${BACKUP_S3_REGION}\" --compression \"${BACKUP_S3_COMPRESSION}\" \"${role_arn_option}\" \"${minio_option}\" ${cert_files_option[*]} ${insecure_skip_verify_option[*]} ${delta_option}"
 
                     startTime=$(get_nanosecond)
-                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --parallelism "${BACKUP_PHYSICAL_PARALLEL_NUM}" --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "s3" --endpoint "${BACKUP_S3_ENDPOINT}" --access_key_id "${BACKUP_S3_ID}" --secret_access_key "${BACKUP_S3_KEY}" --bucket "${BACKUP_S3_BUCKET}" --filepath "${backup_outpath}" --region "${BACKUP_S3_REGION}" --compression "${BACKUP_S3_COMPRESSION}" "${role_arn_option}" "${minio_option}" ${delta_option}; then
+                    if cd ${BACKUP_MOBR_DIRNAME} && ${BACKUP_MOBR_PATH} backup ${br_meta_option} --parallelism "${BACKUP_PHYSICAL_PARALLEL_NUM}" --host "${MO_HOST}" --port "${MO_PORT}" --user "${MO_USER}" --password "${MO_PW}" --backup_dir "s3" --endpoint "${BACKUP_S3_ENDPOINT}" --access_key_id "${BACKUP_S3_ID}" --secret_access_key "${BACKUP_S3_KEY}" --bucket "${BACKUP_S3_BUCKET}" --filepath "${backup_outpath}" --region "${BACKUP_S3_REGION}" --compression "${BACKUP_S3_COMPRESSION}" "${role_arn_option}" "${minio_option}" "${cert_files_option[@]}" "${insecure_skip_verify_option[@]}" ${delta_option}; then
                         outcome="succeeded"
                     else
                         outcome="failed"

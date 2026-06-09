@@ -46,6 +46,10 @@ spec:
               value: /data/logs/mo_ctl
             - name: _CTL_BACKUP_S3_IS_MINIO
               value: "yes"
+            - name: _CTL_BACKUP_S3_CERT_FILES
+              value: "" # optional: comma-separated CA cert files mounted in the container
+            - name: _CTL_BACKUP_S3_INSECURE_SKIP_VERIFY
+              value: "no" # set to "yes" to skip S3 TLS certificate verification
 
             - name: _CTL_CTL_LOG_DIR
               value: "/data/logs/mo_ctl/logs"
