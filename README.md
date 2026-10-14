@@ -108,7 +108,7 @@ Options             :
     csv_convert     : convert a csv file to a sql file in format "insert into values" or "load data inline format='csv'"
     ddl_convert     : convert a ddl file to mo format from other types of database
     deploy          : deploy mo onto the path configured
-    get_branch      : upgrade or downgrade mo from current version to a target commit id or stable version
+    get_branch      : print which git branch mo is currently on
     get_cid         : print mo git commit id from the path configured
     get_conf        : get configurations
     help            : print help information

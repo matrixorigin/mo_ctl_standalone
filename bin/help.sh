@@ -520,7 +520,7 @@ function help_1() {
     echo "    csv_convert     : ${USAGE_CSV_CONVERT}"
     echo "    ddl_convert     : ${USAGE_DDL_CONVERT}"
     echo "    deploy          : ${USAGE_DEPLOY}"
-    echo "    get_branch      : ${USAGE_UPGRADE}"
+    echo "    get_branch      : ${USAGE_GET_BRANCH}"
     echo "    get_cid         : ${USAGE_GET_CID}"
     echo "    get_conf        : ${USAGE_GET_CONF}"
     echo "    help            : ${USAGE_HELP}"
