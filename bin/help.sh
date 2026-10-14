@@ -1,13 +1,13 @@
 #!/bin/bash
 ################################################################
-# Copyright (C) 2023 Matrix Origin. All Rights Reserved
+# Copyright (C) 2023-2026 Matrix Origin. All Rights Reserved
 # Visit us at https://www.matrixorigin.cn/
 ################################################################
 # help
 
 #confs
 TOOL_NAME="mo_ctl"
-USAGE_OPTION_LIST="auto_backup | auto_clean_logs | auto_log_rotate | backup | clean_backup | clean_logs | connect | csv_convert | ddl_convert | deploy | get_branch | get_cid | get_conf | help | monitor | pprof | precheck | restart | set_conf | sql | start | status | stop | uninstall | upgrade | version | watchdog"
+USAGE_OPTION_LIST="auto_backup | auto_clean_logs | auto_log_rotate | backup | build_image | clean_backup | clean_logs | connect | csv_convert | datax | ddl_convert | deploy | get_branch | get_cid | get_conf | help | monitor | pprof | precheck | restart | restore | set_conf | sql | start | status | stop | uninstall | upgrade | version | watchdog"
 
 USAGE_AUTO_BACKUP="setup a crontab task to backup your databases automatically"
 USAGE_AUTO_CLEAN_LOGS="set up a crontab task to clean system log table data automatically"
@@ -64,7 +64,7 @@ function help_deploy() {
     echo "                ${TOOL_NAME} ${option} 1.2.0       # deploy stable verson 1.2.0"
     echo "                ${TOOL_NAME} ${option} force       # delete all under MO_PATH and deploy verson ${MO_DEFAULT_VERSION}"
     echo "                ${TOOL_NAME} ${option} 1.2.0 force # delete all under MO_PATH and deploy stable verson 1.2.0 from beginning"
-    echo "                ${TOOL_NAME} ${option} main        # deploy development latest version, but don't build mo-service, i.e. only pull git codes"
+    echo "                ${TOOL_NAME} ${option} main nobuild # deploy development latest version, but don't build mo-service, i.e. only pull git codes"
 }
 
 function help_deploy_docker() {
@@ -92,7 +92,7 @@ function help_stop() {
     echo "Options    :"
     echo "  [force]     : optional: if specified, will try to kill mo-services with -9 option, so be very carefully"
     echo "Note          : If,"
-    echo "                1. MO_DEPLOY_MODE=binary, will only stop mo container with name ${MO_CONTAINER_NAME}"
+    echo "                1. MO_DEPLOY_MODE=docker, will only stop mo container with name ${MO_CONTAINER_NAME}"
     echo "                2. MO_DEPLOY_MODE=git|binary, will stop all mo-service processes found on this machine"
     echo "Examples      : ${TOOL_NAME} ${option}"
     echo "                ${TOOL_NAME} ${option} force"
@@ -520,7 +520,7 @@ function help_1() {
     echo "    csv_convert     : ${USAGE_CSV_CONVERT}"
     echo "    ddl_convert     : ${USAGE_DDL_CONVERT}"
     echo "    deploy          : ${USAGE_DEPLOY}"
-    echo "    get_branch      : ${USAGE_UPGRADE}"
+    echo "    get_branch      : ${USAGE_GET_BRANCH}"
     echo "    get_cid         : ${USAGE_GET_CID}"
     echo "    get_conf        : ${USAGE_GET_CONF}"
     echo "    help            : ${USAGE_HELP}"

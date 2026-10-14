@@ -65,7 +65,7 @@ mo_ctl set_conf MO_PATH="/data/mo/20230701/matrixone" # set your own mo path
 mo_ctl set_conf MO_GIT_URL="https://gitee.com/matrixorigin/matrixone.git" # in case have network issues, you can set this conf by overwritting default value MO_GIT_URL="https://github.com/matrixorigin/matrixone.git"
 ```
 
-3. Deploy a standalone mo instance of latest stable release version(current: 0.8.0)
+3. Deploy a standalone mo instance of the version configured by MO_DEFAULT_VERSION (check your installed package first)
 
 ```bash
 mo_ctl deploy
@@ -108,7 +108,7 @@ Options             :
     csv_convert     : convert a csv file to a sql file in format "insert into values" or "load data inline format='csv'"
     ddl_convert     : convert a ddl file to mo format from other types of database
     deploy          : deploy mo onto the path configured
-    get_branch      : upgrade or downgrade mo from current version to a target commit id or stable version
+    get_branch      : print which git branch mo is currently on
     get_cid         : print mo git commit id from the path configured
     get_conf        : get configurations
     help            : print help information
@@ -131,3 +131,26 @@ Options             :
 Examples            : mo_ctl status
                       mo_ctl status help
 ```
+
+## Deployment mode and operation scope
+
+Check `mo_ctl version` and `mo_ctl get_conf MO_DEPLOY_MODE,MO_PATH` before operating an instance. Git mode starts from MO_PATH/matrixone, binary mode from MO_PATH, and docker mode manages the configured container. In git/binary mode, stop may stop all mo-service processes on the host; a configured path does not isolate processes. Force termination and deploy force need an independent backup/restore check first.
+
+Scheduled maintenance has separate help and cancellation commands:
+
+```bash
+mo_ctl auto_backup help
+mo_ctl auto_clean_logs help
+mo_ctl auto_log_rotate help
+mo_ctl monitor help
+mo_ctl csv_convert help
+mo_ctl restore help
+# Inspect status before changes; disable only the intended schedule.
+mo_ctl auto_backup status
+mo_ctl auto_backup disable
+mo_ctl auto_clean_logs disable
+mo_ctl auto_log_rotate disable
+mo_ctl watchdog disable
+```
+
+Inspect the current user's crontab, timezone, PATH, configuration and output paths, and observe a real scheduled run. Disable stops future scheduling; it does not restore deleted logs, remove old backups or cancel an already-running task. Test a small CSV/DDL conversion and compare types, NULLs, quoting and values before a migration.
